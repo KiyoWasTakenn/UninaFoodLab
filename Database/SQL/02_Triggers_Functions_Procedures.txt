@@ -13,7 +13,7 @@ BEGIN
     NEW.Cognome := INITCAP(NEW.Cognome);
     RETURN NEW;
 
-END fun_normalizza_utente;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_normalizza_partecipante
@@ -36,7 +36,7 @@ BEGIN
     NEW.Nome := INITCAP(NEW.Nome);
     RETURN NEW;
 
-END fun_normalizza_ingr_chef;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_normalizza_ingrediente
@@ -74,7 +74,7 @@ BEGIN
 	END IF;
 	RETURN NEW;
 
-END fun_username_unique;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_unico_username_partecipante
@@ -105,7 +105,7 @@ BEGIN
 	END IF;
 	RETURN NEW;
 
-END fun_data_sessione;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_data_sessione_online
@@ -127,15 +127,15 @@ RETURNS TRIGGER AS
 $$
 BEGIN
     	IF EXISTS ( SELECT 1 FROM SessioneOnline WHERE Data = NEW.Data AND IdCorso = NEW.IdCorso ) THEN
-    		RAISE EXCEPTION 'C'è già una sessione online lo stesso giorno';
+    		RAISE EXCEPTION 'C''è già una sessione online lo stesso giorno';
 	END IF;
 
     	IF EXISTS ( SELECT 1 FROM SessionePratica WHERE Data = NEW.Data AND IdCorso = NEW.IdCorso) THEN
-    		RAISE EXCEPTION 'C'è già una sessione pratica lo stesso giorno';
+    		RAISE EXCEPTION 'C''è già una sessione pratica lo stesso giorno';
 	END IF;
     	RETURN NEW;
 
-END fun_unicita_sessione_giorno;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_unicita_sessione_online_giorno
@@ -161,7 +161,7 @@ BEGIN
     	WHERE IdCorso = NEW.IdCorso;
     	RETURN NULL;
 
-END fun_incrementa_num_sessioni;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_incremento_numsessioni_online
@@ -211,7 +211,7 @@ BEGIN
     WHERE IdSessionePratica = NEW.IdSessionePratica;
     RETURN NULL;
 
-END fun_incrementa_num_utenti;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_incremento_numutenti
@@ -251,7 +251,7 @@ BEGIN
     WHERE IdPartecipante = NEW.IdPartecipante;
     RETURN NULL;
 
-END fun_incrementa_num_corsi;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_incrementa_num_corsi
@@ -271,7 +271,7 @@ BEGIN
     WHERE IdPartecipante = OLD.IdPartecipante;
     RETURN OLD;
 
-END fun_decrementa_num_corsi;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_decrementa_num_corsi
@@ -300,7 +300,7 @@ BEGIN
     	END IF;
     	RETURN NEW;
 
-END fun_data_adesione;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_data_adesione
@@ -336,7 +336,7 @@ BEGIN
 	END IF;
     	RETURN NEW;
 
-END fun_limite_iscrizioni;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_limite_iscrizioni 
@@ -365,7 +365,7 @@ BEGIN
 	END IF;
     	RETURN NEW;
 
-END fun_iscrizione_before_adesione;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_iscrizione_before_adesione
@@ -388,11 +388,11 @@ BEGIN
 	SELECT COUNT(*) INTO num_argomenti FROM Argomenti_Corso WHERE IdCorso = NEW.IdCorso;
 
 	IF num_argomenti >= 5 THEN
-		RAISE EXCEPTION 'E'' gia' stato scelto il numero massimo di argomenti per questo corso'; 
+		RAISE EXCEPTION 'E'' gia'' stato scelto il numero massimo di argomenti per questo corso'; 
     	END IF;
     	RETURN NEW;
 
-END fun_limit_argomenti;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_limit_argomenti
@@ -415,7 +415,7 @@ BEGIN
 	END IF; 	
 	RETURN NEW;
 
-END fun_upd_tipo_corso;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_upd_tipo_corso
@@ -443,15 +443,10 @@ BEGIN
 	END IF;
 	RETURN NEW;
 
-END fun_ricette_chef_sessione;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_ricette_chef_sessione
 BEFORE INSERT OR UPDATE ON Preparazioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_ricette_chef_sessione();
-
-
-
-
-
