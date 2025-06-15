@@ -109,12 +109,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_data_sessione_online
-BEFORE INSERT OR UPDATE ON SessioneOnline
+BEFORE INSERT ON SessioneOnline
 FOR EACH ROW
 EXECUTE FUNCTION fun_data_sessione();
 
 CREATE TRIGGER trg_data_sessione_pratica
-BEFORE INSERT OR UPDATE ON SessionePratica
+BEFORE INSERT ON SessionePratica
 FOR EACH ROW
 EXECUTE FUNCTION fun_data_sessione();
 
@@ -139,12 +139,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_unicita_sessione_online_giorno
-BEFORE INSERT OR UPDATE ON SessioneOnline
+BEFORE INSERT OR UPDATE OF Data ON SessioneOnline
 FOR EACH ROW
 EXECUTE FUNCTION fun_unicita_sessione_giorno();
 
 CREATE TRIGGER trg_unicita_sessione_pratica_giorno
-BEFORE INSERT OR UPDATE ON SessionePratica
+BEFORE INSERT OR UPDATE OF Data ON SessionePratica
 FOR EACH ROW
 EXECUTE FUNCTION fun_unicita_sessione_giorno();
 
