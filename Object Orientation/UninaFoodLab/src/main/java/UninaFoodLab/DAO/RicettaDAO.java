@@ -1,4 +1,5 @@
 package UninaFoodLab.DAO;
 
-public class sdasda {
+public class RicettaDAO
+{
 }
