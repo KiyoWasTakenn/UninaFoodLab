@@ -1,5 +1,56 @@
 -----------------------------------------------------------------------------------------------------------------------
 
+-- Normalizza Partecipante/Chef con Username minuscolo, CodiceFiscale Maiuscolo, Email minuscolo, Nome e Cognome con l'iniziale Maiuscola
+
+CREATE OR REPLACE FUNCTION fun_normalizza_utente()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    NEW.Username := LOWER(NEW.Username);
+    NEW.CodiceFiscale := UPPER(NEW.CodiceFiscale);
+    NEW.Email := LOWER(NEW.Email);
+    NEW.Nome := INITCAP(NEW.Nome);
+    NEW.Cognome := INITCAP(NEW.Cognome);
+    RETURN NEW;
+
+END fun_normalizza_utente;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_normalizza_partecipante
+BEFORE INSERT OR UPDATE ON Partecipante
+FOR EACH ROW
+EXECUTE FUNCTION fun_normalizza_utente();
+
+CREATE TRIGGER trg_normalizza_chef
+BEFORE INSERT OR UPDATE ON Chef
+FOR EACH ROW
+EXECUTE FUNCTION fun_normalizza_utente();
+
+
+-- Normalizzo Ingrediente e Ricetta con l'iniziale del nome maiuscola
+
+CREATE OR REPLACE FUNCTION fun_normalizza_ingr_chef()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    NEW.Nome := INITCAP(NEW.Nome);
+    RETURN NEW;
+
+END fun_normalizza_ingr_chef;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_normalizza_ingrediente
+BEFORE INSERT OR UPDATE ON Ingrediente
+FOR EACH ROW
+EXECUTE FUNCTION fun_normalizza_ingr_chef();
+
+CREATE TRIGGER trg_normalizza_ricetta
+BEFORE INSERT OR UPDATE ON Ricetta
+FOR EACH ROW
+EXECUTE FUNCTION fun_normalizza_ingr_chef();
+
+-----------------------------------------------------------------------------------------------------------------------
+
 -- Interrelazionale: Impedire che due utenti – uno Chef e uno Partecipante – abbiano lo stesso Username, anche se sono in due tabelle diverse.
 
 CREATE OR REPLACE FUNCTION fun_username_unique()
@@ -131,7 +182,7 @@ RETURNS TRIGGER AS
 $$
 BEGIN
 	UPDATE Corso
-	SET NumeroSessioni = NumeroSessioni - 1
+	SET NumeroSessioni = GREATEST(NumeroSessioni - 1, 0)
 	WHERE IdCorso = OLD.IdCorso;
 	RETURN OLD;
 END;
@@ -176,7 +227,7 @@ RETURNS TRIGGER AS
 $$
 BEGIN
 	UPDATE SessionePratica
-	SET NumeroUtenti = NumeroUtenti - 1
+	SET NumeroUtenti = GREATEST(NumeroUtenti - 1, 0)
 	WHERE IdSessionePratica = OLD.IdSessionePratica;
 	RETURN OLD;
 END;
@@ -216,7 +267,7 @@ RETURNS TRIGGER AS
 $$    
 BEGIN
     UPDATE Partecipante
-    SET NumeroCorsi = NumeroCorsi - 1
+    SET NumeroCorsi = GREATEST(NumeroCorsi - 1, 0)
     WHERE IdPartecipante = OLD.IdPartecipante;
     RETURN OLD;
 
@@ -368,7 +419,7 @@ END fun_upd_tipo_corso;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_upd_tipo_corso
-BEFORE UPDATE ON Corso OF isPratico
+BEFORE UPDATE ON Corso
 FOR EACH ROW
 EXECUTE FUNCTION fun_upd_tipo_corso();
 
