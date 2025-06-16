@@ -1,5 +1,5 @@
 package UninaFoodLab.DTO;
 
-public class Utente
+public abstract class Utente
 {
 }

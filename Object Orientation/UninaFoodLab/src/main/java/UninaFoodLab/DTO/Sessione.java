@@ -1,5 +1,5 @@
 package UninaFoodLab.DTO;
 
-public class Sessione
+public abstract class Sessione
 {
 }
