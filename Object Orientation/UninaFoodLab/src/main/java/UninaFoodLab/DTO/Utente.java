@@ -13,6 +13,18 @@ public abstract class Utente
     private String email;
     private String password;
 
+    protected Utente(String username, String nome, String cognome, String codiceFiscale, Date dataDiNascita, String luogoDiNascita, String email, String password)
+    {
+        this.username = username;
+        this.nome = nome;
+        this.cognome = cognome;
+        this.codiceFiscale = codiceFiscale;
+        this.dataDiNascita = dataDiNascita;
+        this.luogoDiNascita = luogoDiNascita;
+        this.email = email;
+        this.password = password;
+    }
+
     public String getUsername()
     {
         return username;
