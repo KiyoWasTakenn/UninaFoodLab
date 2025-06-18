@@ -1,5 +1,9 @@
 package UninaFoodLab.DAO.Postgres;
 
-public class AdesioneDAO_Postgres
+import UninaFoodLab.DAO.AdesioneDAO;
+import java.sql.*;
+
+public class AdesioneDAO_Postgres implements AdesioneDAO
 {
+
 }

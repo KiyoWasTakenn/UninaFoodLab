@@ -1,5 +1,8 @@
 package UninaFoodLab.DAO.Postgres;
 
-public class SessioneOnlineDAO_Postgres
+import UninaFoodLab.DAO.SessioneOnlineDAO;
+import java.sql.*;
+
+public class SessioneOnlineDAO_Postgres implements SessioneOnlineDAO
 {
 }

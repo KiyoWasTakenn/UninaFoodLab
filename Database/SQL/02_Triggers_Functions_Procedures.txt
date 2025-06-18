@@ -463,22 +463,6 @@ EXECUTE FUNCTION fun_aggiorna_data_inizio();
 
 -----------------------------------------------------------------------------------------------------------------------
 
--- 
-
-CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_pratica
-BEFORE UPDATE ON SessionePratica
-WHEN 
-FOR EACH ROW
-EXECUTE FUNCTION fun_aggiorna_data_inizio();
-
-CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_online
-BEFORE UPDATE ON SessioneOnline
-WHEN 
-FOR EACH ROW
-EXECUTE FUNCTION fun_aggiorna_data_inizio();
-
------------------------------------------------------------------------------------------------------------------------
-
 -- Il Codice Fiscale non è modificabile una volta creato l'utente
 
 CREATE OR REPLACE fun_blocca_aggiorna_utente()

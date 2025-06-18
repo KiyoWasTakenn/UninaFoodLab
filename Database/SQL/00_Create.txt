@@ -53,7 +53,7 @@ CREATE TABLE Corso
 	FrequenzaSessioni VARCHAR(100) NOT NULL,
 	Limite INTEGER DEFAULT NULL,
 	Descrizione TEXT NOT NULL,
-	Costo REAL NOT NULL,
+	Costo FLOAT8 NOT NULL,
 	isPratico BOOLEAN NOT NULL DEFAULT false,
 	IdChef INTEGER NOT NULL,																						
 	CONSTRAINT fk_chef_corso FOREIGN KEY(IdChef) REFERENCES Chef(IdChef) ON DELETE CASCADE,
@@ -163,7 +163,7 @@ CREATE TABLE Utilizzi
 (
 	IdRicetta  INTEGER NOT NULL,
 	IdIngrediente  INTEGER NOT NULL,
-	Quantita REAL NOT NULL,										-- Per una porzione!
+	Quantita FLOAT8 NOT NULL,										-- Per una porzione!
 	UDM	UnitaDiMisura,																	
 	CONSTRAINT pk_ricetta_ingrediente PRIMARY KEY(IdRicetta, IdIngrediente),			-- Gli ingredienti non devono essere ripetuti per la stessa ricetta e ce ne deve essere almeno 1
 	CONSTRAINT fk_ricetta_utilizzi FOREIGN KEY(IdRicetta) REFERENCES Ricetta(IdRicetta) ON DELETE CASCADE,

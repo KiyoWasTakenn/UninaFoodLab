@@ -1,5 +1,7 @@
 package UninaFoodLab.DAO;
 
-public class IngredienteDAO
+import java.sql.*;
+
+public interface IngredienteDAO
 {
 }

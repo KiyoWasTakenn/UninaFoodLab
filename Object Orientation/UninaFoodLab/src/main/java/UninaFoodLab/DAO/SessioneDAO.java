@@ -1,5 +1,7 @@
 package UninaFoodLab.DAO;
 
-public class SessioneDAO
+import java.sql.*;
+
+public interface SessioneDAO
 {
 }

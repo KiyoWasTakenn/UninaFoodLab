@@ -1,6 +1,8 @@
 package UninaFoodLab.DAO;
 
-public class ChefDAO
+import java.sql.*;
+
+public interface ChefDAO
 {
 
 }

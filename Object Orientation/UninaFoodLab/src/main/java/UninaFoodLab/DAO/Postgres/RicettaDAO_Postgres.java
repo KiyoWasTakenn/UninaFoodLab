@@ -1,5 +1,8 @@
 package UninaFoodLab.DAO.Postgres;
 
-public class RicettaDAO_Postgres
+import UninaFoodLab.DAO.RicettaDAO;
+import java.sql.*;
+
+public class RicettaDAO_Postgres implements RicettaDAO
 {
 }

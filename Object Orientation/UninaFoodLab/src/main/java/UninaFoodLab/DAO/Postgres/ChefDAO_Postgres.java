@@ -1,5 +1,8 @@
 package UninaFoodLab.DAO.Postgres;
 
-public class ChefDAO_Postgres
+import UninaFoodLab.DAO.ChefDAO;
+import java.sql.*;
+
+public class ChefDAO_Postgres implements ChefDAO
 {
 }

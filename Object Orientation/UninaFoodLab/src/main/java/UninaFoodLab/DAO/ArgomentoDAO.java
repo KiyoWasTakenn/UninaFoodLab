@@ -1,5 +1,7 @@
 package UninaFoodLab.DAO;
 
-public class ArgomentoDAO
+import java.sql.*;
+
+public interface ArgomentoDAO
 {
 }

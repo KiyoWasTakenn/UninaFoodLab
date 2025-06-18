@@ -1,5 +1,9 @@
 package UninaFoodLab.DAO.Postgres;
 
-public class CorsoDAO_Postgres
+import UninaFoodLab.DAO.CorsoDAO;
+import java.sql.*;
+
+public class CorsoDAO_Postgres implements CorsoDAO
+
 {
 }

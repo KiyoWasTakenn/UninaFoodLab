@@ -1,5 +1,7 @@
 package UninaFoodLab.DAO;
 
-public class AdesioneDAO
+import java.sql.*;
+
+public interface AdesioneDAO
 {
 }

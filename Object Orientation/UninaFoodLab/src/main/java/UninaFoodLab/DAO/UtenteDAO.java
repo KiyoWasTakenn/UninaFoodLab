@@ -1,5 +1,7 @@
 package UninaFoodLab.DAO;
 
-public class UtenteDAO
+import java.sql.*;
+
+public interface UtenteDAO
 {
 }

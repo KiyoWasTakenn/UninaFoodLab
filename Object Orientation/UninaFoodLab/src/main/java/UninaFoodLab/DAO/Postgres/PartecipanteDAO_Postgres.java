@@ -1,5 +1,8 @@
 package UninaFoodLab.DAO.Postgres;
 
-public class PartecipanteDAO_Postgres
+import UninaFoodLab.DAO.PartecipanteDAO;
+import java.sql.*;
+
+public class PartecipanteDAO_Postgres implements PartecipanteDAO
 {
 }

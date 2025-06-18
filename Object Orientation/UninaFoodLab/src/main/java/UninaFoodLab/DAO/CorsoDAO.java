@@ -1,5 +1,7 @@
 package UninaFoodLab.DAO;
 
-public class CorsoDAO
+import java.sql.*;
+
+public interface CorsoDAO
 {
 }
