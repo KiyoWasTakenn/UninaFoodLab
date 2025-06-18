@@ -187,7 +187,7 @@
         <mxCell id="_4BLBaTchMxzVuJuGMlZ-61" value="+ Data: Data [1]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="_4BLBaTchMxzVuJuGMlZ-57" vertex="1">
           <mxGeometry y="104" width="184" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="_4BLBaTchMxzVuJuGMlZ-62" value="+ NumeroUtenti: Integer [0..1]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="_4BLBaTchMxzVuJuGMlZ-57" vertex="1">
+        <mxCell id="_4BLBaTchMxzVuJuGMlZ-62" value="+ NumeroUtenti: Integer [1]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="_4BLBaTchMxzVuJuGMlZ-57" vertex="1">
           <mxGeometry y="130" width="184" height="26" as="geometry" />
         </mxCell>
         <mxCell id="_4BLBaTchMxzVuJuGMlZ-63" value="+ Luogo: String [0..1]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="_4BLBaTchMxzVuJuGMlZ-57" vertex="1">

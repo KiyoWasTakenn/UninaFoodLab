@@ -3,7 +3,6 @@ package UninaFoodLab.DTO;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
-// aggiungisessione
 public class Corso
 {
     private String nome;
@@ -17,48 +16,6 @@ public class Corso
     private ArrayList<Sessione> sessioni;
     private ArrayList<Argomento> argomenti;
 
-    public Corso( String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico)
-    {
-        this.nome = nome;
-        this.data = data;
-        this.frequenzaSessioni = frequenzaSessioni;
-        this.limite = limite;
-        this.descrizione = descrizione;
-        this.costo = costo;
-        this.isPratico = isPratico;
-        this.sessioni  = new ArrayList<Sessione>(0);
-        this.numeroSessioni = 0;
-        this.argomenti = new ArrayList<Argomento>(0);
-    }
-
-    public Corso( String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, ArrayList<Sessione> sessioni)
-    {
-        this.nome = nome;
-        this.data = data;
-        this.frequenzaSessioni = frequenzaSessioni;
-        this.limite = limite;
-        this.descrizione = descrizione;
-        this.costo = costo;
-        this.isPratico = isPratico;
-        this.sessioni = sessioni;
-        this.numeroSessioni = sessioni.size();
-        this.argomenti = new ArrayList<Argomento>(0);
-    }
-
-    public Corso( String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, ArrayList<Argomento> argomenti)
-    {
-        this.nome = nome;
-        this.data = data;
-        this.frequenzaSessioni = frequenzaSessioni;
-        this.limite = limite;
-        this.descrizione = descrizione;
-        this.costo = costo;
-        this.isPratico = isPratico;
-        this.sessioni  = new ArrayList<Sessione>(0);
-        this.numeroSessioni = 0;
-        this.argomenti = argomenti;
-    }
-
     public Corso( String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, ArrayList<Sessione> sessioni, ArrayList<Argomento> argomenti)
     {
         this.nome = nome;
@@ -68,60 +25,83 @@ public class Corso
         this.descrizione = descrizione;
         this.costo = costo;
         this.isPratico = isPratico;
-        this.sessioni = sessioni;
-        this.numeroSessioni = sessioni.size();
-        this.argomenti = argomenti;
+
+        if(sessioni != null)
+        {
+            this.sessioni = sessioni;
+            this.numeroSessioni = sessioni.size();
+        }
+        else
+        {
+            this.sessioni = new ArrayList<>();
+            this.numeroSessioni = 0;
+        }
+
+        this.argomenti = (argomenti != null) ? argomenti : new ArrayList<>();
     }
 
-    public String getNome() {
+    public String getNome()
+    {
         return nome;
     }
 
-    public void setNome(String nome) {
+    public void setNome(String nome)
+    {
         this.nome = nome;
     }
 
-    public LocalDate getData() {
+    public LocalDate getData()
+    {
         return data;
     }
 
-    public int getNumeroSessioni() {
+    public int getNumeroSessioni()
+    {
         return numeroSessioni;
     }
 
-    public int getLimite() {
+    public int getLimite()
+    {
         return limite;
     }
 
-    public String getFrequenzaSessioni() {
+    public String getFrequenzaSessioni()
+    {
         return frequenzaSessioni;
     }
 
-    public void setFrequenzaSessioni(String frequenzaSessioni) {
+    public void setFrequenzaSessioni(String frequenzaSessioni)
+    {
         this.frequenzaSessioni = frequenzaSessioni;
     }
 
-    public String getDescrizione() {
+    public String getDescrizione()
+    {
         return descrizione;
     }
 
-    public void setDescrizione(String descrizione) {
+    public void setDescrizione(String descrizione)
+    {
         this.descrizione = descrizione;
     }
 
-    public double getCosto() {
+    public double getCosto()
+    {
         return costo;
     }
 
-    public boolean isPratico() {
+    public boolean isPratico()
+    {
         return isPratico;
     }
 
-    public void setPratico(boolean pratico) {
+    public void setPratico(boolean pratico)
+    {
         isPratico = pratico;
     }
 
-    public int getNumeroSessionePratica(){
+    public int getNumeroSessionePratica()
+    {
         int numSessionePratica=0;
 
         for (Sessione x: sessioni)
@@ -133,7 +113,8 @@ public class Corso
         return numSessionePratica;
     }
 
-    public int getNumeroSessioneOnline(){
+    public int getNumeroSessioneOnline()
+    {
         int numSessioneOnline=0;
 
         for (Sessione x: sessioni)
@@ -145,7 +126,7 @@ public class Corso
         return numSessioneOnline;
     }
 
-    public void AggiungiSessione( Sessione toAddSessione)
+    public void AggiungiSessione(Sessione toAddSessione)
     {
         sessioni.add(toAddSessione);
     }

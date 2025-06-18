@@ -68,7 +68,7 @@ CREATE TABLE SessionePratica
 	Durata INTEGER NOT NULL,			-- La durata è in minuti
 	Orario TIME NOT NULL,
 	Data DATE NOT NULL, 
-	NumeroUtenti INTEGER DEFAULT 0,
+	NumeroPartecipanti INTEGER NOT NULL DEFAULT 0,
 	Luogo VARCHAR(100),
 	IdCorso  INTEGER NOT NULL,
 	CONSTRAINT fk_corso_pratica FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE 			--Se eliminiamo il corso vengono eliminate anche tutte le sessioni pratiche associate

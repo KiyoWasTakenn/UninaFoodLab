@@ -176,7 +176,7 @@ RETURNS TRIGGER AS
 $$    
 BEGIN
     UPDATE SessionePratica
-    SET NumeroUtenti = NumeroUtenti + 1
+    SET NumeroPartecipanti = NumeroPartecipanti + 1
     WHERE IdSessionePratica = NEW.IdSessionePratica;
     RETURN NULL;
 
@@ -196,7 +196,7 @@ RETURNS TRIGGER AS
 $$
 BEGIN
 	UPDATE SessionePratica
-	SET NumeroUtenti = GREATEST(NumeroUtenti - 1, 0)
+	SET NumeroPartecipanti = GREATEST(NumeroPartecipanti - 1, 0)
 	WHERE IdSessionePratica = OLD.IdSessionePratica;
 	RETURN OLD;
 END;

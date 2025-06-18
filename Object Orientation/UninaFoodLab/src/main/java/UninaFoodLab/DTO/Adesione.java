@@ -19,7 +19,9 @@ public class Adesione
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        
         Adesione ad = (Adesione) o;
         return dataAdesione.equals(ad.dataAdesione) && partecipante.equals(ad.partecipante) && sessione.equals(ad.sessione);
     }

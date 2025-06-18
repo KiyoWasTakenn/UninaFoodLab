@@ -2,7 +2,6 @@ package UninaFoodLab.DTO;
 
 import java.sql.Time;
 import java.time.LocalDate;
-import java.util.Objects;
 
 public abstract class Sessione
 {
