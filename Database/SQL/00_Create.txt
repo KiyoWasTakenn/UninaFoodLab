@@ -48,7 +48,7 @@ CREATE TABLE Corso
 (
 	IdCorso SERIAL PRIMARY KEY,
 	Nome VARCHAR(100) NOT NULL,
-	DataInizio DATE,										-- Prendiamo sempre la data della sessione più recente
+	DataInizio DATE,																											-- Prendiamo sempre la data della sessione più recente
 	NumeroSessioni INTEGER DEFAULT 0 NOT NULL,							
 	FrequenzaSessioni VARCHAR(100) NOT NULL,
 	Limite INTEGER DEFAULT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE Corso
 CREATE TABLE SessionePratica
 (
 	IdSessionePratica SERIAL PRIMARY KEY, 
-	Durata INTEGER NOT NULL,			-- La durata è in minuti
+	Durata INTEGER NOT NULL,																							-- La durata è in minuti
 	Orario TIME NOT NULL,
 	Data DATE NOT NULL, 
 	NumeroPartecipanti INTEGER NOT NULL DEFAULT 0,
@@ -83,7 +83,7 @@ CREATE TABLE SessioneOnline
 	Data DATE NOT NULL, 
 	LinkRiunione TEXT NOT NULL,
 	IdCorso  INTEGER NOT NULL,
-	CONSTRAINT fk_corso_online FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE		--Se eliminiamo il corso vengono eliminate anche tutte le sessioni online associate
+	CONSTRAINT fk_corso_online FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE			--Se eliminiamo il corso vengono eliminate anche tutte le sessioni online associate
 );
 
 -- Enum per il tipo di difficoltà della ricetta
@@ -96,7 +96,7 @@ CREATE TABLE Ricetta																												-- Rilassamento vincolo implemen
 	Nome VARCHAR(100) UNIQUE NOT NULL,
 	Provenienza VARCHAR(100) NOT NULL,
 	Tempo INTEGER NOT NULL,				-- La durata è in minuti
-	Calorie INTEGER NOT NULL,			-- in KCAL
+	Calorie INTEGER NOT NULL,				-- in KCAL
 	Difficolta LivelloDifficolta NOT NULL,
 	Allergeni VARCHAR(100),
 	IdChef INTEGER NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE  Argomenti_Corso
 	IdCorso  INTEGER NOT NULL,
 	IdArgomento  INTEGER NOT NULL,
 	CONSTRAINT pk_argomenti_corso PRIMARY KEY(IdCorso, IdArgomento),									-- Minimo un argomento e niente argomenti ripetuti per corso
-	CONSTRAINT fk_corso_argomenticorso FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso),
+	CONSTRAINT fk_corso_argomenticorso FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE,
 	CONSTRAINT fk_argomenti_argomenticorso FOREIGN KEY(IdArgomento) REFERENCES Argomento(IdArgomento)
 );
 
@@ -143,7 +143,7 @@ CREATE TABLE Adesioni
 	IdSessionePratica  INTEGER NOT NULL,
 	DataAdesione DATE NOT NULL,
 	CONSTRAINT fk_partecipante_adesioni FOREIGN KEY(IdPartecipante) REFERENCES Partecipante(IdPartecipante) ON DELETE CASCADE,
-	CONSTRAINT fk_sessionepratica_adesioni FOREIGN KEY(IdSessionePratica) REFERENCES SessionePratica(IdSessionePratica)
+	CONSTRAINT fk_sessionepratica_adesioni FOREIGN KEY(IdSessionePratica) REFERENCES SessionePratica(IdSessionePratica) ON DELETE CASCADE
 );
 
 -- Preparazioni
@@ -152,8 +152,8 @@ CREATE TABLE Preparazioni
 	IdSessionePratica  INTEGER NOT NULL,
 	IdRicetta  INTEGER NOT NULL,
 	CONSTRAINT pk_sessionepratica_ricetta PRIMARY KEY (IdSessionePratica, IdRicetta),						-- Non si può ripetere la stessa ricetta nella stessa sessione
-	CONSTRAINT fk_sessionepratica_preparazioni FOREIGN KEY(IdSessionePratica) REFERENCES SessionePratica(IdSessionePratica),
-	CONSTRAINT fk_ricetta_preparazioni FOREIGN KEY(IdRicetta) REFERENCES Ricetta(IdRicetta) ON DELETE RESTRICT
+	CONSTRAINT fk_sessionepratica_preparazioni FOREIGN KEY(IdSessionePratica) REFERENCES SessionePratica(IdSessionePratica) ON DELETE CASCADE,
+	CONSTRAINT fk_ricetta_preparazioni FOREIGN KEY(IdRicetta) REFERENCES Ricetta(IdRicetta) ON DELETE CASCADE
 );
 
 CREATE TYPE UnitaDiMisura AS ENUM ('Unita', 'Grammi', 'Kilogrammi', 'Litri', 'Millilitri', 'Bicchiere', 'Tazza', 'Tazzina', 'Cucchiaio', 'Cucchiaino');
@@ -166,7 +166,7 @@ CREATE TABLE Utilizzi
 	Quantita REAL NOT NULL,										-- Per una porzione!
 	UDM	UnitaDiMisura,																	
 	CONSTRAINT pk_ricetta_ingrediente PRIMARY KEY(IdRicetta, IdIngrediente),			-- Gli ingredienti non devono essere ripetuti per la stessa ricetta e ce ne deve essere almeno 1
-	CONSTRAINT fk_ricetta_utilizzi FOREIGN KEY(IdRicetta) REFERENCES Ricetta(IdRicetta) ON DELETE RESTRICT,
+	CONSTRAINT fk_ricetta_utilizzi FOREIGN KEY(IdRicetta) REFERENCES Ricetta(IdRicetta) ON DELETE CASCADE,
 	CONSTRAINT fk_ingrediente_utilizzi FOREIGN KEY(IdIngrediente) REFERENCES Ingrediente(IdIngrediente) ON DELETE CASCADE,
 	CONSTRAINT check_quantita CHECK (Quantita > 0)
 );

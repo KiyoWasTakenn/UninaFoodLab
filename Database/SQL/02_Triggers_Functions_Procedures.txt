@@ -388,7 +388,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER trg_upd_tipo_corso
-BEFORE UPDATE ON Corso
+BEFORE UPDATE ON Corso OF isPratico
 FOR EACH ROW
 EXECUTE FUNCTION fun_upd_tipo_corso();
 
@@ -422,7 +422,7 @@ EXECUTE FUNCTION fun_ricette_chef_sessione();
 
 -----------------------------------------------------------------------------------------------------------------------
 
--- Aggiornamento data inizio del corso
+-- L'inserimento di una sessione pratica (se la data è maggiore della data odierna) aggiorna la data di inizio del corso (se è minore della data del corso oppure non c'è ancora una data di inizio), l'aggiornamento di sessioni già avvenute non deve essere possibile
 
 CREATE OR REPLACE fun_aggiorna_data_inizio()
 RETURNS TRIGGER AS 
@@ -430,6 +430,17 @@ $$
 DECLARE
 	current_data Corso.DataInizio%TYPE;
 BEGIN
+
+	IF TG_OP = 'UPDATE' THEN
+			IF OLD.Data <= CURRENT_DATE THEN
+				RAISE EXCEPTION 'Non puoi modificare sessioni già avvenute';
+			END IF;
+	END IF;
+
+	IF NEW.Data <= CURRENT_DATE
+		RAISE EXCEPTION 'La data di inizio della sessione non puo'' essere antecedente alla data odierna o inserita oggi!';
+	END IF;
+
 	SELECT DataInizio INTO current_data FROM Corso WHERE IdCorso = NEW.IdCorso;
 	
 	IF current_data IS NULL OR current_data > NEW.Data THEN
@@ -445,42 +456,259 @@ BEFORE INSERT OR UPDATE ON SessionePratica
 FOR EACH ROW
 EXECUTE FUNCTION fun_aggiorna_data_inizio();
 
-
 CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_online
 BEFORE INSERT OR UPDATE ON SessioneOnline
 FOR EACH ROW
-CREATE FUNCTION fun_aggiorna_data_inizio();
-
------------------------------------------------------------------------------------------------------------------------
-
--- La data di inizio del corso deve essere > della data odierna DataInizio > CURRENT_DATE
-
-CREATE OR REPLACE fun_data_inizio_sessione()
-RETURNS TRIGGER AS 
-$$
-BEGIN
-	IF NEW.Data <= CURRENT_DATE
-		RAISE EXCEPTION 'La data di inizio della sessione non puo'' essere antecedente alla data odierna o inserita oggi!';
-	END IF;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE TRIGGER trg_data_inizio_corso
-BEFORE INSERT OR UPDATE ON SessionePratica
-FOR EACH ROW
-EXECUTE FUNCTION fun_data_inizio_sessione();
-
-
-CREATE OR REPLACE TRIGGER trg_data_inizio_corso
-BEFORE INSERT OR UPDATE ON SessioneOnline
-FOR EACH ROW
-CREATE FUNCTION fun_data_inizio_sessione();
+EXECUTE FUNCTION fun_aggiorna_data_inizio();
 
 -----------------------------------------------------------------------------------------------------------------------
 
 -- 
 
+CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_pratica
+BEFORE UPDATE ON SessionePratica
+WHEN 
+FOR EACH ROW
+EXECUTE FUNCTION fun_aggiorna_data_inizio();
 
+CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_online
+BEFORE UPDATE ON SessioneOnline
+WHEN 
+FOR EACH ROW
+EXECUTE FUNCTION fun_aggiorna_data_inizio();
 
+-----------------------------------------------------------------------------------------------------------------------
 
+-- Il Codice Fiscale non è modificabile una volta creato l'utente
+
+CREATE OR REPLACE fun_blocca_aggiorna_utente()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	RAISE EXCEPTION 'Non puoi modificare il tuo codice fiscale!!!';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna__chef
+BEFORE UPDATE ON Chef OF CodiceFiscale
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_utente();
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_partecipante
+BEFORE UPDATE ON Partecipante OF CodiceFiscale
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_utente();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non si può modificare o eliminare un argomento
+
+CREATE OR REPLACE fun_blocca_aggiorna_argomento()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	RAISE EXCEPTION 'Non puoi modificare o cancellare un argomento!!!';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_argomento
+BEFORE DELETE OR UPDATE  OF Nome ON Argomento
+FOR EACH ROW
+EXECUTE  FUNCTION fun_blocca_aggiorna_argomento();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non si può modificare o eliminare un ingrediente
+
+CREATE OR REPLACE fun_blocca_aggiorna_ingrediente()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	RAISE EXCEPTION 'Non puoi modificare o cancellare un ingrediente!!!';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_ingrediente
+BEFORE DELETE OR UPDATE  OF Nome, Origine ON Ingrediente
+FOR EACH ROW
+EXECUTE  FUNCTION fun_blocca_aggiorna_ingrediente();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non posso inserire una sessione pratica se ispratico  = false (non ho modo di prendere il limite lato db senza aggiornare prima corso)
+
+CREATE OR REPLACE FUNCTION fun_ispratico_insert()
+RETURNS TRIGGER AS
+$$
+DECLARE
+	pratico Corso.isPratico%TYPE;
+BEGIN
+	SELECT isPratico INTO pratico FROM Corso WHERE IdCorso = NEW.IdCorso;
+
+	IF NOT pratico THEN
+		RAISE EXCEPTION 'Non puoi inserire una sessione pratica senza prima aggiornare il tipo di corso con un limite !!!';
+	END IF;
+END;
+
+CREATE OR REPLACE TRIGGER trg_ispratico_insert
+BEFORE INSERT ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_ispratico_insert();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Del corso non  è possibile aggiornare IdCorso, Nome, FrequenzaSessioni, Costo, IdChef
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_corso()
+RETURNS TRIGGER AS 
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdCorso, Nome, FrequenzaSessioni, Costo o IdChef.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_corso
+BEFORE UPDATE  OF IdCorso, Nome, FrequenzaSessioni, Costo, IdChef ON Corso
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_corso();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Della ricetta non è possibile aggiornare IdRicetta e IdChef
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_ricetta()
+RETURNS TRIGGER AS 
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdRicetta e IdChef.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_ricetta
+BEFORE UPDATE  OF IdRicetta, IdChef ON Ricetta
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_ricetta();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Delle sessioni non è possibile aggiornare IdSessione(pratica,online) e IdCorso
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_sessioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdSessione e IdCorso.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_sessioni_online
+BEFORE UPDATE  OF IdSessioneOnline, IdCorso On SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_sessionio();
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_sessioni_pratiche
+BEFORE UPDATE  OF IdSessionePratica, IdCorso ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_sessioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Degli Ingredienti non deve essere possibile aggiornare IdIngrediente, Nome, Origine 
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_ingrediente()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdIngrediente, Nome, Origine.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_ingrediente
+BEFORE UPDATE  OF IdIngrediente, Nome, Origine  ON Ingrediente
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_ingrediente();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare le  iscrizioni
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_iscrizioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdPartecipante, IdCorso.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_iscrizioni
+BEFORE UPDATE  OF IdPartecipante, IdCorso  ON Iscrizioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_iscrizioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare gli argomenti_corso
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_argomenticorso()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdCorso, IdArgomento.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_argomenticorso
+BEFORE UPDATE  OF IdCorso, IdArgomento ON Argomenti_Corso
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_argomenticorso();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare le adesioni
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_adesioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdPartecipante, IdSessionePratica, DataAdesione.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_adesioni
+BEFORE UPDATE  OF IdPartecipante, IdSessionePratica, DataAdesione ON Adesioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_adesioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare le preparazioni
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_preparazioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdSessionePratica, IdRicetta.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_preparazioni
+BEFORE UPDATE  OF IdSessionePratica, IdRicetta ON Preparazioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_preparazioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare gli utilizzi
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_utilizzi()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi  IdRicetta, IdIngrediente.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_utilizzi
+BEFORE UPDATE  OF IdRicetta, IdIngrediente ON Utilizzi
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_utilizzi();

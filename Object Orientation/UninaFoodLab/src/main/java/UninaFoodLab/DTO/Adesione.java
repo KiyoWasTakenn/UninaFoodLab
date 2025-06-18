@@ -44,15 +44,8 @@ public class Adesione
         return partecipante;
     }
 
-    public void setPartecipante(Partecipante partecipante) {
-        this.partecipante = partecipante;
-    }
-
     public SessionePratica getSessione() {
         return sessione;
     }
-
-    public void setSessione(SessionePratica sessione) {
-        this.sessione = sessione;
-    }
+    
 }
