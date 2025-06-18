@@ -105,4 +105,9 @@ public class Ricetta
     {
         this.allergeni = allergeni;
     }
+
+    public ArrayList<Utilizzo> getUtilizzi()
+    {
+        return utilizzi;
+    }
 }

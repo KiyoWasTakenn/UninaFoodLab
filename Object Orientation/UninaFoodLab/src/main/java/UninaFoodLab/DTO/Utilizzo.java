@@ -55,9 +55,5 @@ public class Utilizzo
     {
         return ingrediente;
     }
-
-    public void setIngrediente(Ingrediente ingrediente)
-    {
-        this.ingrediente = ingrediente;
-    }
+    
 }

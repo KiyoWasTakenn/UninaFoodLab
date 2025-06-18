@@ -36,10 +36,6 @@ public class Adesione
         return dataAdesione;
     }
 
-    public void setDataAdesione(LocalDate dataAdesione) {
-        this.dataAdesione = dataAdesione;
-    }
-
     public Partecipante getPartecipante() {
         return partecipante;
     }
@@ -47,5 +43,5 @@ public class Adesione
     public SessionePratica getSessione() {
         return sessione;
     }
-    
+
 }

@@ -76,11 +76,6 @@ public abstract class Utente
         return codiceFiscale;
     }
 
-    public void setCodiceFiscale(String codiceFiscale)
-    {
-        this.codiceFiscale = codiceFiscale;
-    }
-
     public LocalDate getDataDiNascita()
     {
         return dataDiNascita;

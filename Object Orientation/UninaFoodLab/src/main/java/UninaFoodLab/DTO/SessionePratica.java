@@ -34,7 +34,6 @@ public class SessionePratica extends Sessione
         this.adesioni = (adesioni != null) ? adesioni : new ArrayList<>();
     }
 
-
     @Override
     public boolean equals(Object o)
     {
@@ -90,6 +89,11 @@ public class SessionePratica extends Sessione
     public int getNumeroRicette()
     {
         return ricette.size();
+    }
+
+    public ArrayList<Adesione> getAdesioni()
+    {
+        return adesioni;
     }
 
     public void addAdesione (Adesione toAddAdesione)

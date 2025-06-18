@@ -7,9 +7,9 @@ public class Partecipante extends Utente
 {
     private int numeroCorsi;
     private ArrayList<Corso> corsi;
-    private ArrayList<SessionePratica> sessioniPratiche;
+    private ArrayList<Adesione> adesioni;
 
-    public Partecipante(String username, String nome, String cognome, String codiceFiscale, LocalDate dataDiNascita, String luogoDiNascita, String email, String password, ArrayList<Corso> corsi, ArrayList<SessionePratica> sessioniPratiche)
+    public Partecipante(String username, String nome, String cognome, String codiceFiscale, LocalDate dataDiNascita, String luogoDiNascita, String email, String password, ArrayList<Corso> corsi, ArrayList<Adesione> adesioni)
     {
         super(username, nome, cognome, codiceFiscale, dataDiNascita, luogoDiNascita, email, password);
 
@@ -24,7 +24,7 @@ public class Partecipante extends Utente
             this.numeroCorsi = 0;
         }
 
-        this.sessioniPratiche = (sessioniPratiche != null) ? sessioniPratiche : new ArrayList<>();
+        this.adesioni = (adesioni != null) ? adesioni : new ArrayList<>();
     }
 
     public int getNumeroCorsi()
@@ -45,11 +45,11 @@ public class Partecipante extends Utente
 
     public ArrayList<SessionePratica> getSessioniPratiche()
     {
-        return sessioniPratiche;
+        return adesioni;
     }
 
-    public void aggiungiSessionePratica(SessionePratica toAddSessionePratica)
+    public void aggiungiAdesione(Adesione toAddAdesione)
     {
-        sessioniPratiche.add(toAddSessionePratica);
+        adesioni.add(toAddAdesione);
     }
 }

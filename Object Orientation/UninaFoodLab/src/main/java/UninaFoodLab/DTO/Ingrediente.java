@@ -34,18 +34,9 @@ public class Ingrediente
         return nome;
     }
 
-    public void setNome(String nome)
-    {
-        this.nome = nome;
-    }
-
     public NaturaIngrediente getOrigine()
     {
         return origine;
     }
 
-    public void setOrigine(NaturaIngrediente origine)
-    {
-        this.origine = origine;
-    }
 }

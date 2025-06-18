@@ -6,7 +6,7 @@ import java.time.LocalDate;
 public class Corso
 {
     private String nome;
-    private LocalDate data;
+    private LocalDate dataInizio;
     private int numeroSessioni;
     private String frequenzaSessioni;
     private int limite;
@@ -16,10 +16,10 @@ public class Corso
     private ArrayList<Sessione> sessioni;
     private ArrayList<Argomento> argomenti;
 
-    public Corso( String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, ArrayList<Sessione> sessioni, ArrayList<Argomento> argomenti)
+    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, ArrayList<Sessione> sessioni, ArrayList<Argomento> argomenti)
     {
         this.nome = nome;
-        this.data = data;
+        this.dataInizio = data;
         this.frequenzaSessioni = frequenzaSessioni;
         this.limite = limite;
         this.descrizione = descrizione;
@@ -45,14 +45,9 @@ public class Corso
         return nome;
     }
 
-    public void setNome(String nome)
+    public LocalDate getDataInizio()
     {
-        this.nome = nome;
-    }
-
-    public LocalDate getData()
-    {
-        return data;
+        return dataInizio;
     }
 
     public int getNumeroSessioni()
@@ -60,19 +55,19 @@ public class Corso
         return numeroSessioni;
     }
 
-    public int getLimite()
-    {
-        return limite;
-    }
-
     public String getFrequenzaSessioni()
     {
         return frequenzaSessioni;
     }
 
-    public void setFrequenzaSessioni(String frequenzaSessioni)
+    public int getLimite()
     {
-        this.frequenzaSessioni = frequenzaSessioni;
+        return limite;
+    }
+
+    public void setLimite(int limite)
+    {
+        this.limite = limite;
     }
 
     public String getDescrizione()
@@ -90,50 +85,52 @@ public class Corso
         return costo;
     }
 
-    public boolean isPratico()
+    public boolean getIsPratico()
     {
         return isPratico;
     }
 
-    public void setPratico(boolean pratico)
+    public void setIsPratico(boolean isPratico)
     {
-        isPratico = pratico;
+        this.isPratico = isPratico;
     }
 
-    public int getNumeroSessionePratica()
+    public int getReport()
     {
         int numSessionePratica=0;
-
-        for (Sessione x: sessioni)
-        {
-            if(x instanceof SessionePratica)
-                if(x.getData().isAfter(LocalDate.now().minusDays(30)) && x.getData().isBefore(LocalDate.now()))
-                    numSessionePratica ++;
-        }
-        return numSessionePratica;
-    }
-
-    public int getNumeroSessioneOnline()
-    {
         int numSessioneOnline=0;
 
         for (Sessione x: sessioni)
         {
-            if(x instanceof SessioneOnline)
-                if(x.getData().isAfter(LocalDate.now().minusDays(30)) && x.getData().isBefore(LocalDate.now()))
-                    numSessioneOnline ++;
+            if(x.getData().isAfter(LocalDate.now().minusDays(30)) && x.getData().isBefore(LocalDate.now()))
+                if(x instanceof SessionePratica)
+                {
+                    ++numSessionePratica;
+
+                }
+                else
+                    ++numSessioneOnline;
         }
-        return numSessioneOnline;
+        return numSessionePratica;
     }
 
-    public void AggiungiSessione(Sessione toAddSessione)
+    public ArrayList<Sessione> getSessioni()
+    {
+        return sessioni;
+    }
+
+    public ArrayList<Argomento> getArgomenti()
+    {
+        return argomenti;
+    }
+
+    public void aggiungiSessione(Sessione toAddSessione)
     {
         sessioni.add(toAddSessione);
     }
 
-    public void AggiungiArgomento(Argomento toAddArgomento)
+    public void aggiungiArgomento(Argomento toAddArgomento)
     {
         argomenti.add(toAddArgomento);
     }
-
 }
