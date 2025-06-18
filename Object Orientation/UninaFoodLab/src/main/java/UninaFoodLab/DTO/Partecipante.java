@@ -43,7 +43,7 @@ public class Partecipante extends Utente
         ++numeroCorsi;
     }
 
-    public ArrayList<SessionePratica> getSessioniPratiche()
+    public ArrayList<Adesione> getAdesioni()
     {
         return adesioni;
     }
