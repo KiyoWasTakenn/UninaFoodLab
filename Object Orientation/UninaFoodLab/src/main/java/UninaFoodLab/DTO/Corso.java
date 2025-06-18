@@ -100,17 +100,31 @@ public class Corso
         int numSessionePratica=0;
         int numSessioneOnline=0;
 
+        int min=0;
+        int max=0;
+        double mediaRicette=0.0;
+        int sommaRicette=0;
+        int numeroRicette=0;
+
         for (Sessione x: sessioni)
         {
             if(x.getData().isAfter(LocalDate.now().minusDays(30)) && x.getData().isBefore(LocalDate.now()))
                 if(x instanceof SessionePratica)
                 {
                     ++numSessionePratica;
-
+                    numeroRicette=((SessionePratica) x).getNumeroRicette();
+                    if(min>numeroRicette)
+                        min=numeroRicette;
+                    if(max<numeroRicette)
+                        max=numeroRicette;
+                    sommaRicette=sommaRicette+numeroRicette;
                 }
                 else
                     ++numSessioneOnline;
         }
+
+        mediaRicette=sommaRicette/numSessionePratica;
+
         return numSessionePratica;
     }
 
