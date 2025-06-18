@@ -16,12 +16,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_normalizza_partecipante
+CREATE OR REPLACE TRIGGER trg_normalizza_partecipante
 BEFORE INSERT OR UPDATE ON Partecipante
 FOR EACH ROW
 EXECUTE FUNCTION fun_normalizza_utente();
 
-CREATE TRIGGER trg_normalizza_chef
+CREATE OR REPLACE TRIGGER trg_normalizza_chef
 BEFORE INSERT OR UPDATE ON Chef
 FOR EACH ROW
 EXECUTE FUNCTION fun_normalizza_utente();
@@ -39,12 +39,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_normalizza_ingrediente
+CREATE OR REPLACE TRIGGER trg_normalizza_ingrediente
 BEFORE INSERT OR UPDATE ON Ingrediente
 FOR EACH ROW
 EXECUTE FUNCTION fun_normalizza_ingr_chef();
 
-CREATE TRIGGER trg_normalizza_ricetta
+CREATE OR REPLACE TRIGGER trg_normalizza_ricetta
 BEFORE INSERT OR UPDATE ON Ricetta
 FOR EACH ROW
 EXECUTE FUNCTION fun_normalizza_ingr_chef();
@@ -77,46 +77,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_unico_username_partecipante
+CREATE OR REPLACE TRIGGER trg_unico_username_partecipante
 BEFORE INSERT OR UPDATE ON Partecipante 
 FOR EACH ROW
 EXECUTE FUNCTION fun_username_unique();
 
-CREATE TRIGGER trg_unico_username_chef
+CREATE OR REPLACE TRIGGER trg_unico_username_chef
 BEFORE INSERT OR UPDATE ON Chef 
 FOR EACH ROW
 EXECUTE FUNCTION fun_username_unique();
-
------------------------------------------------------------------------------------------------------------------------
-
--- Interrelazionale: La Data della sessione deve essere maggiore o uguale della data di inizio corso (sia per pratica che per online)
-
-CREATE OR REPLACE FUNCTION fun_data_sessione()
-RETURNS TRIGGER AS
-$$
-DECLARE
-	Data_Corso Corso.DataInizio%TYPE;
-
-BEGIN
-	SELECT C.DataInizio INTO Data_Corso FROM Corso C WHERE C.IdCorso = NEW.IdCorso;
-
-	IF NEW.Data < Data_Corso THEN
-		RAISE EXCEPTION 'La sessione deve avere una data successiva all''inizio del corso';
-	END IF;
-	RETURN NEW;
-
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_data_sessione_online
-BEFORE INSERT ON SessioneOnline
-FOR EACH ROW
-EXECUTE FUNCTION fun_data_sessione();
-
-CREATE TRIGGER trg_data_sessione_pratica
-BEFORE INSERT ON SessionePratica
-FOR EACH ROW
-EXECUTE FUNCTION fun_data_sessione();
 
 -----------------------------------------------------------------------------------------------------------------------
 
@@ -138,12 +107,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_unicita_sessione_online_giorno
+CREATE OR REPLACE TRIGGER trg_unicita_sessione_online_giorno
 BEFORE INSERT OR UPDATE OF Data ON SessioneOnline
 FOR EACH ROW
 EXECUTE FUNCTION fun_unicita_sessione_giorno();
 
-CREATE TRIGGER trg_unicita_sessione_pratica_giorno
+CREATE OR REPLACE TRIGGER trg_unicita_sessione_pratica_giorno
 BEFORE INSERT OR UPDATE OF Data ON SessionePratica
 FOR EACH ROW
 EXECUTE FUNCTION fun_unicita_sessione_giorno();
@@ -164,12 +133,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_incremento_numsessioni_online
+CREATE OR REPLACE TRIGGER trg_incremento_numsessioni_online
 AFTER INSERT ON SessioneOnline
 FOR EACH ROW
 EXECUTE FUNCTION fun_incrementa_num_sessioni();
 
-CREATE TRIGGER trg_incremento_numsessioni_pratiche
+CREATE OR REPLACE TRIGGER trg_incremento_numsessioni_pratiche
 AFTER INSERT ON SessionePratica
 FOR EACH ROW
 EXECUTE FUNCTION fun_incrementa_num_sessioni();
@@ -188,12 +157,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_decrementa_num_sessioni_pratica
+CREATE OR REPLACE TRIGGER trg_decrementa_num_sessioni_pratica
 AFTER DELETE ON SessionePratica
 FOR EACH ROW
 EXECUTE FUNCTION fun_decrementa_num_sessioni();
 
-CREATE TRIGGER trg_decrementa_num_sessioni_online
+CREATE OR REPLACE TRIGGER trg_decrementa_num_sessioni_online
 AFTER DELETE ON SessioneOnline
 FOR EACH ROW
 EXECUTE FUNCTION fun_decrementa_num_sessioni();
@@ -214,7 +183,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_incremento_numutenti
+CREATE OR REPLACE TRIGGER trg_incremento_numutenti
 AFTER INSERT ON Adesioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_incrementa_num_utenti();
@@ -233,7 +202,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_decrementa_num_utenti
+CREATE OR REPLACE TRIGGER trg_decrementa_num_utenti
 AFTER DELETE ON Adesioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_decrementa_num_utenti();
@@ -254,7 +223,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_incrementa_num_corsi
+CREATE OR REPLACE TRIGGER trg_incrementa_num_corsi
 AFTER INSERT ON Iscrizioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_incrementa_num_corsi();
@@ -274,7 +243,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_decrementa_num_corsi
+CREATE OR REPLACE TRIGGER trg_decrementa_num_corsi
 AFTER DELETE ON Iscrizioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_decrementa_num_corsi();
@@ -303,7 +272,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_data_adesione
+CREATE OR REPLACE TRIGGER trg_data_adesione
 BEFORE INSERT OR UPDATE ON Adesioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_data_adesione();
@@ -339,7 +308,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_limite_iscrizioni 
+CREATE OR REPLACE TRIGGER trg_limite_iscrizioni 
 BEFORE INSERT OR UPDATE ON Iscrizioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_limite_iscrizioni();
@@ -368,7 +337,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_iscrizione_before_adesione
+CREATE OR REPLACE TRIGGER trg_iscrizione_before_adesione
 BEFORE INSERT OR UPDATE ON Adesioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_iscrizione_before_adesione();
@@ -395,7 +364,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_limit_argomenti
+CREATE OR REPLACE TRIGGER trg_limit_argomenti
 BEFORE INSERT OR UPDATE ON Argomenti_Corso
 FOR EACH ROW
 EXECUTE FUNCTION fun_limit_argomenti();
@@ -418,7 +387,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_upd_tipo_corso
+CREATE OR REPLACE TRIGGER trg_upd_tipo_corso
 BEFORE UPDATE ON Corso
 FOR EACH ROW
 EXECUTE FUNCTION fun_upd_tipo_corso();
@@ -446,7 +415,72 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_ricette_chef_sessione
+CREATE OR REPLACE TRIGGER trg_ricette_chef_sessione
 BEFORE INSERT OR UPDATE ON Preparazioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_ricette_chef_sessione();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Aggiornamento data inizio del corso
+
+CREATE OR REPLACE fun_aggiorna_data_inizio()
+RETURNS TRIGGER AS 
+$$
+DECLARE
+	current_data Corso.DataInizio%TYPE;
+BEGIN
+	SELECT DataInizio INTO current_data FROM Corso WHERE IdCorso = NEW.IdCorso;
+	
+	IF current_data IS NULL OR current_data > NEW.Data THEN
+		UPDATE Corso(DataInizio)
+		SET DataInizio = NEW.Data
+		WHERE IdCorso = NEW.IdCorso;
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_pratica
+BEFORE INSERT OR UPDATE ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_aggiorna_data_inizio();
+
+
+CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_online
+BEFORE INSERT OR UPDATE ON SessioneOnline
+FOR EACH ROW
+CREATE FUNCTION fun_aggiorna_data_inizio();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- La data di inizio del corso deve essere > della data odierna DataInizio > CURRENT_DATE
+
+CREATE OR REPLACE fun_data_inizio_sessione()
+RETURNS TRIGGER AS 
+$$
+BEGIN
+	IF NEW.Data <= CURRENT_DATE
+		RAISE EXCEPTION 'La data di inizio della sessione non puo'' essere antecedente alla data odierna o inserita oggi!';
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE TRIGGER trg_data_inizio_corso
+BEFORE INSERT OR UPDATE ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_data_inizio_sessione();
+
+
+CREATE OR REPLACE TRIGGER trg_data_inizio_corso
+BEFORE INSERT OR UPDATE ON SessioneOnline
+FOR EACH ROW
+CREATE FUNCTION fun_data_inizio_sessione();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- 
+
+
+
+

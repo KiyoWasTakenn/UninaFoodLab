@@ -1,6 +1,7 @@
 package UninaFoodLab.DTO;
 
-import java.util.Date;
+import java.util.Objects;
+import java.time.LocalDate;
 
 public abstract class Utente
 {
@@ -8,12 +9,12 @@ public abstract class Utente
     private String nome;
     private String cognome;
     private String codiceFiscale;
-    private Date dataDiNascita;
+    private LocalDate dataDiNascita;
     private String luogoDiNascita;
     private String email;
     private String password;
 
-    protected Utente(String username, String nome, String cognome, String codiceFiscale, Date dataDiNascita, String luogoDiNascita, String email, String password)
+    protected Utente(String username, String nome, String cognome, String codiceFiscale, LocalDate dataDiNascita, String luogoDiNascita, String email, String password)
     {
         this.username = username;
         this.nome = nome;
@@ -23,6 +24,21 @@ public abstract class Utente
         this.luogoDiNascita = luogoDiNascita;
         this.email = email;
         this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if(o == null || getClass() != o.getClass())
+            return false;
+
+        return username.equals(((Utente) o).username);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(username);
     }
 
     public String getUsername()
@@ -65,12 +81,12 @@ public abstract class Utente
         this.codiceFiscale = codiceFiscale;
     }
 
-    public Date getDataDiNascita()
+    public LocalDate getDataDiNascita()
     {
         return dataDiNascita;
     }
 
-    public void setDataDiNascita(Date dataDiNascita)
+    public void setDataDiNascita(LocalDate dataDiNascita)
     {
         this.dataDiNascita = dataDiNascita;
     }

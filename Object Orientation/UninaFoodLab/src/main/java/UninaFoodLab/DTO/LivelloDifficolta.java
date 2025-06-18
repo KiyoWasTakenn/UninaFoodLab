@@ -1,6 +1,6 @@
 package UninaFoodLab.DTO;
 
-public enum LivelloDifficoltà
+public enum LivelloDifficolta
 {
     Principiante,
     Facile,

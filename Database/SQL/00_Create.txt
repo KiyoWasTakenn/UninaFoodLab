@@ -48,8 +48,8 @@ CREATE TABLE Corso
 (
 	IdCorso SERIAL PRIMARY KEY,
 	Nome VARCHAR(100) NOT NULL,
-	DataInizio DATE NOT NULL,
-	NumeroSessioni INTEGER DEFAULT 0 NOT NULL,							--Rilassamento vincolo (Implementato lato Java)
+	DataInizio DATE,										-- Prendiamo sempre la data della sessione più recente
+	NumeroSessioni INTEGER DEFAULT 0 NOT NULL,							
 	FrequenzaSessioni VARCHAR(100) NOT NULL,
 	Limite INTEGER DEFAULT NULL,
 	Descrizione TEXT NOT NULL,
@@ -57,7 +57,6 @@ CREATE TABLE Corso
 	isPratico BOOLEAN NOT NULL DEFAULT false,
 	IdChef INTEGER NOT NULL,																						
 	CONSTRAINT fk_chef_corso FOREIGN KEY(IdChef) REFERENCES Chef(IdChef) ON DELETE CASCADE,
-	CONSTRAINT check_inizio_corso CHECK (DataInizio > CURRENT_DATE),
 	CONSTRAINT check_costo_non_negativo CHECK (Costo >= 0.0),
 	CONSTRAINT check_limite_pratico CHECK ((NOT isPratico AND LIMITE IS NULL) OR (isPratico AND Limite IS NOT NULL))	 -- Il corso ha limite solo se ha almeno una sessione pratica			
 );
@@ -122,7 +121,7 @@ CREATE TABLE Iscrizioni
 (
 	IdPartecipante  INTEGER NOT NULL,
 	IdCorso  INTEGER NOT NULL,
-	CONSTRAINT pk_iscrizioni_corso PRIMARY KEY(IdPartecipante, IdCorso),					      	   		-- Lo stesso utente non puo' partecipare due volte allo stesso corso
+	CONSTRAINT pk_iscrizioni_corso PRIMARY KEY(IdPartecipante, IdCorso),					      	   			-- Lo stesso utente non puo' partecipare due volte allo stesso corso
 	CONSTRAINT fk_partecipante_iscrizioni FOREIGN KEY(IdPartecipante) REFERENCES Partecipante(IdPartecipante) ON DELETE CASCADE,
 	CONSTRAINT fk_corso_iscrizioni FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso)
 );
@@ -166,8 +165,8 @@ CREATE TABLE Utilizzi
 	IdIngrediente  INTEGER NOT NULL,
 	Quantita REAL NOT NULL,										-- Per una porzione!
 	UDM	UnitaDiMisura,																	
-	CONSTRAINT pk_ricetta_ingrediente PRIMARY KEY(IdRicetta, IdIngrediente),				-- Gli ingredienti non devono essere ripetuti per la stessa ricetta e ce ne deve essere almeno 1
+	CONSTRAINT pk_ricetta_ingrediente PRIMARY KEY(IdRicetta, IdIngrediente),			-- Gli ingredienti non devono essere ripetuti per la stessa ricetta e ce ne deve essere almeno 1
 	CONSTRAINT fk_ricetta_utilizzi FOREIGN KEY(IdRicetta) REFERENCES Ricetta(IdRicetta) ON DELETE RESTRICT,
-	CONSTRAINT fk_ingrediente_utilizzi FOREIGN KEY(IdIngrediente) REFERENCES Ingrediente(IdIngrediente),
+	CONSTRAINT fk_ingrediente_utilizzi FOREIGN KEY(IdIngrediente) REFERENCES Ingrediente(IdIngrediente) ON DELETE CASCADE,
 	CONSTRAINT check_quantita CHECK (Quantita > 0)
 );
