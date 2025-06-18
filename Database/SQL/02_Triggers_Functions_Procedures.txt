@@ -1,4 +1,4 @@
------------------------------------------------------------------------------------------------------------------------
+-- 02_Triggers_Functions_Procedures
 
 -- Normalizza Partecipante/Chef con Username minuscolo, CodiceFiscale Maiuscolo, Email minuscolo, Nome e Cognome con l'iniziale Maiuscola
 

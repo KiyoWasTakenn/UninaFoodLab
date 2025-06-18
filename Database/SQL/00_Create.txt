@@ -1,8 +1,8 @@
+-- Setto lo schema come primo nella ricerca
+SET search_path TO UninaFoodLab, public;
+
 -- Creo lo schema per UninaFoodLab
 CREATE SCHEMA UninaFoodLab;
-
--- Setto lo schema come primo nella ricerca
-ALTER DATABASE postgres SET search_path TO UninaFoodLab, public;
 
 -- 00_Create: Definizione Tabelle
 
