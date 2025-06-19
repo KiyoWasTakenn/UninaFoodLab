@@ -20,7 +20,7 @@ public class ConnectionManager
         return instance;
     }
 
-    public Connection getConnection() throws SQLException
+    public static Connection getConnection() throws SQLException
     {
         try
         {
@@ -36,7 +36,7 @@ public class ConnectionManager
         return conn;
     }
 
-    public void closeConnection() throws SQLException
+    public static void closeConnection() throws SQLException
     {
         try
         {

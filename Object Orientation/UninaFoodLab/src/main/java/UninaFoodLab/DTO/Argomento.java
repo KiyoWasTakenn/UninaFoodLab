@@ -6,7 +6,7 @@ public class Argomento
 {
     private String nome;
 
-    public Argomento (String nome)
+    public Argomento(String nome)
     {
         this.nome = nome;
     }
