@@ -4,7 +4,6 @@ import java.util.Objects;
 
 public class Utilizzo
 {
-    private int id;
     private double quantita;
     private UnitaDiMisura udm;
     private Ingrediente ingrediente;
@@ -30,16 +29,6 @@ public class Utilizzo
     public int hashCode()
     {
         return Objects.hash(quantita, udm, ingrediente);
-    }
-
-    public int getId()
-    {
-        return id;
-    }
-
-    public void setId(int id)
-    {
-        this.id = id;
     }
 
     public double getQuantita()
