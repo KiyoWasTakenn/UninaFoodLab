@@ -76,11 +76,6 @@ public class Corso
         return limite;
     }
 
-    public void setLimite(int limite)
-    {
-        this.limite = limite;
-    }
-
     public String getDescrizione()
     {
         return descrizione;
@@ -101,10 +96,6 @@ public class Corso
         return isPratico;
     }
 
-    public void setIsPratico(boolean isPratico)
-    {
-        this.isPratico = isPratico;
-    }
 
     public int getReport()
     {
