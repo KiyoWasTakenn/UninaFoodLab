@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public class Corso
 {
+    private int id;
     private String nome;
     private LocalDate dataInizio;
     private int numeroSessioni;
@@ -38,6 +39,16 @@ public class Corso
         }
 
         this.argomenti = (argomenti != null) ? argomenti : new ArrayList<>();
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public String getNome()

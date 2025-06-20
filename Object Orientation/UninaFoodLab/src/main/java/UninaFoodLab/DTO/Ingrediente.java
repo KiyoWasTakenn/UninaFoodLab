@@ -4,6 +4,7 @@ import java.util.Objects;
 
 public class Ingrediente
 {
+    private int id;
     private String nome;
     private NaturaIngrediente origine;
 
@@ -27,6 +28,16 @@ public class Ingrediente
     public int hashCode()
     {
         return Objects.hash(nome, origine);
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public String getNome()

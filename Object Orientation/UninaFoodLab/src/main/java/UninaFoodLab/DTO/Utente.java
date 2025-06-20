@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 public abstract class Utente
 {
+    private int id;
     private String username;
     private String nome;
     private String cognome;
@@ -41,6 +42,16 @@ public abstract class Utente
     public int hashCode()
     {
         return Objects.hashCode(username);
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public String getUsername()

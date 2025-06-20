@@ -371,26 +371,7 @@ EXECUTE FUNCTION fun_limit_argomenti();
 
 -----------------------------------------------------------------------------------------------------------------------
 
--- trigger su update di tipo pratiche, se diventa true allora imporre il limite altrimenti metti null
 
-CREATE OR REPLACE FUNCTION fun_upd_tipo_corso()
-RETURNS TRIGGER AS 
-$$
-BEGIN
-	IF OLD.isPratico <> NEW.isPratico THEN
-		IF NOT NEW.isPratico THEN
-			NEW.Limite = NULL;
-		END IF;  
-	END IF; 	
-	RETURN NEW;
-
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER trg_upd_tipo_corso
-BEFORE UPDATE OF isPratico ON Corso 
-FOR EACH ROW
-EXECUTE FUNCTION fun_upd_tipo_corso();
 
 -----------------------------------------------------------------------------------------------------------------------
 
@@ -422,7 +403,7 @@ EXECUTE FUNCTION fun_ricette_chef_sessione();
 
 -----------------------------------------------------------------------------------------------------------------------
 
--- L'inserimento di una sessione pratica (se la data è maggiore della data odierna) aggiorna la data di inizio del corso (se è minore della data del corso oppure non c'è ancora una data di inizio), l'aggiornamento di sessioni già avvenute non deve essere possibile
+-- L'inserimento di una sessione pratica o online (se la data è maggiore della data odierna) aggiorna la data di inizio del corso (se è minore della data del corso oppure non c'è ancora una data di inizio), l'aggiornamento di sessioni già avvenute non deve essere possibile
 
 CREATE OR REPLACE FUNCTION fun_aggiorna_data_inizio()
 RETURNS TRIGGER AS 
@@ -524,7 +505,7 @@ EXECUTE  FUNCTION fun_blocca_aggiorna_ingrediente();
 
 -----------------------------------------------------------------------------------------------------------------------
 
--- Non posso inserire una sessione pratica se ispratico  = false (non ho modo di prendere il limite lato db senza aggiornare prima corso)
+-- Non posso inserire una sessione pratica se ispratico  = false 
 
 CREATE OR REPLACE FUNCTION fun_ispratico_insert()
 RETURNS TRIGGER AS
@@ -535,7 +516,7 @@ BEGIN
 	SELECT isPratico INTO pratico FROM Corso WHERE IdCorso = NEW.IdCorso;
 
 	IF NOT pratico THEN
-		RAISE EXCEPTION 'Non puoi inserire una sessione pratica senza prima aggiornare il tipo di corso con un limite !!!';
+		RAISE EXCEPTION 'Non puoi inserire una sessione pratica in un corso non pratico!!!';
 	END IF;
 	RETURN NEW;
 	
