@@ -510,7 +510,7 @@
         <mxCell id="vfVHeJbnowlgTLXQ370m-25" value="(0,N)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="380" y="315" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="vfVHeJbnowlgTLXQ370m-26" value="(1,N)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+        <mxCell id="vfVHeJbnowlgTLXQ370m-26" value="(0,N)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="600" y="600" width="60" height="30" as="geometry" />
         </mxCell>
         <mxCell id="vfVHeJbnowlgTLXQ370m-27" value="(0,N)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">

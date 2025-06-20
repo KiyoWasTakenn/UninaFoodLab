@@ -126,7 +126,7 @@ CREATE TABLE Iscrizioni
 	CONSTRAINT fk_corso_iscrizioni FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso)
 );
 
--- Argomenti_Corso
+-- Argomenti_Corso			-- Rilassamento vincolo altrimenti un corso non può nascere senza un argomento
 CREATE TABLE  Argomenti_Corso
 (
 	IdCorso  INTEGER NOT NULL,

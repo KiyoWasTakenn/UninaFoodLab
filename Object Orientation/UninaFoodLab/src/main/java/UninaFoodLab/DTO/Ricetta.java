@@ -5,6 +5,7 @@ import java.util.Objects;
 
 public class Ricetta
 {
+    private int id;
     private String nome;
     private String provenienza;
     private int tempo;
@@ -44,6 +45,16 @@ public class Ricetta
     public int hashCode()
     {
         return Objects.hash(nome, provenienza, tempo, calorie, difficolta, allergeni);
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public String getNome()

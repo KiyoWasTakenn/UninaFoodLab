@@ -5,6 +5,7 @@ import java.util.Objects;
 
 public class Adesione
 {
+    private int id;
     private LocalDate dataAdesione;
     Partecipante partecipante;
     SessionePratica sessione;
@@ -30,6 +31,16 @@ public class Adesione
     public int hashCode()
     {
         return Objects.hash(dataAdesione, partecipante, sessione);
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public LocalDate getDataAdesione() {

@@ -7,11 +7,11 @@ import java.sql.*;
 
 public interface ChefDAO
 {
-    Chef getChefById(int id) throws SQLException;
+    Chef getChefById(int idChef) throws SQLException;
+    Chef getChefByUsername(String username) throws SQLException;
     List<Chef> getChefByName(String name, String surname) throws SQLException;
     List<Chef> getAllChefs() throws SQLException;
     void save(Chef toSaveChef) throws SQLException;
-    void update(int id, String username) throws SQLException;
-
-    void delete(int id) throws SQLException;
+    void update(Chef previousChef, Chef updatedChef) throws SQLException;
+    void delete(int idChef) throws SQLException;
 }

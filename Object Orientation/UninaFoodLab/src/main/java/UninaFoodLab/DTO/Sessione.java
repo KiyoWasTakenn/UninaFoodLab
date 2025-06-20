@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public abstract class Sessione
 {
+    private int id;
     private int durata;
     private Time orario;
     private LocalDate data;
@@ -14,6 +15,16 @@ public abstract class Sessione
         this.durata = durata;
         this.orario = orario;
         this.data = data;
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public int getDurata() {
