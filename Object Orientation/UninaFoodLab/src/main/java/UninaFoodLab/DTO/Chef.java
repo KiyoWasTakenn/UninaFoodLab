@@ -17,16 +17,6 @@ public class Chef extends Utente
         this.corsi = (corsi != null) ? corsi : new ArrayList<>();
     }
 
-    public int getId()
-    {
-        return id;
-    }
-
-    public void setId(int id)
-    {
-        this.id = id;
-    }
-
     public String getCurriculum()
     {
         return curriculum;

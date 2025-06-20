@@ -1,5 +1,7 @@
 package UninaFoodLab.DTO;
 
+import java.sql.Date;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
@@ -56,9 +58,9 @@ public class Corso
         return nome;
     }
 
-    public LocalDate getDataInizio()
+    public Date getDataInizio()
     {
-        return dataInizio;
+        return Date.valueOf(dataInizio);
     }
 
     public int getNumeroSessioni()
