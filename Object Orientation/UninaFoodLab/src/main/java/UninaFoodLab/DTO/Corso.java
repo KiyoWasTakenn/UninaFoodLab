@@ -1,10 +1,13 @@
 package UninaFoodLab.DTO;
 
+import java.sql.Date;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
 public class Corso
 {
+    private int id;
     private String nome;
     private LocalDate dataInizio;
     private int numeroSessioni;
@@ -40,14 +43,24 @@ public class Corso
         this.argomenti = (argomenti != null) ? argomenti : new ArrayList<>();
     }
 
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
+
     public String getNome()
     {
         return nome;
     }
 
-    public LocalDate getDataInizio()
+    public Date getDataInizio()
     {
-        return dataInizio;
+        return Date.valueOf(dataInizio);
     }
 
     public int getNumeroSessioni()
@@ -63,11 +76,6 @@ public class Corso
     public int getLimite()
     {
         return limite;
-    }
-
-    public void setLimite(int limite)
-    {
-        this.limite = limite;
     }
 
     public String getDescrizione()
@@ -90,10 +98,6 @@ public class Corso
         return isPratico;
     }
 
-    public void setIsPratico(boolean isPratico)
-    {
-        this.isPratico = isPratico;
-    }
 
     public int getReport()
     {
