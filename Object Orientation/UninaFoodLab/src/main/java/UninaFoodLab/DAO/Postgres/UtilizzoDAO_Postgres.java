@@ -18,30 +18,22 @@ public class UtilizzoDAO_Postgres implements UtilizzoDAO
 
     public List<Utilizzo> getUtilizziByIdRicetta(int idRicetta) throws SQLException
     {
-        List<Utilizzo> chefs = new ArrayList<>();
-        String sql = "SELECT * FROM Utilizzi WHERE Nome = ? AND Cognome = ?";
+        List<Utilizzo> utilizzi = new ArrayList<>();
+        String sql = "SELECT * FROM Utilizzi WHERE IdRicetta = ?";
 
         try(PreparedStatement s = conn.prepareStatement(sql))
         {
-            s.setString(1, name);
-            s.setString(2, surname);
+            s.setInt(idRicetta);
             ResultSet rs = s.executeQuery();
             while(rs.next())
-                chefs.add( new Chef( rs.getString("Username"),
-                                rs.getString("Nome"),
-                                rs.getString("Cognome"),
-                                rs.getString("CodiceFiscale"),
-                                rs.getDate("DataDiNascita").toLocalDate(),
-                                rs.getString("LuogoDiNascita"),
-                                rs.getString("Email"),
-                                rs.getString("Password"),
-                                rs.getString("Curriculum"),
-                                null,
-                                null
+                utilizzi.add( new Utilizzo(
+                							
+                		
+                						  );
                         )
                 );
         }
-        return chefs;
+        return utilizzi;
     }
 
     public void save(Utilizzo toSaveUtilizzo) throws SQLException

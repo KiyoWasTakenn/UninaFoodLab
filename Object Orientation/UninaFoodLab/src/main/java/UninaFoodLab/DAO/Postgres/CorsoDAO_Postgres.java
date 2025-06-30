@@ -169,7 +169,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
             try (PreparedStatement s = conn.prepareStatement(sql))
             {
                 s.setString(1, newCorso.getDescrizione());
-                s.setInt(2, IdCorso);
+                s.setInt(2, oldCorso.getId());
                 s.executeUpdate();
             }
         }
