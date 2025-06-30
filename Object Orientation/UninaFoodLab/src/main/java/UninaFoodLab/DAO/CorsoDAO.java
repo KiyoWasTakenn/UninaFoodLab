@@ -4,7 +4,6 @@ import UninaFoodLab.DTO.Argomento;
 import UninaFoodLab.DTO.Corso;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public interface CorsoDAO

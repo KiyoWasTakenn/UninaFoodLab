@@ -1,37 +1,27 @@
 package UninaFoodLab.DTO;
 
+import UninaFoodLab.Exceptions.RequiredRicettaException;
+
 import java.sql.Time;
 import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.Objects;
 
-//associaricetta
 public class SessionePratica extends Sessione
 {
-    private int numeroPartecipanti;
+    private int numeroPartecipanti = 0;
     private String indirizzo;
-    ArrayList<Partecipante> partecipanti;
+    ArrayList<Partecipante> partecipanti = new ArrayList<>();
     ArrayList<Ricetta> ricette;
-    ArrayList<Adesione> adesioni;
+    ArrayList<Adesione> adesioni = new ArrayList<>();
 
-    public SessionePratica(int durata, Time orario, LocalDate data, String indirizzo, ArrayList<Partecipante> partecipanti, ArrayList<Ricetta> ricette, ArrayList<Adesione> adesioni)
+    public SessionePratica(int durata, Time orario, LocalDate data, Corso corso, String indirizzo, ArrayList<Ricetta> ricette)
     {
-        super(durata, orario, data);
+        super(durata, orario, data, corso);
         this.indirizzo = indirizzo;
-
-        if(partecipanti != null)
-        {
-            this.partecipanti = partecipanti;
-            this.numeroPartecipanti = partecipanti.size();
-        }
-        else
-        {
-            this.partecipanti = new ArrayList<>();
-            this.numeroPartecipanti = 0;
-        }
-
+        
+        if(ricette == null) throw new RequiredRicettaException();
         this.ricette = ricette;
-        this.adesioni = (adesioni != null) ? adesioni : new ArrayList<>();
     }
 
     @Override

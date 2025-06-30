@@ -40,7 +40,7 @@ public class SessioneOnlineDAO_Postgres implements SessioneOnlineDAO
     public List<SessioneOnline> getSessioniOnlineByCorso(int idCorso) throws SQLException
     {
         String sql ="SELECT * FROM SessioneOnline WHERE IdCorso = ?";
-        List<SessioneOnline> ret =new ArrayList<SessioneOnline>();
+        List<SessioneOnline> ret = new ArrayList<SessioneOnline>();
         try (PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idCorso);

@@ -1,7 +1,12 @@
 package UninaFoodLab.DTO;
 
 import java.sql.Date;
+import java.sql.Time;
 import java.util.ArrayList;
+
+import UninaFoodLab.Exceptions.RequiredArgomentoException;
+import UninaFoodLab.Exceptions.RequiredChefException;
+
 import java.time.LocalDate;
 
 public class Corso
@@ -15,10 +20,13 @@ public class Corso
     private String descrizione;
     private double costo;
     private boolean isPratico;
+    private Chef chef; 
     private ArrayList<Sessione> sessioni;
     private ArrayList<Argomento> argomenti;
-
-    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, ArrayList<Sessione> sessioni, ArrayList<Argomento> argomenti)
+    
+    // Questi costruttori vengono chiamati quando dalla GUI viene aggiunta una sessione pratica/online
+    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, Chef chef,
+    		     ArrayList<Argomento> argomenti, int durata, Time orario, LocalDate dataSessione, Corso corso, String linkRiunione)
     {
         this.nome = nome;
         this.dataInizio = data;
@@ -27,22 +35,39 @@ public class Corso
         this.descrizione = descrizione;
         this.costo = costo;
         this.isPratico = isPratico;
-
-        if(sessioni != null)
-        {
-            this.sessioni = sessioni;
-            this.numeroSessioni = sessioni.size();
-        }
-        else
-        {
-            this.sessioni = new ArrayList<>();
-            this.numeroSessioni = 0;
-        }
-
-        this.argomenti = (argomenti != null) ? argomenti : throw new Exception();  
+        
+        if(chef == null) throw new RequiredChefException();
+        this.chef = chef;
+        
+        this.sessioni.add( new SessioneOnline(durata, orario, dataSessione, corso, linkRiunione) );
+        this.numeroSessioni = sessioni.size();
+        
+        if(argomenti == null || argomenti.isEmpty()) throw new RequiredArgomentoException();	
+        this.argomenti = argomenti;  
     }
 
-    public int getId()
+    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, Chef chef, 
+    			 ArrayList<Argomento> argomenti, int durata, Time orario, LocalDate dataSessione, Corso corso, String indirizzo, ArrayList<Ricetta> ricette)
+    {
+        this.nome = nome;
+        this.dataInizio = data;
+        this.frequenzaSessioni = frequenzaSessioni;
+        this.limite = limite;
+        this.descrizione = descrizione;
+        this.costo = costo;
+        this.isPratico = isPratico;
+        
+        if(chef == null) throw new RequiredChefException();
+        this.chef = chef;
+        
+        this.sessioni.add( new SessionePratica(durata, orario, dataSessione, corso, indirizzo, ricette) );
+        this.numeroSessioni = sessioni.size();
+        
+        if(argomenti == null || argomenti.isEmpty()) throw new RequiredArgomentoException();	
+        this.argomenti = argomenti;  
+    }
+    
+    public int getId()  
     {
         return id;
     }

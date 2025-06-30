@@ -4,6 +4,8 @@ import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDate;
 
+import UninaFoodLab.Exceptions.RequiredCorsoException;
+
 public abstract class Sessione
 {
     private int id;
@@ -11,11 +13,13 @@ public abstract class Sessione
     private Time orario;
     private LocalDate data;
 
-    protected Sessione(int durata, Time orario, LocalDate data)
+    protected Sessione(int durata, Time orario, LocalDate data, Corso corso)
     {
         this.durata = durata;
         this.orario = orario;
         this.data = data;
+        
+        if(corso == null) throw new RequiredCorsoException();
     }
 
     public int getId()

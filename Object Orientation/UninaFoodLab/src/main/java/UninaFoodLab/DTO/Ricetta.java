@@ -3,6 +3,8 @@ package UninaFoodLab.DTO;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import UninaFoodLab.Exceptions.RequiredIngredienteException;
+
 public class Ricetta
 {
     private int id;
@@ -21,6 +23,9 @@ public class Ricetta
         this.tempo = tempo;
         this.calorie = calorie;
         this.difficolta = difficolta;
+        
+        if(utilizzi == null) throw new RequiredIngredienteException();
+        
         this.utilizzi = utilizzi;
     }
 

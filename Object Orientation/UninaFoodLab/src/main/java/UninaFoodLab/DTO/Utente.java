@@ -2,7 +2,6 @@ package UninaFoodLab.DTO;
 
 import java.sql.Date;
 import java.util.Objects;
-import java.sql.Time;
 import java.time.LocalDate;
 
 public abstract class Utente

@@ -6,7 +6,6 @@ import UninaFoodLab.DAO.*;
 import UninaFoodLab.DAO.Postgres.*;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 
 public class Controller
 {
