@@ -371,10 +371,6 @@ EXECUTE FUNCTION fun_limit_argomenti();
 
 -----------------------------------------------------------------------------------------------------------------------
 
-
-
------------------------------------------------------------------------------------------------------------------------
-
 -- Interrelazionale: Lo chef non può usare ricette nelle sessioni pratiche che non sono sue
 
 CREATE OR REPLACE FUNCTION fun_ricette_chef_sessione()
