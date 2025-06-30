@@ -37,7 +37,8 @@ public class SessioneOnlineDAO_Postgres implements SessioneOnlineDAO
         return null;
     }
 
-    public List<SessioneOnline> getSessioniOnlineByCorso(int idCorso) throws SQLException{
+    public List<SessioneOnline> getSessioniOnlineByCorso(int idCorso) throws SQLException
+    {
         String sql ="SELECT * FROM SessioneOnline WHERE IdCorso = ?";
         List<SessioneOnline> ret =new ArrayList<SessioneOnline>();
         try (PreparedStatement s = conn.prepareStatement(sql))
@@ -58,7 +59,8 @@ public class SessioneOnlineDAO_Postgres implements SessioneOnlineDAO
         return ret;
     }
 
-    public void save(SessioneOnline toSaveSessione) throws SQLException {
+    public void save(SessioneOnline toSaveSessione) throws SQLException 
+    {
         String sql = "INSERT INTO SessioneOnline (durata, orario, data, link)  VALUES (?, ?, ?, ?)";
         try (PreparedStatement s = conn.prepareStatement(sql))
         {
@@ -71,8 +73,9 @@ public class SessioneOnlineDAO_Postgres implements SessioneOnlineDAO
         }
     }
 
-    public void delete(int IdSessioneOnline) throws SQLException {
-        String sql = "DELETE FROM SessioneOnline WHERE IdSessioneOnline = ?";
+    public void delete(int IdSessioneOnline) throws SQLException 
+    {
+        String sql = "DELETE FROM Corso WHERE IdSessioneOnline = ?";
         try (PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, IdSessioneOnline);
@@ -81,7 +84,8 @@ public class SessioneOnlineDAO_Postgres implements SessioneOnlineDAO
 
     }
 
-    public void update(SessioneOnline oldSessione, SessioneOnline newSessione) throws SQLException{
+    public void update(SessioneOnline oldSessione, SessioneOnline newSessione) throws SQLException
+    {
         if(!oldSessione.getLinkRiunione().equals(newSessione.getLinkRiunione()))
         {
             String sql = "UPDATE SessioneOnline SET LinkRiunione = ? WHERE IdSessioneOnline = ?";

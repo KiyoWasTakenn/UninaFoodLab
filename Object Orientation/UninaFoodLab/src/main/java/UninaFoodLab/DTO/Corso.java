@@ -1,7 +1,6 @@
 package UninaFoodLab.DTO;
 
 import java.sql.Date;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
@@ -40,7 +39,7 @@ public class Corso
             this.numeroSessioni = 0;
         }
 
-        this.argomenti = (argomenti != null) ? argomenti : new ArrayList<>();
+        this.argomenti = (argomenti != null) ? argomenti : throw new Exception();  
     }
 
     public int getId()
@@ -112,7 +111,7 @@ public class Corso
 
         for (Sessione x: sessioni)
         {
-            if(x.getData().isAfter(LocalDate.now().minusDays(30)) && x.getData().isBefore(LocalDate.now()))
+            if(x.getData().toLocalDate().isAfter(LocalDate.now().minusDays(30)) && x.getData().toLocalDate().isBefore(LocalDate.now()))
                 if(x instanceof SessionePratica)
                 {
                     ++numSessionePratica;
