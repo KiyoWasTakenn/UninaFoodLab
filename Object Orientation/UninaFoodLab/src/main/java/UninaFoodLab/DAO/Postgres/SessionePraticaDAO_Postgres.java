@@ -31,7 +31,6 @@ public class SessionePraticaDAO_Postgres implements SessionePraticaDAO
                         rs.getInt("Durata"),
                         rs.getTime("Orario"),
                         rs.getDate("Data").toLocalDate(),
-                        rs.getInt("NumeroPartecipanti"),
                         rs.getString("Indirizzo"),
                         null,
                         null,
@@ -56,7 +55,7 @@ public class SessionePraticaDAO_Postgres implements SessionePraticaDAO
                         rs.getInt("Durata"),
                         rs.getTime("Orario"),
                         rs.getDate("Data").toLocalDate(),
-                        rs.getInt("NumeroPartecipanti"),
+                        rs.getString("Indirizzo"),
                         null,
                         null,
                         null
@@ -73,17 +72,18 @@ public class SessionePraticaDAO_Postgres implements SessionePraticaDAO
             s.setInt(1, toSaveSessione.getDurata());
             s.setTime(2, toSaveSessione.getOrario());
             s.setDate(3, toSaveSessione.getData());
-
+            s.setInt(4, toSaveSessione.getNumeroPartecipanti());
+            s.setString(5, toSaveSessione.getIndirizzo());
 
             s.executeUpdate();
         }
     }
 
-    public void delete(int IdSessioneOnline) throws SQLException {
-        String sql = "DELETE FROM Corso WHERE IdSessioneOnline = ?";
+    public void delete(int IdSessionePratica) throws SQLException {
+        String sql = "DELETE FROM SessionePratica WHERE IdSessionePratica = ?";
         try (PreparedStatement s = conn.prepareStatement(sql))
         {
-            s.setInt(1, IdSessioneOnline);
+            s.setInt(1, IdSessionePratica);
             s.executeUpdate();
         }
 

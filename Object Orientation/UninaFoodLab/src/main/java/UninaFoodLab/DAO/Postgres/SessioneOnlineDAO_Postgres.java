@@ -72,7 +72,7 @@ public class SessioneOnlineDAO_Postgres implements SessioneOnlineDAO
     }
 
     public void delete(int IdSessioneOnline) throws SQLException {
-        String sql = "DELETE FROM Corso WHERE IdSessioneOnline = ?";
+        String sql = "DELETE FROM SessioneOnline WHERE IdSessioneOnline = ?";
         try (PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, IdSessioneOnline);
