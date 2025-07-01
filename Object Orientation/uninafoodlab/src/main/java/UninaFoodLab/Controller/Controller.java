@@ -24,5 +24,12 @@ public class Controller
     {
 
     }
+    
+
+	public bool checkLogin(String user, char[] pass)
+	{
+		
+		
+	}
 
 }

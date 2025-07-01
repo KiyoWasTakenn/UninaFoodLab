@@ -18,7 +18,9 @@ CREATE TABLE Partecipante
 	LuogoDiNascita VARCHAR(100) NOT NULL,
 	Email TEXT UNIQUE NOT NULL, 
 	Password VARCHAR(60) NOT NULL,
-	NumeroCorsi INTEGER DEFAULT 0
+	NumeroCorsi INTEGER DEFAULT 0,
+	COSTRAINT check_usrpart_length CHECK (LENGHT(Username) BETWEEN (4, 16)),
+	COSTRAINT check_pswpart_length CHECK (LENGHT(Password) BETWEEN (8, 20))
 );
 
 -- Chef
@@ -34,6 +36,8 @@ CREATE TABLE Chef
 	Email TEXT UNIQUE NOT NULL, 
 	Password VARCHAR(60) NOT NULL,
 	Curriculum TEXT NOT NULL
+	COSTRAINT check_usrchef_length CHECK (LENGHT(Username) BETWEEN (4,16)),
+	COSTRAINT check_pswchef_length CHECK (LENGHT(Password) BETWEEN (8, 20))
 );
 
 -- Argomento

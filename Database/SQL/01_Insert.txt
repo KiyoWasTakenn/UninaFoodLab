@@ -13,7 +13,7 @@ INSERT INTO Partecipante (Username, Nome, Cognome, CodiceFiscale, DataDiNascita,
 ('andrearizzo', 'Andrea', 'Rizzo', 'RZZNDR70E01L789H', '1970-09-10', 'Palermo', 'andrea.rizzo@example.com', 'rizzoAnd', 0),
 ('sofianeri', 'Sofia', 'Neri', 'NRESFO95F01F839I', '1995-01-30', 'Genova', 'sofia.neri@example.com', 'sofiaNeri', 0),
 ('giacomobruno', 'Giacomo', 'Bruno', 'BRNGCM85G01C345J', '1985-04-03', 'Bari', 'giacomo.bruno@example.com', 'brunoGiac', 0),
-('chiaraconti', 'Chiara', 'Conti', 'CNTCHR90H01B678K', '1990-08-12', 'Venezia', 'chiara.conti@example.com', 'contiCh', 0);
+('chiaraconti', 'Chiara', 'Conti', 'CNTCHR90H01B678K', '1990-08-12', 'Venezia', 'chiara.conti@example.com', 'contiChi', 0);
 
 
 -- Chef
