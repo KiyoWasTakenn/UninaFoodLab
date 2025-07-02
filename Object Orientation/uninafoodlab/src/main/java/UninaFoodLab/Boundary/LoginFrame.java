@@ -30,22 +30,17 @@ import org.kordamp.ikonli.materialdesign.MaterialDesign;
 import org.kordamp.ikonli.swing.FontIcon;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.github.lgooddatepicker.components.DatePicker;
 
 import UninaFoodLab.Controller.Controller;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class LoginFrame extends JFrame
 {
@@ -161,8 +156,10 @@ public class LoginFrame extends JFrame
 		loginBtn.setForeground(Color.WHITE);
 		loginBtn.setOpaque(true);
 		loginBtn.setFocusPainted(false);
+		loginBtn.setBorderPainted(false);
 		loginBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		panel.add(loginBtn, "span 2, center, gaptop 10");
+		getRootPane().setDefaultButton(loginBtn);
 		
 		orLabel = new JXLabel("Oppure");
 		orLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
@@ -210,6 +207,7 @@ public class LoginFrame extends JFrame
 									    }
 								   }
 								  );
+		
 
 		passField.addFocusListener(new FocusAdapter()
 								   {
@@ -258,7 +256,6 @@ public class LoginFrame extends JFrame
 									    }
 									}
 								  );
-		
 	}
 	
 	public void enableButtons()
