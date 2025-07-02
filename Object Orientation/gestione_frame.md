@@ -22,5 +22,22 @@
 **VARIE**
 
 * Card di creazione corso, sessione, ricetta, ingrediente
-* Card per corso che quando clicchi escono i dettagli e la possibilità di iscriversi (forse pagina nuova boh) per i partecipanti, modificarlo e rimuoverlo per lo chef(se non è ancora iniziato)
-* Card per ricette che quando clicchi escono i dettagli e la possibilità di modificarla e rimuoverla
+* Frame per corso che quando clicchi escono i dettagli e la possibilità di iscriversi (forse pagina nuova boh) per i partecipanti, modificarlo e rimuoverlo per lo chef(se non è ancora iniziato)
+* Frame per ricette che quando clicchi escono i dettagli e la possibilità di modificarla e rimuoverla
+
+
+
+
+
+
+
+
+
+
+
+FRAME INSIEME: Homepage
+
+FRAME MIEI: LoginScreen, IMieiCorsi, Report, CardCorsoCreazione, CardSessione, CorsoDettagli
+
+FRAME VIRGINIA: RegisterScreen, Profilo, Ricette, CardRicetta, CardIngrediente, RicettaDettagli
+
