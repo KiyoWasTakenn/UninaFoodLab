@@ -35,18 +35,4 @@ public class ConnectionManager
 
         return conn;
     }
-
-    public static void closeConnection() throws SQLException
-    {
-        try
-        {
-            if(conn != null && !conn.isClosed())
-                conn.close();
-        }
-        catch (SQLException ex)
-        {
-            ex.printStackTrace();
-            throw ex;
-        }
-    }
 }

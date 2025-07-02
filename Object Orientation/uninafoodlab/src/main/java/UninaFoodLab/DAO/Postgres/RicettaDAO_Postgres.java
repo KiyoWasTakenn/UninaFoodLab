@@ -10,19 +10,12 @@ import java.util.List;
 
 public class RicettaDAO_Postgres implements RicettaDAO
 {
-    private Connection conn;
-
-    public RicettaDAO_Postgres(Connection conn)
-    {
-        this.conn = conn;
-    }
-
     public List<Ricetta> getRicetteByIdChef(int idChef) throws SQLException
     {
         List<Ricetta> ricette = new ArrayList<>();
         String sql = "SELECT * FROM Ricetta WHERE IdChef = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idChef);
             ResultSet rs = s.executeQuery();
@@ -45,7 +38,7 @@ public class RicettaDAO_Postgres implements RicettaDAO
         List<Ricetta> ricette = new ArrayList<>();
         String sql = "SELECT * FROM Ricetta NATURAL JOIN Preparazioni WHERE IdSessionePratica = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idSessione);
             ResultSet rs = s.executeQuery();
@@ -68,7 +61,7 @@ public class RicettaDAO_Postgres implements RicettaDAO
         String sql = "INSERT INTO Ricetta(Nome, Provenienza, Tempo, Calorie, Difficolta, Allergeni) " +
                      "VALUES(?, ?, ?, ?, ?, ?)";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, toSaveRicetta.getNome());
             s.setString(2, toSaveRicetta.getProvenienza());
@@ -123,10 +116,13 @@ public class RicettaDAO_Postgres implements RicettaDAO
 
         if(!param.isEmpty())
         {
-            sql += "WHERE IdRicetta = ?";
+        	if(sql.endsWith(", ")) 
+        		sql = sql.substring(0, sql.length() - 2);
+        	
+            sql += " WHERE IdRicetta = ?";
             param.add(previousRicetta.getId());
 
-            try(PreparedStatement s = conn.prepareStatement(sql))
+            try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
             {
                 for(int i = 0; i < param.size(); i++)
                     s.setObject(i + 1, param.get(i));
@@ -140,7 +136,7 @@ public class RicettaDAO_Postgres implements RicettaDAO
     {
         String sql = "DELETE FROM Ricetta WHERE IdRicetta = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idRicetta);
             s.executeUpdate();

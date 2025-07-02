@@ -2,6 +2,9 @@ package UninaFoodLab.DAO.Postgres;
 
 import UninaFoodLab.DAO.PartecipanteDAO;
 import UninaFoodLab.DTO.Partecipante;
+import UninaFoodLab.Exceptions.DAOException;
+import UninaFoodLab.Exceptions.PartecipanteNotFoundException;
+import UninaFoodLab.Exceptions.RecordNotFoundException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,48 +12,46 @@ import java.util.List;
 
 public class PartecipanteDAO_Postgres implements PartecipanteDAO
 {
-    private Connection conn;
-
-    public PartecipanteDAO_Postgres(Connection conn)
-    {
-        this.conn = conn;
-    }
-
-    public Partecipante getPartecipanteById(int idPartecipante) throws SQLException
-    {
+    public Partecipante getPartecipanteById(int idPartecipante)
+    {	
         String sql = "SELECT * FROM Partecipante WHERE IdPartecipante = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idPartecipante);
             ResultSet rs = s.executeQuery();
 
-            while(rs.next())
+            if(rs.next())
                 return new Partecipante( rs.getString("Username"),
-                        rs.getString("Nome"),
-                        rs.getString("Cognome"),
-                        rs.getString("CodiceFiscale"),
-                        rs.getDate("DataDiNascita").toLocalDate(),
-                        rs.getString("LuogoDiNascita"),
-                        rs.getString("Email"),
-                        rs.getString("Password"),
-                        null,
-                        null
-                );
+                        				 rs.getString("Nome"),
+                        				 rs.getString("Cognome"),
+                        				 rs.getString("CodiceFiscale"),
+                        				 rs.getDate("DataDiNascita").toLocalDate(),
+                        				 rs.getString("LuogoDiNascita"),
+                        				 rs.getString("Email"),
+                        				 rs.getString("Password"),
+                        				 null,
+                        				 null
+                					   );
+            else
+            	throw new PartecipanteNotFoundException("Partecipante con id " + idPartecipante + " non trovato");
         }
-        return null;
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante ricerca Partecipante per id", e);
+        }
     }
 
-    public Partecipante getPartecipanteByUsername(String username) throws SQLException
+    public Partecipante getPartecipanteByUsername(String username)
     {
         String sql = "SELECT * FROM Partecipante WHERE Username = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, username);
             ResultSet rs = s.executeQuery();
 
-            while(rs.next())
+            if(rs.next())
                 return new Partecipante( rs.getString("Username"),
                         rs.getString("Nome"),
                         rs.getString("Cognome"),
@@ -62,16 +63,21 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
                         null,
                         null
                 );
+            else
+            	throw new PartecipanteNotFoundException("Partecipante con id " + username + " non trovato");
         }
-        return null;
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante ricerca Partecipante per username", e);
+        }
     }
 
-    public void save(Partecipante toSavePartecipante) throws SQLException
+    public void save(Partecipante toSavePartecipante)
     {
         String sql = "INSERT INTO Partecipante(Username, Nome, Cognome, CodiceFiscale, DataDiNascita, Email, Password) " +
                 "VALUES(?, ?, ?, ?, ?, ?, ?)";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, toSavePartecipante.getUsername());
             s.setString(2, toSavePartecipante.getNome());
@@ -82,9 +88,13 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
             s.setString(7, toSavePartecipante.getHashPassword());
             s.executeUpdate();
         }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante salvataggio Partecipante", e);
+        }
     }
 
-    public void update(Partecipante previousPartecipante, Partecipante updatedPartecipante) throws SQLException
+    public void update(Partecipante previousPartecipante, Partecipante updatedPartecipante)
     {
         String sql = "UPDATE Partecipante SET";
         List<Object> param = new ArrayList<>();
@@ -127,27 +137,42 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
 
         if(!param.isEmpty())
         {
-            sql += "WHERE IdPartecipante = ?";
+        	if(sql.endsWith(", ")) 
+        		sql = sql.substring(0, sql.length() - 2);
+
+            sql += " WHERE IdPartecipante = ?";
             param.add(previousPartecipante.getId());
 
-            try(PreparedStatement s = conn.prepareStatement(sql))
+            try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
             {
                 for(int i = 0; i < param.size(); i++)
                     s.setObject(i + 1, param.get(i));
 
                 s.executeUpdate();
             }
+            catch(SQLException e)
+            {
+            	throw new DAOException("Errore DB durante aggiornamento Partecipante", e);
+            }
         }
     }
 
-    public void delete(int idPartecipante) throws SQLException
+    public void delete(int idPartecipante)
     {
         String sql = "DELETE FROM Partecipante WHERE IdPartecipante = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idPartecipante);
-            s.executeUpdate();
+            int done = s.executeUpdate();
+            
+            if(done == 0)
+            	 throw new PartecipanteNotFoundException("Partecipante con id " + idPartecipante + " non trovato per l' eliminazione");
+ 
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante eliminazione Partecipante", e);
         }
     }
 }

@@ -9,18 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CorsoDAO_Postgres implements CorsoDAO
-
 {
-    private Connection conn;
-
-    public CorsoDAO_Postgres(Connection conn)
-    {
-        this.conn=conn;
-    }
-
     public Corso getCorsoById(int idCorso) throws SQLException{
         String sql ="SELECT * FROM Corso WHERE IdCorso = ?";
-        try (PreparedStatement s = conn.prepareStatement(sql))
+        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idCorso);
             ResultSet rs = s.executeQuery();
@@ -45,7 +37,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
 
     public Corso getCorsoByChef(int idChef) throws SQLException{
         String sql ="SELECT * FROM Corso WHERE IdChef = ?";
-        try (PreparedStatement s = conn.prepareStatement(sql))
+        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idChef);
             ResultSet rs = s.executeQuery();
@@ -71,7 +63,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
     public List<Corso> getAllCorsi() throws SQLException{
         String sql ="SELECT * FROM Corso";
         List<Corso> ret =new ArrayList<Corso>();
-        try(Statement s = conn.createStatement())
+        try(Connection conn = ConnectionManager.getConnection(); Statement s = conn.createStatement())
         {
             ResultSet rs = s.executeQuery(sql);
 
@@ -108,7 +100,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
 
         int i=1;
         List<Corso> ret =new ArrayList<Corso>();
-        try (PreparedStatement s = conn.prepareStatement(sql))
+        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             for (Argomento x:argomenti)
             {
@@ -139,7 +131,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
 
     public void save(Corso toSaveCorso) throws SQLException {
         String sql = "INSERT INTO Corso (nome, data, frequenzaSessioni, limite, descrizione, costo, isPratico)  VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement s = conn.prepareStatement(sql))
+        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, toSaveCorso.getNome());
             s.setDate(2, toSaveCorso.getDataInizio());
@@ -154,7 +146,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
 
     public void delete(int IdCorso) throws SQLException {
         String sql = "DELETE FROM Corso WHERE IdCorso = ?";
-        try (PreparedStatement s = conn.prepareStatement(sql))
+        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, IdCorso);
             s.executeUpdate();
@@ -166,7 +158,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
         if(!oldCorso.getDescrizione().equals(newCorso.getDescrizione()))
         {
             String sql = "UPDATE Corso SET Descrizione = ? WHERE IdCorso = ?";
-            try (PreparedStatement s = conn.prepareStatement(sql))
+            try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
             {
                 s.setString(1, newCorso.getDescrizione());
                 s.setInt(2, oldCorso.getId());

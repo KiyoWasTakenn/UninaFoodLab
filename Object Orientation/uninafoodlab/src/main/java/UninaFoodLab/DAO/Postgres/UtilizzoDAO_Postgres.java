@@ -9,19 +9,12 @@ import java.util.List;
 
 public class UtilizzoDAO_Postgres implements UtilizzoDAO
 {
-    private Connection conn;
-
-    public UtilizzoDAO_Postgres(Connection conn)
-    {
-        this.conn = conn;
-    }
-
     public List<Utilizzo> getUtilizziByIdRicetta(int idRicetta) throws SQLException
     {
         List<Utilizzo> utilizzi = new ArrayList<>();
         String sql = "SELECT * FROM Utilizzi WHERE IdRicetta = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(idRicetta);
             ResultSet rs = s.executeQuery();
@@ -50,7 +43,7 @@ public class UtilizzoDAO_Postgres implements UtilizzoDAO
     {
         String sql = "DELETE FROM Utilizzi WHERE IdRicetta = ? AND IdIngrediente = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idRicetta);
             s.setInt(2, idIngrediente);

@@ -1,6 +1,9 @@
 package UninaFoodLab.DAO.Postgres;
 
 import UninaFoodLab.DTO.Chef;
+import UninaFoodLab.Exceptions.ChefNotFoundException;
+import UninaFoodLab.Exceptions.DAOException;
+import UninaFoodLab.Exceptions.RecordNotFoundException;
 import UninaFoodLab.DAO.ChefDAO;
 
 import java.util.ArrayList;
@@ -10,23 +13,16 @@ import java.sql.*;
 
 public class ChefDAO_Postgres implements ChefDAO
 {
-    private Connection conn;
-
-    public ChefDAO_Postgres(Connection conn)
-    {
-        this.conn = conn;
-    }
-
-    public Chef getChefById(int idChef) throws SQLException
+    public Chef getChefById(int idChef)
     {
         String sql = "SELECT * FROM Chef WHERE IdChef = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idChef);
             ResultSet rs = s.executeQuery();
 
-            while(rs.next())
+            if(rs.next())
                 return new Chef( rs.getString("Username"),
                                  rs.getString("Nome"),
                                  rs.getString("Cognome"),
@@ -39,20 +35,25 @@ public class ChefDAO_Postgres implements ChefDAO
                                  null,
                                  null
                                );
+            else
+            	throw new ChefNotFoundException("Chef con id " + idChef + " non trovato");
         }
-        return null;
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante ricerca Chef per id", e);
+        }
     }
 
-    public Chef getChefByUsername(String username) throws SQLException
+    public Chef getChefByUsername(String username)
     {
         String sql = "SELECT * FROM Chef WHERE Username = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, username);
             ResultSet rs = s.executeQuery();
 
-            while(rs.next())
+            if(rs.next())
                 return new Chef( rs.getString("Username"),
                         rs.getString("Nome"),
                         rs.getString("Cognome"),
@@ -65,16 +66,21 @@ public class ChefDAO_Postgres implements ChefDAO
                         null,
                         null
                 );
+            else
+            	throw new ChefNotFoundException("Chef con username " + username + " non trovato");
         }
-        return null;
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante ricerca Chef per username", e);
+        }
     }
 
-    public List<Chef> getChefByName(String name, String surname) throws SQLException
+    public List<Chef> getChefByName(String name, String surname)
     {
         List<Chef> chefs = new ArrayList<>();
         String sql = "SELECT * FROM Chef WHERE Nome = ? AND Cognome = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, name);
             s.setString(2, surname);
@@ -94,15 +100,20 @@ public class ChefDAO_Postgres implements ChefDAO
                                    )
                          );
         }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante ricerca Chef per nome", e);
+        }
+        
         return chefs;
     }
 
-    public List<Chef> getAllChefs() throws SQLException
+    public List<Chef> getAllChefs()
     {
         List<Chef> chefs = new ArrayList<>();
         String sql = "SELECT * FROM Chef";
 
-        try(Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(sql))
+        try(Connection conn = ConnectionManager.getConnection(); Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(sql))
         {
             while(rs.next())
                 chefs.add( new Chef( rs.getString("Username"),
@@ -119,15 +130,20 @@ public class ChefDAO_Postgres implements ChefDAO
                         )
                 );
         }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante ricerca di tutti gli Chef", e);
+        }
+        
         return chefs;
     }
 
-    public void save(Chef toSaveChef) throws SQLException
+    public void save(Chef toSaveChef)
     {
         String sql = "INSERT INTO Chef(Username, Nome, Cognome, CodiceFiscale, DataDiNascita, Email, Password, Curriculum) " +
                      "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, toSaveChef.getUsername());
             s.setString(2, toSaveChef.getNome());
@@ -139,9 +155,13 @@ public class ChefDAO_Postgres implements ChefDAO
             s.setString(8, toSaveChef.getCurriculum());
             s.executeUpdate();
         }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante salvataggio Chef", e);
+        }
     }
 
-    public void update(Chef previousChef, Chef updatedChef) throws SQLException
+    public void update(Chef previousChef, Chef updatedChef)
     {
         String sql = "UPDATE Chef SET";
         List<Object> param = new ArrayList<>();
@@ -190,27 +210,42 @@ public class ChefDAO_Postgres implements ChefDAO
 
         if(!param.isEmpty())
         {
-            sql += "WHERE IdChef = ?";
+        	if(sql.endsWith(", ")) 
+        		sql = sql.substring(0, sql.length() - 2);
+        	
+            sql += " WHERE IdChef = ?";
             param.add(previousChef.getId());
 
-            try(PreparedStatement s = conn.prepareStatement(sql))
+            try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
             {
                 for(int i = 0; i < param.size(); i++)
                     s.setObject(i + 1, param.get(i));
 
                 s.executeUpdate();
             }
+            catch(SQLException e)
+            {
+            	throw new DAOException("Errore DB durante aggiornamento Chef", e);
+            }
         }
     }
 
-    public void delete(int idChef) throws SQLException
+    public void delete(int idChef)
     {
         String sql = "DELETE FROM Chef WHERE IdChef = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idChef);
-            s.executeUpdate();
+            int done = s.executeUpdate();
+            
+            if(done == 0)
+            	 throw new ChefNotFoundException("Chef con id " + idChef + " non trovato per l' eliminazione");
+ 
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante eliminazione Chef", e);
         }
     }
 }

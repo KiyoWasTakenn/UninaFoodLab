@@ -9,9 +9,11 @@ import java.awt.Image;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.CompoundBorder;
@@ -24,8 +26,11 @@ import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
+import org.kordamp.ikonli.materialdesign.MaterialDesign;
+import org.kordamp.ikonli.swing.FontIcon;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.github.lgooddatepicker.components.DatePicker;
 
 import UninaFoodLab.Controller.Controller;
 import net.miginfocom.swing.MigLayout;
@@ -33,6 +38,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,6 +50,7 @@ import java.awt.event.MouseEvent;
 public class LoginFrame extends JFrame
 {
 	private static final long serialVersionUID = 1L;
+	private static final String FontAwesomeSolid = null;
 	private JPanel contentPane;
 	private JXPanel panel;
 	private CompoundBorder defaultBorder = BorderFactory.createCompoundBorder(
@@ -61,6 +68,9 @@ public class LoginFrame extends JFrame
 	private JXTextField userField;
 	private JXLabel passLabel;
 	private JPasswordField passField;
+	private JToggleButton showPassBtn;
+	FontIcon eyeIcon = FontIcon.of(MaterialDesign.MDI_EYE, 18);
+	FontIcon eyeOffIcon = FontIcon.of(MaterialDesign.MDI_EYE_OFF, 18);
 	private JXButton loginBtn;
 	private JXLabel orLabel;
 	private JXButton registerBtn;
@@ -133,8 +143,17 @@ public class LoginFrame extends JFrame
 		passField = new JPasswordField();
 		passField.setPreferredSize(new Dimension(250, 30));
 		panel.add(passLabel); 
-		panel.add(passField, "w 250!, h 25!, gapbottom 18"); 
+		panel.add(passField, "w 250!, h 25!, gapbottom 18, split2"); 
 		
+		showPassBtn = new JToggleButton();
+		showPassBtn.setIcon(eyeOffIcon);
+		showPassBtn.setPreferredSize(new Dimension(30, 30));
+		showPassBtn.setFocusable(false);
+		showPassBtn.setToolTipText("Mostra/Nascondi password");
+		showPassBtn.setBorderPainted(false);
+		showPassBtn.setContentAreaFilled(false);
+		panel.add(showPassBtn, "w 30!, h 25!, gapleft 5, gapbottom 18");
+	
 		loginBtn = new JXButton("Login");
 		loginBtn.setFont(new Font("SansSerif", Font.BOLD, 18));
 		loginBtn.setPreferredSize(new Dimension(120, 30));
@@ -158,7 +177,7 @@ public class LoginFrame extends JFrame
 		registerBtn.setFocusPainted(false);
 		registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		panel.add(registerBtn, "span 2, center");
-		
+			
 		// Action Listeners 
 		userField.getDocument().addDocumentListener(new DocumentListener()
 													{
@@ -201,7 +220,25 @@ public class LoginFrame extends JFrame
 									    }
 								   }
 								  );
-
+		
+		showPassBtn.addActionListener(new ActionListener()
+									  {
+										@Override 
+										public void actionPerformed(ActionEvent e)
+										{
+											if(showPassBtn.isSelected())
+			    							{
+										    	passField.setEchoChar('•');
+										    	showPassBtn.setIcon(eyeOffIcon);
+										    } 
+										    else
+										    {
+										    	passField.setEchoChar((char)0);
+										    	showPassBtn.setIcon(eyeIcon);
+										    }
+										}				
+									  });
+		
 		loginBtn.addActionListener(new ActionListener()
 									{
 										@Override 
@@ -214,17 +251,20 @@ public class LoginFrame extends JFrame
 									        else
 									        {
 									        	loginBtn.setEnabled(false);
+									        	registerBtn.setEnabled(false);
 									        	Controller ctrLogin = Controller.getController();
-									        	ctrLogin.checkLogin(userField.getText().trim(), passField.getPassword());
-									        	
-									        	
-									        	
-									        	loginBtn.setEnabled(true);
+									        	ctrLogin.checkLogin(LoginFrame.this, userField.getText().trim(), passField.getPassword());
 									        }
 									    }
 									}
 								  );
 		
+	}
+	
+	public void enableButtons()
+	{
+	    loginBtn.setEnabled(true);
+	    registerBtn.setEnabled(true);
 	}
 	
 	private boolean checkUser() 
@@ -238,10 +278,10 @@ public class LoginFrame extends JFrame
 	    	userErrorLabel.setText("L'username non può contenere spazi!");
 	    	check = false;
 	    }
-	    else if(text.length() < 4 || text.length() > 16) 
+	    else if(text.length() < 4 || text.length() > 20) 
 	 	{
 	 	    userField.setBorder(errorBorder);
-	 	    userErrorLabel.setText("L'username deve essere tra 4 e 16 caratteri!");
+	 	    userErrorLabel.setText("L'username deve essere tra 4 e 20 caratteri!");
 	 	    check = false;
 	 	} 
 	    else
@@ -258,10 +298,10 @@ public class LoginFrame extends JFrame
 		boolean check = true;
 		String text = new String(passField.getPassword()).trim();
 
-	    if (text.length() < 8 || text.length() > 20)
+	    if (text.length() < 8 || text.length() > 30)
 	    {
 	        passField.setBorder(errorBorder);
-	        passErrorLabel.setText("La password deve essere tra 8 e 20 caratteri.");
+	        passErrorLabel.setText("La password deve essere tra 8 e 30 caratteri.");
 	        check = false;
 	    } 
 	    else
@@ -271,5 +311,10 @@ public class LoginFrame extends JFrame
 	    }
 	    
 	    return check; 
+	}
+
+	public void showError(String msg)
+	{
+		JOptionPane.showMessageDialog(this, msg, "Errore", JOptionPane.ERROR_MESSAGE);
 	}	
 }

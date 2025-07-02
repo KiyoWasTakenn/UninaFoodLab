@@ -10,19 +10,12 @@ import java.util.List;
 
 public class IngredienteDAO_Postgres implements IngredienteDAO
 {
-    private Connection conn;
-
-    public IngredienteDAO_Postgres(Connection conn)
-    {
-        this.conn = conn;
-    }
-
     public List<Ingrediente> getIngredientiByIdRicetta(int idRicetta) throws SQLException
     {
         List<Ingrediente> ingredienti = new ArrayList<>();
         String sql = "SELECT * FROM Ingrediente NATURAL JOIN Utilizzi WHERE IdRicetta = ?";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idRicetta);
             ResultSet rs = s.executeQuery();
@@ -40,7 +33,7 @@ public class IngredienteDAO_Postgres implements IngredienteDAO
         String sql = "INSERT INTO Ingrediente(Nome, Origine) " +
                      "VALUES(?, ?)";
 
-        try(PreparedStatement s = conn.prepareStatement(sql))
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, toSaveIngrediente.getNome());
             s.setString(2, toSaveIngrediente.getOrigine().toString());

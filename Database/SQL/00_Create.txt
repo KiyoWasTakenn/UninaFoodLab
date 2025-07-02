@@ -19,8 +19,7 @@ CREATE TABLE Partecipante
 	Email TEXT UNIQUE NOT NULL, 
 	Password VARCHAR(60) NOT NULL,
 	NumeroCorsi INTEGER DEFAULT 0,
-	COSTRAINT check_usrpart_length CHECK (LENGHT(Username) BETWEEN (4, 16)),
-	COSTRAINT check_pswpart_length CHECK (LENGHT(Password) BETWEEN (8, 20))
+	CONSTRAINT check_usrpart_length CHECK (LENGTH(Username) BETWEEN 4 AND 20)
 );
 
 -- Chef
@@ -35,9 +34,8 @@ CREATE TABLE Chef
 	LuogoDiNascita VARCHAR(100) NOT NULL,
 	Email TEXT UNIQUE NOT NULL, 
 	Password VARCHAR(60) NOT NULL,
-	Curriculum TEXT NOT NULL
-	COSTRAINT check_usrchef_length CHECK (LENGHT(Username) BETWEEN (4,16)),
-	COSTRAINT check_pswchef_length CHECK (LENGHT(Password) BETWEEN (8, 20))
+	Curriculum TEXT NOT NULL,
+	CONSTRAINT check_usrchef_length CHECK (LENGTH(Username) BETWEEN 4 AND 20)
 );
 
 -- Argomento
@@ -174,3 +172,4 @@ CREATE TABLE Utilizzi
 	CONSTRAINT fk_ingrediente_utilizzi FOREIGN KEY(IdIngrediente) REFERENCES Ingrediente(IdIngrediente) ON DELETE CASCADE,
 	CONSTRAINT check_quantita CHECK (Quantita > 0)
 );
+

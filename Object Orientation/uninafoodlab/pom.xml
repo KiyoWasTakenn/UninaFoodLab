@@ -12,6 +12,13 @@
   
   <dependencies>
   
+  	<!--  Per salt + iterazioni per hashare la èassword  -->
+  	<dependency>
+    	<groupId>org.mindrot</groupId>
+    	<artifactId>jbcrypt</artifactId>
+    	<version>0.4</version>
+	</dependency>
+
    	 <!--  Flatlaf (Look & Feel)  -->
   	<dependency>
   		<groupId>com.formdev</groupId>
