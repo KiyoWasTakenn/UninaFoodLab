@@ -4,7 +4,13 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import org.mindrot.jbcrypt.BCrypt;
+
+import com.formdev.flatlaf.FlatLightLaf;
 
 import UninaFoodLab.Boundary.*;
 import UninaFoodLab.DTO.*;
@@ -40,12 +46,20 @@ public class Controller
 
     public static void main(String[] args)
     {
-
+    	java.awt.EventQueue.invokeLater(() -> {
+    		
+    		try 
+    		{
+    	        UIManager.setLookAndFeel(new FlatLightLaf());
+    	    } 
+    		catch (UnsupportedLookAndFeelException e) 
+    		{
+    	        e.printStackTrace();
+    	    }
+    		
+            new LoginFrame().setVisible(true);
+        });
     }
-    
-    
-    
-    
     
     
     
@@ -144,6 +158,31 @@ public class Controller
         return utilizzoDAO;
     }
     
+    // Navigation methods
+    
+    public void goToLogin(JFrame currFrame)
+    {
+    	currFrame.dispose();
+        new LoginFrame().setVisible(true);
+    }
+    
+    public void goToRegister(JFrame currFrame)
+    {
+    	currFrame.dispose();
+        new RegisterFrame().setVisible(true);
+    }
+    
+    public void goToHomepage(JFrame currFrame)
+    {
+    	currFrame.dispose();
+        new HomepageFrame().setVisible(true);
+    }
+    
+    
+    
+    
+    
+    
     // RegisterFrame
     public String hashPassword(char[] plainPassword)
     {
@@ -183,8 +222,7 @@ public class Controller
     {
     	LOGGER.log(Level.INFO, "Login riuscito per utente: {0}", currUser.getUsername());
     	this.loggedUser = currUser;
-        currFrame.dispose();
-        new HomepageFrame().setVisible(true);
+    	goToHomepage(currFrame);
     }
     
     private void loginFailed(LoginFrame currFrame, String message) 
@@ -207,7 +245,7 @@ public class Controller
 		}
 		catch(RecordNotFoundException e) 
 		{
-			loginFailed(currFrame, "Username o password errati."); // In realtà è sbagliato solo lo username ma evitiamo User Enumeration
+			loginFailed(currFrame, "Username o password errati."); // Evitiamo User Enumeration
 		}
 		catch(DAOException e)
 		{

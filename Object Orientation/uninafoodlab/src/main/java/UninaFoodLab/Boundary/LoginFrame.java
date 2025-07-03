@@ -7,12 +7,8 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -23,6 +19,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
@@ -41,12 +38,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-public class LoginFrame extends JFrame
+public class LoginFrame extends JXFrame
 {
 	private static final long serialVersionUID = 1L;
-	private static final String FontAwesomeSolid = null;
-	private JPanel contentPane;
 	private JXPanel panel;
 	private CompoundBorder defaultBorder = BorderFactory.createCompoundBorder(
 				new LineBorder(Color.LIGHT_GRAY, 1), 
@@ -70,43 +67,16 @@ public class LoginFrame extends JFrame
 	private JXLabel orLabel;
 	private JXButton registerBtn;
 	
-	public static void main(String[] args)
-	{
-		EventQueue.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				try
-				{
-					LoginFrame frame = new LoginFrame();
-					frame.setVisible(true);
-				} catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
 	public LoginFrame()
 	{
 		setTitle("UninaFoodLab - Login");
 		setSize(400, 500);
 		setLocationRelativeTo(null);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		
 		windowLogo = new ImageIcon(getClass().getResource("/logo_finestra.png"));
 		setIconImage(windowLogo.getImage());
-		
-		try
-		{
-			UIManager.setLookAndFeel(new FlatLightLaf());
-		} 
-		catch (UnsupportedLookAndFeelException e)
-		{
-			e.printStackTrace();
-		}
 		
 		panel = new JXPanel(new MigLayout("wrap 2, insets 15", "[right][grow, fill]", "[][3][][3][][10][]"));
 		setContentPane(panel);
@@ -172,6 +142,7 @@ public class LoginFrame extends JFrame
 		registerBtn.setForeground(Color.WHITE);
 		registerBtn.setOpaque(true);
 		registerBtn.setFocusPainted(false);
+		registerBtn.setBorderPainted(false);
 		registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		panel.add(registerBtn, "span 2, center");
 			
@@ -201,10 +172,13 @@ public class LoginFrame extends JFrame
 		userField.addFocusListener(new FocusAdapter()
 								   {
 		    							@Override
-		    							public void focusLost(FocusEvent e)
-		    							{
-									        checkUser();
-									    }
+		    							public void focusLost(FocusEvent e) { checkUser(); }
+		    							@Override
+									    public void focusGained(FocusEvent e)
+		    							{ 
+		    								if(!userField.getText().isEmpty())
+		    								    userField.selectAll();
+		    							}
 								   }
 								  );
 		
@@ -212,10 +186,13 @@ public class LoginFrame extends JFrame
 		passField.addFocusListener(new FocusAdapter()
 								   {
 										@Override
-										public void focusLost(FocusEvent e)
-										{
-									        checkPass();
-									    }
+										public void focusLost(FocusEvent e) { checkPass(); }
+										@Override
+									    public void focusGained(FocusEvent e) 
+										{ 
+											if(!(passField.getPassword().length == 0))
+												passField.selectAll(); 
+										}
 								   }
 								  );
 		
@@ -236,7 +213,7 @@ public class LoginFrame extends JFrame
 										    }
 										}				
 									  });
-		
+
 		loginBtn.addActionListener(new ActionListener()
 									{
 										@Override 
@@ -250,12 +227,21 @@ public class LoginFrame extends JFrame
 									        {
 									        	loginBtn.setEnabled(false);
 									        	registerBtn.setEnabled(false);
-									        	Controller ctrLogin = Controller.getController();
-									        	ctrLogin.checkLogin(LoginFrame.this, userField.getText().trim(), passField.getPassword());
+									        	Controller.getController().checkLogin(LoginFrame.this, userField.getText().trim(), passField.getPassword());
 									        }
 									    }
 									}
 								  );
+		
+		registerBtn.addActionListener(new ActionListener()
+									  {
+										@Override 
+										public void actionPerformed(ActionEvent e)
+										{										
+											Controller.getController().goToRegister(LoginFrame.this);
+										}
+									  }
+									);
 	}
 	
 	public void enableButtons()
