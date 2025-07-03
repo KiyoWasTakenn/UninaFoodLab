@@ -265,7 +265,7 @@ public class RegisterFrame extends JFrame
 		accediLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
 		panel.add(accediLabel, "cell 0 14, span 4, center");
 		
-		accediBtn = new JXButton("Accedi");
+		accediBtn = new JXButton("Vai a Login");
 		accediBtn.setFont(new Font("SansSerif", Font.BOLD, 18));
 		accediBtn.setPreferredSize(new Dimension(120, 30));
 		accediBtn.setBackground(new Color(225, 126, 47, 220));

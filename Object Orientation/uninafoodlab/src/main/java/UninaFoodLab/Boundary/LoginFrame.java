@@ -3,15 +3,12 @@ package UninaFoodLab.Boundary;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JToggleButton;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -26,8 +23,6 @@ import org.jdesktop.swingx.JXTextField;
 import org.kordamp.ikonli.materialdesign.MaterialDesign;
 import org.kordamp.ikonli.swing.FontIcon;
 
-import com.formdev.flatlaf.FlatLightLaf;
-
 import UninaFoodLab.Controller.Controller;
 import net.miginfocom.swing.MigLayout;
 
@@ -38,8 +33,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class LoginFrame extends JXFrame
 {
@@ -131,7 +124,7 @@ public class LoginFrame extends JXFrame
 		panel.add(loginBtn, "span 2, center, gaptop 10");
 		getRootPane().setDefaultButton(loginBtn);
 		
-		orLabel = new JXLabel("Oppure");
+		orLabel = new JXLabel("Oppure, se non sei ancora registrato");
 		orLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
 		panel.add(orLabel, "span 2, center");
 		
@@ -236,12 +229,6 @@ public class LoginFrame extends JXFrame
 										@Override 
 										public void actionPerformed(ActionEvent e)
 										{	
-											userErrorLabel.setText(" ");
-											userField.setBorder(defaultBorder);
-											
-											passErrorLabel.setText(" ");
-											passField.setBorder(defaultBorder);
-											
 											Controller.getController().goToRegister(LoginFrame.this);
 										}
 									  }

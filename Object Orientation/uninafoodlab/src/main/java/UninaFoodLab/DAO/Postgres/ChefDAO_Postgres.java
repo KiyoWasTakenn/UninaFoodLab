@@ -3,7 +3,6 @@ package UninaFoodLab.DAO.Postgres;
 import UninaFoodLab.DTO.Chef;
 import UninaFoodLab.Exceptions.ChefNotFoundException;
 import UninaFoodLab.Exceptions.DAOException;
-import UninaFoodLab.Exceptions.RecordNotFoundException;
 import UninaFoodLab.DAO.ChefDAO;
 
 import java.util.ArrayList;
@@ -13,6 +12,57 @@ import java.sql.*;
 
 public class ChefDAO_Postgres implements ChefDAO
 {
+	private Chef mapResultSetToChef(ResultSet rs) throws SQLException
+	{
+	    Chef c = new Chef(
+				        	  rs.getString("Username"),
+				        	  rs.getString("Nome"),
+				        	  rs.getString("Cognome"),
+				        	  rs.getString("CodiceFiscale"),
+				        	  rs.getDate("DataDiNascita").toLocalDate(),
+				        	  rs.getString("LuogoDiNascita"),
+				        	  rs.getString("Email"),
+				       		  rs.getString("Password"),
+				       		  rs.getString("Curriculum"),
+				       		  null,
+				       		  null
+	    			   	    );
+	    c.setId(rs.getInt("IdChef"));	    
+	    return c;
+	}
+
+	public void save(Chef toSaveChef)
+    {
+        String sql = "INSERT INTO Chef(Username, Nome, Cognome, CodiceFiscale, DataDiNascita, LuogoDiNascita, Email, Password, Curriculum) " +
+                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
+        {
+            s.setString(1, toSaveChef.getUsername());
+            s.setString(2, toSaveChef.getNome());
+            s.setString(3, toSaveChef.getCognome());
+            s.setString(4, toSaveChef.getCodiceFiscale());
+            s.setDate(5, toSaveChef.getDataDiNascita());
+            s.setString(6, toSaveChef.getLuogoDiNascita());
+            s.setString(7, toSaveChef.getEmail());
+            s.setString(8, toSaveChef.getHashPassword());
+            s.setString(9, toSaveChef.getCurriculum());
+            s.executeUpdate();
+            
+            try(ResultSet genKeys = s.getGeneratedKeys())
+            {
+            	if(genKeys.next())
+            		toSaveChef.setId(genKeys.getInt(1));
+            	else
+            		throw new DAOException("Creazione Chef fallita, nessun ID ottenuto.");
+            }      
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante salvataggio Chef", e);
+        }
+    }
+	
     public Chef getChefById(int idChef)
     {
         String sql = "SELECT * FROM Chef WHERE IdChef = ?";
@@ -23,18 +73,7 @@ public class ChefDAO_Postgres implements ChefDAO
             ResultSet rs = s.executeQuery();
 
             if(rs.next())
-                return new Chef( rs.getString("Username"),
-                                 rs.getString("Nome"),
-                                 rs.getString("Cognome"),
-                                 rs.getString("CodiceFiscale"),
-                                 rs.getDate("DataDiNascita").toLocalDate(),
-                                 rs.getString("LuogoDiNascita"),
-                                 rs.getString("Email"),
-                                 rs.getString("Password"),
-                                 rs.getString("Curriculum"),
-                                 null,
-                                 null
-                               );
+                return mapResultSetToChef(rs);
             else
             	throw new ChefNotFoundException("Chef con id " + idChef + " non trovato");
         }
@@ -54,18 +93,7 @@ public class ChefDAO_Postgres implements ChefDAO
             ResultSet rs = s.executeQuery();
 
             if(rs.next())
-                return new Chef( rs.getString("Username"),
-                        rs.getString("Nome"),
-                        rs.getString("Cognome"),
-                        rs.getString("CodiceFiscale"),
-                        rs.getDate("DataDiNascita").toLocalDate(),
-                        rs.getString("LuogoDiNascita"),
-                        rs.getString("Email"),
-                        rs.getString("Password"),
-                        rs.getString("Curriculum"),
-                        null,
-                        null
-                );
+            	return mapResultSetToChef(rs);
             else
             	throw new ChefNotFoundException("Chef con username " + username + " non trovato");
         }
@@ -75,7 +103,7 @@ public class ChefDAO_Postgres implements ChefDAO
         }
     }
 
-    public List<Chef> getChefByName(String name, String surname)
+    public List<Chef> getChefsByName(String name, String surname)
     {
         List<Chef> chefs = new ArrayList<>();
         String sql = "SELECT * FROM Chef WHERE Nome = ? AND Cognome = ?";
@@ -86,19 +114,7 @@ public class ChefDAO_Postgres implements ChefDAO
             s.setString(2, surname);
             ResultSet rs = s.executeQuery();
             while(rs.next())
-                chefs.add( new Chef( rs.getString("Username"),
-                                     rs.getString("Nome"),
-                                     rs.getString("Cognome"),
-                                     rs.getString("CodiceFiscale"),
-                                     rs.getDate("DataDiNascita").toLocalDate(),
-                                     rs.getString("LuogoDiNascita"),
-                                     rs.getString("Email"),
-                                     rs.getString("Password"),
-                                     rs.getString("Curriculum"),
-                                     null,
-                                     null
-                                   )
-                         );
+                chefs.add(mapResultSetToChef(rs));
         }
         catch(SQLException e)
         {
@@ -116,19 +132,7 @@ public class ChefDAO_Postgres implements ChefDAO
         try(Connection conn = ConnectionManager.getConnection(); Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(sql))
         {
             while(rs.next())
-                chefs.add( new Chef( rs.getString("Username"),
-                                rs.getString("Nome"),
-                                rs.getString("Cognome"),
-                                rs.getString("CodiceFiscale"),
-                                rs.getDate("DataDiNascita").toLocalDate(),
-                                rs.getString("LuogoDiNascita"),
-                                rs.getString("Email"),
-                                rs.getString("Password"),
-                                rs.getString("Curriculum"),
-                                null,
-                                null
-                        )
-                );
+            	chefs.add(mapResultSetToChef(rs));
         }
         catch(SQLException e)
         {
@@ -138,32 +142,9 @@ public class ChefDAO_Postgres implements ChefDAO
         return chefs;
     }
 
-    public void save(Chef toSaveChef)
-    {
-        String sql = "INSERT INTO Chef(Username, Nome, Cognome, CodiceFiscale, DataDiNascita, Email, Password, Curriculum) " +
-                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
-        {
-            s.setString(1, toSaveChef.getUsername());
-            s.setString(2, toSaveChef.getNome());
-            s.setString(3, toSaveChef.getCognome());
-            s.setString(4, toSaveChef.getCodiceFiscale());
-            s.setDate(5, toSaveChef.getDataDiNascita());
-            s.setString(6, toSaveChef.getEmail());
-            s.setString(7, toSaveChef.getHashPassword());
-            s.setString(8, toSaveChef.getCurriculum());
-            s.executeUpdate();
-        }
-        catch(SQLException e)
-        {
-        	throw new DAOException("Errore DB durante salvataggio Chef", e);
-        }
-    }
-
     public void update(Chef previousChef, Chef updatedChef)
     {
-        String sql = "UPDATE Chef SET";
+        String sql = "UPDATE Chef SET ";
         List<Object> param = new ArrayList<>();
 
         if(! (previousChef.getUsername().equals(updatedChef.getUsername())) )
@@ -188,6 +169,12 @@ public class ChefDAO_Postgres implements ChefDAO
         {
             sql += "DataDiNascita = ?, ";
             param.add(updatedChef.getDataDiNascita());
+        }
+
+        if(! (previousChef.getLuogoDiNascita().equals(updatedChef.getLuogoDiNascita())) )
+        {
+            sql += "LuogoDiNascita = ?, ";
+            param.add(updatedChef.getLuogoDiNascita());
         }
 
         if(! (previousChef.getEmail().equals(updatedChef.getEmail())) )
