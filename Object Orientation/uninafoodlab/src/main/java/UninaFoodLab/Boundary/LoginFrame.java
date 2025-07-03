@@ -171,8 +171,7 @@ public class LoginFrame extends JXFrame
 		
 		userField.addFocusListener(new FocusAdapter()
 								   {
-		    							@Override
-		    							public void focusLost(FocusEvent e) { checkUser(); }
+		    	
 		    							@Override
 									    public void focusGained(FocusEvent e)
 		    							{ 
@@ -185,8 +184,7 @@ public class LoginFrame extends JXFrame
 
 		passField.addFocusListener(new FocusAdapter()
 								   {
-										@Override
-										public void focusLost(FocusEvent e) { checkPass(); }
+										
 										@Override
 									    public void focusGained(FocusEvent e) 
 										{ 
@@ -237,7 +235,13 @@ public class LoginFrame extends JXFrame
 									  {
 										@Override 
 										public void actionPerformed(ActionEvent e)
-										{										
+										{	
+											userErrorLabel.setText(" ");
+											userField.setBorder(defaultBorder);
+											
+											passErrorLabel.setText(" ");
+											passField.setBorder(defaultBorder);
+											
 											Controller.getController().goToRegister(LoginFrame.this);
 										}
 									  }

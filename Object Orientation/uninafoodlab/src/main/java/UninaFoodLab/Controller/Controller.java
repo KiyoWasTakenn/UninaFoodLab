@@ -177,10 +177,7 @@ public class Controller
     	currFrame.dispose();
         new HomepageFrame().setVisible(true);
     }
-    
-    
-    
-    
+
     
     
     // RegisterFrame
