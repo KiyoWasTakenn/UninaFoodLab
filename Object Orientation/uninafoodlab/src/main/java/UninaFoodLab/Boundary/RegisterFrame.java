@@ -2,12 +2,15 @@ package UninaFoodLab.Boundary;
 
 import java.awt.EventQueue;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXLabel;
@@ -17,8 +20,11 @@ import org.jdesktop.swingx.JXTextField;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.github.lgooddatepicker.components.DatePicker;
 
+import UninaFoodLab.Controller.Controller;
+
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -27,12 +33,16 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 
 import org.jdesktop.swingx.JXLabel.TextAlignment;
+import org.kordamp.ikonli.materialdesign.MaterialDesign;
+import org.kordamp.ikonli.swing.FontIcon;
+
 import javax.swing.SwingConstants;
 import javax.swing.JButton;
 
@@ -50,6 +60,12 @@ public class RegisterFrame extends JFrame
 	private JRadioButton chefButton;
 	private JRadioButton partecipanteButton;
 	private JXLabel nomeErrorLabel;
+	private CompoundBorder defaultBorder = BorderFactory.createCompoundBorder(
+			new LineBorder(Color.LIGHT_GRAY, 1), 
+		  	new EmptyBorder(0, 6, 0, 0));
+	private CompoundBorder errorBorder = BorderFactory.createCompoundBorder(
+        	new LineBorder(Color.RED, 1),
+        	new EmptyBorder(0, 6, 0, 0));
 	private JXLabel nomeLabel;
 	private JXTextField nomeField;
 	private JXLabel cognomeErrorLabel;
@@ -69,30 +85,16 @@ public class RegisterFrame extends JFrame
 	private JXTextField emailField;
 	private JXLabel passwordErrorLabel;
 	private JXLabel passwordLabel;
+	private JToggleButton showPassBtn;
+	FontIcon eyeIcon = FontIcon.of(MaterialDesign.MDI_EYE, 18);
+	FontIcon eyeOffIcon = FontIcon.of(MaterialDesign.MDI_EYE_OFF, 18);
 	private JPasswordField passwordField;
 	private JXLabel userErrorLabel;
 	private JXLabel userLabel;
 	private JXTextField userField;
 	private JXButton registerBtn;
-
-
-	public static void main(String[] args)
-	{
-		EventQueue.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				try
-				{
-					RegisterFrame frame = new RegisterFrame();
-					frame.setVisible(true);
-				} catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	private JXLabel accediLabel;
+	private JXButton accediBtn;
 
 	public RegisterFrame()
 	{
@@ -113,7 +115,7 @@ public class RegisterFrame extends JFrame
 			e.printStackTrace();
 		}
 		
-		panel = new JXPanel(new MigLayout("", "[grow]3[grow]20[grow]3[grow]", "[]30[]10[]10[]10[]10[]10[]10[]10[]10[]10[]10[]10[]30[fill]"));
+		panel = new JXPanel(new MigLayout("", "20[grow]3[grow]20[grow]3[grow]", "[]30[]10[]10[]10[]10[]10[]10[]10[]10[]10[]10[]10[]30[]10[]10[fill]"));
 		setContentPane(panel);
 		
 		paneLogo = new ImageIcon(getClass().getResource("/logo_schermata.png"));
@@ -225,7 +227,16 @@ public class RegisterFrame extends JFrame
 		
 		passwordField = new JPasswordField();
 		passwordField.setPreferredSize(new Dimension(200, 30));
-		panel.add(passwordField, "cell 3 10, left");
+		panel.add(passwordField, "cell 3 10, left, split 2");
+		
+		showPassBtn = new JToggleButton();
+		showPassBtn.setIcon(eyeOffIcon);
+		showPassBtn.setPreferredSize(new Dimension(30, 30));
+		showPassBtn.setFocusable(false);
+		showPassBtn.setToolTipText("Mostra/Nascondi password");
+		showPassBtn.setBorderPainted(false);
+		showPassBtn.setContentAreaFilled(false);
+		panel.add(showPassBtn, "w 30!, h 25!, gapleft 5");
 		
 		userErrorLabel = new JXLabel(" ");
 		userErrorLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
@@ -248,10 +259,258 @@ public class RegisterFrame extends JFrame
 		registerBtn.setOpaque(true);
 		registerBtn.setFocusPainted(false);
 		registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		panel.add(registerBtn, "cell 0 13, span 4, center, gaptop 100");
+		panel.add(registerBtn, "cell 0 13, span 4, center, gaptop 50");
+
+		accediLabel = new JXLabel("Oppure, se sei già registrato");
+		accediLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
+		panel.add(accediLabel, "cell 0 14, span 4, center");
+		
+		accediBtn = new JXButton("Accedi");
+		accediBtn.setFont(new Font("SansSerif", Font.BOLD, 18));
+		accediBtn.setPreferredSize(new Dimension(120, 30));
+		accediBtn.setBackground(new Color(225, 126, 47, 220));
+		accediBtn.setForeground(Color.WHITE);
+		accediBtn.setOpaque(true);
+		accediBtn.setFocusPainted(false);
+		accediBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		panel.add(accediBtn, "cell 0 15, span 4, center");
 	
 
+		showPassBtn.addActionListener(new ActionListener()
+		  {
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{
+				if(showPassBtn.isSelected())
+				{
+			    	passwordField.setEchoChar('•');
+			    	showPassBtn.setIcon(eyeOffIcon);
+			    } 
+			    else
+			    {
+			    	passwordField.setEchoChar((char)0);
+			    	showPassBtn.setIcon(eyeIcon);
+			    }
+			}				
+		  });
+		
+		registerBtn.addActionListener(new ActionListener()
+		{
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{
+				if(!checkNome())
+					nomeField.requestFocus();
+				else if(!checkCognome())
+					cognomeField.requestFocus();
+				else if(!checkData())
+					dataPicker.requestFocus();
+				else if(!checkLuogo())
+					luogoField.requestFocus();
+				else if(!checkCod())
+					codFiscField.requestFocus();
+				else if(!checkEmail())
+					emailField.requestFocus();
+				else if(!checkUser())
+		        	userField.requestFocus();
+		        else if(!checkPass())
+		        	passwordField.requestFocus();
+		        else
+		        {
+		        	registerBtn.setEnabled(false);
+		        	//Controller.getController().checkRegister(RegisterFrame.this, userField.getText().trim(), passwordField.getPassword());
+		        }
+		    }
+		}
+	  );
+
+		accediBtn.addActionListener(new ActionListener()
+		  {
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{										
+				//Controller.getController().goToRegister(LoginFrame.this);
+			}
+		  }
+		);
 		
 		}
+	
+	private boolean checkNome()
+	{
+		boolean check = true;
+	    String text = nomeField.getText().trim();
+	      
+	    if(text.isEmpty())
+	    {
+	    	nomeField.setBorder(errorBorder);
+	    	nomeErrorLabel.setText("Bisogna inserire un nome!");
+	    	check = false;
+	    }
+	    else
+	    {
+	        nomeField.setBorder(defaultBorder);
+	        nomeErrorLabel.setText(" ");
+	    }
+	    
+	    return check;
+	}
+	
+	private boolean checkCognome()
+	{
+		boolean check = true;
+	    String text = cognomeField.getText().trim();
+	      
+	    if(text.isEmpty())
+	    {
+	    	cognomeField.setBorder(errorBorder);
+	    	cognomeErrorLabel.setText("Bisogna inserire un cognome!");
+	    	check = false;
+	    }
+	    else
+	    {
+	        cognomeField.setBorder(defaultBorder);
+	        cognomeErrorLabel.setText(" ");
+	    }
+	    
+	    return check;
+	}
+	
+	private boolean checkCod()
+	{
+		boolean check = true;
+	    String text = codFiscField.getText().trim();
+	      
+	    if(text.isEmpty())
+	    {
+	    	codFiscField.setBorder(errorBorder);
+	    	codFiscErrorLabel.setText("Bisogna inserire un codice fiscale!");
+	    	check = false;
+	    }
+	    else
+	    {
+	    	codFiscField.setBorder(defaultBorder);
+	    	codFiscErrorLabel.setText(" ");
+	    }
+	    
+	    return check;
+	}	
+	
+	private boolean checkLuogo()
+	{
+		boolean check = true;
+	    String text = luogoField.getText().trim();
+	      
+	    if(text.isEmpty())
+	    {
+	    	luogoField.setBorder(errorBorder);
+	    	luogoErrorLabel.setText("Bisogna inserire il luogo di nascita!");
+	    	check = false;
+	    }
+	    else
+	    {
+	    	luogoField.setBorder(defaultBorder);
+	    	luogoErrorLabel.setText(" ");
+	    }
+	    
+	    return check;
+	}	
+	
+	private boolean checkData()
+	{
+		boolean check = true;
+
+	    if(!dataPicker.isTextFieldValid()||dataPicker.getText().isEmpty())
+	    {
+	    	dataPicker.setBorder(errorBorder);
+	    	dataErrorLabel.setText("Bisogna inserire la data di nascita!");
+	    	check = false;
+	    }
+	    else
+	    {
+	    	dataPicker.setBorder(defaultBorder);
+	    	dataErrorLabel.setText(" ");
+	    }
+	    
+	    return check;
+	}	
+	
+	private boolean checkEmail()
+	{
+		boolean check = true;
+	    String text = emailField.getText().trim();
+	      
+	    if(text.isEmpty())
+	    {
+	    	emailField.setBorder(errorBorder);
+	    	emailErrorLabel.setText("Bisogna inserire un' email!");
+	    	check = false;
+	    }
+	    else
+	    {
+	    	emailField.setBorder(defaultBorder);
+	    	emailErrorLabel.setText(" ");
+	    }
+	    
+	    return check;
+	}	
+	
+	private boolean checkUser() 
+	{
+		boolean check = true;
+	    String text = userField.getText().trim();
+	      
+	    if(text.contains(" ") || text.contains("\t") || text.contains("\n"))
+	    {
+	    	userField.setBorder(errorBorder);
+	    	userErrorLabel.setText("L'username non può contenere spazi!");
+	    	check = false;
+	    }
+	    else if(text.isEmpty())
+	    {
+	    	userField.setBorder(errorBorder);
+	    	userErrorLabel.setText("Bisogna inserire un username!");
+	    	check = false;
+	    }
+	    else if(text.length() < 4 || text.length() > 20) 
+	 	{
+	 	    userField.setBorder(errorBorder);
+	 	    userErrorLabel.setText("L'username deve essere tra 4 e 20 caratteri!");
+	 	    check = false;
+	 	} 
+	    else
+	    {
+	        userField.setBorder(defaultBorder);
+	        userErrorLabel.setText(" ");
+	    }
+	    
+	    return check;
+	}
+
+	private boolean checkPass()
+	{
+		boolean check = true;
+		String text = new String(passwordField.getPassword()).trim();
+
+	    if (text.length() < 8 || text.length() > 30)
+	    {
+	        passwordField.setBorder(errorBorder);
+	        passwordErrorLabel.setText("La password deve essere tra 8 e 30 caratteri.");
+	        check = false;
+	    } 
+	    else if(text.isEmpty())
+	    {
+	    	userField.setBorder(errorBorder);
+	    	userErrorLabel.setText("Bisogna inserire una password!");
+	    	check = false;
+	    }
+	    else
+	    {
+	        passwordField.setBorder(defaultBorder);
+	        passwordErrorLabel.setText(" ");
+	    }
+	    
+	    return check; 
+	}
 }
 
