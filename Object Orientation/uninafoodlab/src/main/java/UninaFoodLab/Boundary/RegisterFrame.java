@@ -387,6 +387,12 @@ public class RegisterFrame extends JFrame
 	    	codFiscErrorLabel.setText("Bisogna inserire un codice fiscale!");
 	    	check = false;
 	    }
+	    else if(text.length()!=16)
+	    {
+	    	codFiscField.setBorder(errorBorder);
+	    	codFiscErrorLabel.setText("Il codice fiscale deve avere 16 caratteri!");
+	    	check = false;	    	
+	    }
 	    else
 	    {
 	    	codFiscField.setBorder(defaultBorder);
