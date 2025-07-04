@@ -4,7 +4,6 @@ import UninaFoodLab.DAO.PartecipanteDAO;
 import UninaFoodLab.DTO.Partecipante;
 import UninaFoodLab.Exceptions.DAOException;
 import UninaFoodLab.Exceptions.PartecipanteNotFoundException;
-import UninaFoodLab.Exceptions.RecordNotFoundException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,6 +11,55 @@ import java.util.List;
 
 public class PartecipanteDAO_Postgres implements PartecipanteDAO
 {
+	private Partecipante mapResultSetToPartecipante(ResultSet rs) throws SQLException
+	{
+	    Partecipante p = new Partecipante(
+								           rs.getString("Username"),
+								           rs.getString("Nome"),
+								           rs.getString("Cognome"),
+								           rs.getString("CodiceFiscale"),
+								           rs.getDate("DataDiNascita").toLocalDate(),
+								           rs.getString("LuogoDiNascita"),
+								           rs.getString("Email"),
+								       	   rs.getString("Password"),
+								           null,
+								           null
+					    			   	 );
+	    p.setId(rs.getInt("IdPartecipante"));	    
+	    return p;
+	}
+	
+	public void save(Partecipante toSavePartecipante)
+    {
+        String sql = "INSERT INTO Partecipante(Username, Nome, Cognome, CodiceFiscale, DataDiNascita, LuogoDiNascita, Email, Password) " +
+                	 "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
+        {
+            s.setString(1, toSavePartecipante.getUsername());
+            s.setString(2, toSavePartecipante.getNome());
+            s.setString(3, toSavePartecipante.getCognome());
+            s.setString(4, toSavePartecipante.getCodiceFiscale());
+            s.setDate(5, toSavePartecipante.getDataDiNascita());
+            s.setString(6, toSavePartecipante.getLuogoDiNascita());
+            s.setString(7, toSavePartecipante.getEmail());
+            s.setString(8, toSavePartecipante.getHashPassword());
+            s.executeUpdate();
+            
+            try(ResultSet genKeys = s.getGeneratedKeys())
+            {
+            	if(genKeys.next())
+            		toSavePartecipante.setId(genKeys.getInt(1));
+            	else
+            		throw new DAOException("Creazione partecipante fallita, nessun ID ottenuto.");
+            }       
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante salvataggio Partecipante", e);
+        }
+    }
+	
     public Partecipante getPartecipanteById(int idPartecipante)
     {	
         String sql = "SELECT * FROM Partecipante WHERE IdPartecipante = ?";
@@ -22,17 +70,7 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
             ResultSet rs = s.executeQuery();
 
             if(rs.next())
-                return new Partecipante( rs.getString("Username"),
-                        				 rs.getString("Nome"),
-                        				 rs.getString("Cognome"),
-                        				 rs.getString("CodiceFiscale"),
-                        				 rs.getDate("DataDiNascita").toLocalDate(),
-                        				 rs.getString("LuogoDiNascita"),
-                        				 rs.getString("Email"),
-                        				 rs.getString("Password"),
-                        				 null,
-                        				 null
-                					   );
+                return mapResultSetToPartecipante(rs);
             else
             	throw new PartecipanteNotFoundException("Partecipante con id " + idPartecipante + " non trovato");
         }
@@ -52,19 +90,9 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
             ResultSet rs = s.executeQuery();
 
             if(rs.next())
-                return new Partecipante( rs.getString("Username"),
-                        rs.getString("Nome"),
-                        rs.getString("Cognome"),
-                        rs.getString("CodiceFiscale"),
-                        rs.getDate("DataDiNascita").toLocalDate(),
-                        rs.getString("LuogoDiNascita"),
-                        rs.getString("Email"),
-                        rs.getString("Password"),
-                        null,
-                        null
-                );
+            	return mapResultSetToPartecipante(rs);
             else
-            	throw new PartecipanteNotFoundException("Partecipante con id " + username + " non trovato");
+            	throw new PartecipanteNotFoundException("Partecipante con username " + username + " non trovato");
         }
         catch(SQLException e)
         {
@@ -72,31 +100,9 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
         }
     }
 
-    public void save(Partecipante toSavePartecipante)
-    {
-        String sql = "INSERT INTO Partecipante(Username, Nome, Cognome, CodiceFiscale, DataDiNascita, Email, Password) " +
-                "VALUES(?, ?, ?, ?, ?, ?, ?)";
-
-        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
-        {
-            s.setString(1, toSavePartecipante.getUsername());
-            s.setString(2, toSavePartecipante.getNome());
-            s.setString(3, toSavePartecipante.getCognome());
-            s.setString(4, toSavePartecipante.getCodiceFiscale());
-            s.setDate(5, toSavePartecipante.getDataDiNascita());
-            s.setString(6, toSavePartecipante.getEmail());
-            s.setString(7, toSavePartecipante.getHashPassword());
-            s.executeUpdate();
-        }
-        catch(SQLException e)
-        {
-        	throw new DAOException("Errore DB durante salvataggio Partecipante", e);
-        }
-    }
-
     public void update(Partecipante previousPartecipante, Partecipante updatedPartecipante)
     {
-        String sql = "UPDATE Partecipante SET";
+        String sql = "UPDATE Partecipante SET ";
         List<Object> param = new ArrayList<>();
 
         if(! (previousPartecipante.getUsername().equals(updatedPartecipante.getUsername())) )
@@ -121,6 +127,12 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
         {
             sql += "DataDiNascita = ?, ";
             param.add(updatedPartecipante.getDataDiNascita());
+        }
+        
+        if(! (previousPartecipante.getLuogoDiNascita().equals(updatedPartecipante.getLuogoDiNascita())) )
+        {
+            sql += "LuogoDiNascita = ?, ";
+            param.add(updatedPartecipante.getLuogoDiNascita());
         }
 
         if(! (previousPartecipante.getEmail().equals(updatedPartecipante.getEmail())) )
@@ -168,7 +180,6 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
             
             if(done == 0)
             	 throw new PartecipanteNotFoundException("Partecipante con id " + idPartecipante + " non trovato per l' eliminazione");
- 
         }
         catch(SQLException e)
         {

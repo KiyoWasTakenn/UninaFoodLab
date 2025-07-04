@@ -61,8 +61,6 @@ public class Controller
         });
     }
     
-    
-    
     public Utente getLoggedUser()
     {
         return loggedUser;
@@ -177,10 +175,7 @@ public class Controller
     	currFrame.dispose();
         new HomepageFrame().setVisible(true);
     }
-    
-    
-    
-    
+
     
     
     // RegisterFrame
@@ -257,4 +252,11 @@ public class Controller
 	        Arrays.fill(pass, ' '); // It is recommended that the returned character array be cleared after use by setting each character to zero.
 	    }
 	}
+	
+	// HomepageFrame
+
+	// CoursesFrame
+	
+	
+	
 }

@@ -2,8 +2,13 @@ package UninaFoodLab.Exceptions;
 
 public class DAOException extends RuntimeException
 {
-    public DAOException(String message, Throwable cause)
+    public DAOException(String msg, Throwable cause)
     {
-        super(message, cause);
+        super(msg, cause);
     }
+
+	public DAOException(String msg)
+	{
+		super(msg);
+	}
 }

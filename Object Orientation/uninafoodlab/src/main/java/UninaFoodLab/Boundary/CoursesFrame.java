@@ -1,16 +1,27 @@
 package UninaFoodLab.Boundary;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
-public class CoursesFrame extends JFrame
+import org.jdesktop.swingx.JXFrame;
+
+public class CoursesFrame extends JXFrame
 {
-
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
+	private CompoundBorder defaultBorder = BorderFactory.createCompoundBorder(
+			new LineBorder(Color.LIGHT_GRAY, 1), 
+		  	new EmptyBorder(0, 6, 0, 0));
+	private CompoundBorder errorBorder = BorderFactory.createCompoundBorder(
+        	new LineBorder(Color.RED, 1),
+        	new EmptyBorder(0, 6, 0, 0));
+	private ImageIcon windowLogo;
+	private ImageIcon paneLogo;
 
 	public static void main(String[] args)
 	{
@@ -29,15 +40,15 @@ public class CoursesFrame extends JFrame
 			}
 		});
 	}
-
+	
 	public CoursesFrame()
 	{
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-
+		setTitle("UninaFoodLab - I miei corsi");
+		setSize(1000, 700);
+		setLocationRelativeTo(null);
+		setExtendedState(JXFrame.MAXIMIZED_BOTH);
+		setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
+		setResizable(true);
 	}
 
 }
