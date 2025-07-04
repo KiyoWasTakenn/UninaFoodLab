@@ -2,6 +2,9 @@ package UninaFoodLab.Boundary;
 
 import java.awt.EventQueue;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -11,6 +14,8 @@ import javax.swing.JPasswordField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXLabel;
@@ -34,6 +39,8 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -95,7 +102,11 @@ public class RegisterFrame extends JFrame
 	private JXButton registerBtn;
 	private JXLabel accediLabel;
 	private JXButton accediBtn;
-
+	private JXButton scegliBtn;
+	private JFileChooser fileChooser;
+	private JXLabel fileLabel;
+	private JXLabel curriculumErrorLabel;
+	
 	public RegisterFrame()
 	{
 		setTitle("UninaFoodLab - Registrazione");
@@ -115,7 +126,7 @@ public class RegisterFrame extends JFrame
 			e.printStackTrace();
 		}
 		
-		panel = new JXPanel(new MigLayout("", "20[grow]3[grow]20[grow]3[grow]", "[]30[]10[]10[]10[]10[]10[]10[]10[]10[]10[]10[]10[]30[]10[]10[fill]"));
+		panel = new JXPanel(new MigLayout("", "20[grow]3[grow]20[grow]3[grow]", "[]30[]10[]10[]10[]10[]10[]10[]10[]10[]10[30]10[]10[]30[]10[]10[fill]"));
 		setContentPane(panel);
 		
 		paneLogo = new ImageIcon(getClass().getResource("/logo_schermata.png"));
@@ -249,7 +260,27 @@ public class RegisterFrame extends JFrame
 		
 		userField = new JXTextField();
 		userField.setPreferredSize(new Dimension(200, 30));
-		panel.add(userField, "cell 1 10, left");		
+		panel.add(userField, "cell 1 10, left");
+		
+		curriculumErrorLabel = new JXLabel(" ");
+		curriculumErrorLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+		curriculumErrorLabel.setForeground(Color.RED);
+		panel.add(curriculumErrorLabel, "span 2, cell 0 11, center");
+		
+		scegliBtn = new JXButton("Scegli\n curriculum")	;
+		scegliBtn.setFont(new Font("SansSerif", Font.BOLD, 18));
+		scegliBtn.setPreferredSize(new Dimension(120, 30));
+		scegliBtn.setBackground(new Color(200, 200, 200));
+		scegliBtn.setForeground(Color.BLACK);
+		scegliBtn.setOpaque(true);
+		scegliBtn.setFocusPainted(false);
+		scegliBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		panel.add(scegliBtn, "cell 0 12, span 2, right, gapright 30");
+		
+		fileLabel = new JXLabel(" ");
+		fileLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+		fileLabel.setForeground(Color.BLACK);
+		panel.add(fileLabel,  "w 400!, cell 2 12, span 2,left");
 		
 		registerBtn = new JXButton("Registrati");
 		registerBtn.setFont(new Font("SansSerif", Font.BOLD, 18));
@@ -259,7 +290,7 @@ public class RegisterFrame extends JFrame
 		registerBtn.setOpaque(true);
 		registerBtn.setFocusPainted(false);
 		registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		panel.add(registerBtn, "cell 0 13, span 4, center, gaptop 50");
+		panel.add(registerBtn, "cell 0 13 4 1,alignx center,gapy 30");
 
 		accediLabel = new JXLabel("Oppure, se sei già registrato");
 		accediLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
@@ -274,8 +305,43 @@ public class RegisterFrame extends JFrame
 		accediBtn.setFocusPainted(false);
 		accediBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		panel.add(accediBtn, "cell 0 15, span 4, center");
-	
+		
+		curriculumErrorLabel.setEnabled(false);
+		curriculumErrorLabel.setVisible(false);
+		scegliBtn.setEnabled(false);
+		scegliBtn.setVisible(false);
+		fileLabel.setEnabled(false);
+		fileLabel.setVisible(false);
+		
+        fileChooser = new JFileChooser();
+		
+		scegliBtn.addActionListener(new ActionListener()
+		  {
+			
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{
 
+		        fileChooser = new JFileChooser();
+
+		        // Opzionale: Filtro per specificare i tipi di file da visualizzare
+		        FileNameExtensionFilter filter = new FileNameExtensionFilter("Pdf file(.pdf)", "pdf");
+		        fileChooser.setFileFilter(filter);
+
+
+		        int returnValue = fileChooser.showOpenDialog(RegisterFrame.this);
+
+		        if (returnValue == JFileChooser.APPROVE_OPTION) {
+		            File selectedFile = fileChooser.getSelectedFile();
+		            fileLabel.setText(selectedFile.getName());
+		            // Qui si può aggiungere il codice per elaborare il file selezionato
+		        } else {
+		            System.out.println("Selezione annullata.");
+		        }
+
+			}				
+		  });
+		
 		showPassBtn.addActionListener(new ActionListener()
 		  {
 			@Override 
@@ -315,6 +381,8 @@ public class RegisterFrame extends JFrame
 		        	userField.requestFocus();
 		        else if(!checkPass())
 		        	passwordField.requestFocus();
+		        else if(!checkCurriculum())
+		        	scegliBtn.requestFocus();
 		        else
 		        {
 		        	registerBtn.setEnabled(false);
@@ -323,13 +391,210 @@ public class RegisterFrame extends JFrame
 		    }
 		}
 	  );
+		
+		
+		
+		nomeField.addFocusListener(new FocusAdapter()
+		   {
+
+			@Override
+		    public void focusGained(FocusEvent e)
+			{ 
+				if(!nomeField.getText().isEmpty())
+				    nomeField.selectAll();
+			}
+		   }
+		  );
+		
+		nomeField.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkNome(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkNome(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkNome(); }
+		}
+	   );
+		
+		cognomeField.addFocusListener(new FocusAdapter()
+		   {
+
+			@Override
+		    public void focusGained(FocusEvent e)
+			{ 
+				if(!cognomeField.getText().isEmpty())
+				    cognomeField.selectAll();
+			}
+		   }
+		  );
+		
+		cognomeField.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkCognome(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkCognome(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkCognome(); }
+		}
+	   );
+		
+		codFiscField.addFocusListener(new FocusAdapter()
+		   {
+
+			@Override
+		    public void focusGained(FocusEvent e)
+			{ 
+				if(!codFiscField.getText().isEmpty())
+				    codFiscField.selectAll();
+			}
+		   }
+		  );
+		
+		codFiscField.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkCod(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkCod(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkCod(); }
+		}
+	   );
+		
+		luogoField.addFocusListener(new FocusAdapter()
+		   {
+			@Override
+		    public void focusGained(FocusEvent e)
+			{ 
+				if(!luogoField.getText().isEmpty())
+				    luogoField.selectAll();
+			}
+			
+		   }
+		  );
+		
+		luogoField.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkLuogo(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkLuogo(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkLuogo(); }
+		}
+	   );
+		
+		
+		
+		emailField.addFocusListener(new FocusAdapter()
+		   {
+
+			@Override
+		    public void focusGained(FocusEvent e)
+			{ 
+				if(!emailField.getText().isEmpty())
+				    emailField.selectAll();
+			}
+		   }
+		  );
+		
+		emailField.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkEmail(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkEmail(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkEmail(); }
+		}
+	   );
+		
+		userField.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkUser(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkUser(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkUser(); }
+		}
+	   );
+
+		passwordField.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkPass(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkPass(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkPass(); }
+		}
+	   );
+		
+		userField.addFocusListener(new FocusAdapter()
+		   {
+
+				@Override
+			    public void focusGained(FocusEvent e)
+				{ 
+					if(!userField.getText().isEmpty())
+					    userField.selectAll();
+				}
+		   }
+		  );
+
+
+		passwordField.addFocusListener(new FocusAdapter()
+		   {
+				
+				@Override
+			    public void focusGained(FocusEvent e) 
+				{ 
+					if(!(passwordField.getPassword().length == 0))
+						passwordField.selectAll(); 
+				}
+		   }
+		  );
 
 		accediBtn.addActionListener(new ActionListener()
 		  {
 			@Override 
 			public void actionPerformed(ActionEvent e)
 			{										
-				//Controller.getController().goToRegister(LoginFrame.this);
+				Controller.getController().goToLogin(RegisterFrame.this);
+			}
+		  }
+		);
+		
+		chefButton.addActionListener(new ActionListener()
+		  {
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{				
+				curriculumErrorLabel.setEnabled(true);
+				curriculumErrorLabel.setVisible(true);
+				scegliBtn.setEnabled(true);
+				scegliBtn.setVisible(true);
+				fileLabel.setEnabled(true);
+				fileLabel.setVisible(true);
+			}
+		  }
+		);
+		
+		partecipanteButton.addActionListener(new ActionListener()
+		  {
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{				
+				curriculumErrorLabel.setEnabled(false);
+				curriculumErrorLabel.setVisible(false);
+				scegliBtn.setEnabled(false);
+				scegliBtn.setVisible(false);
+				fileLabel.setText(" ");
+				fileLabel.setEnabled(false);
+				fileLabel.setVisible(false);
 			}
 		  }
 		);
@@ -510,6 +775,26 @@ public class RegisterFrame extends JFrame
 	    	userErrorLabel.setText("Bisogna inserire una password!");
 	    	check = false;
 	    }
+	    else
+	    {
+	        passwordField.setBorder(defaultBorder);
+	        passwordErrorLabel.setText(" ");
+	    }
+	    
+	    return check; 
+	}
+	
+	private boolean checkCurriculum()
+	{
+		boolean check = true;
+		String text = new String(fileLabel.getText()).trim();
+
+	    if (text.isEmpty() && chefButton.isSelected())
+	    {
+	    	scegliBtn.setBorder(errorBorder);
+	        curriculumErrorLabel.setText("Deve essere inserito un curriculum!");
+	        check = false;
+	    } 
 	    else
 	    {
 	        passwordField.setBorder(defaultBorder);
