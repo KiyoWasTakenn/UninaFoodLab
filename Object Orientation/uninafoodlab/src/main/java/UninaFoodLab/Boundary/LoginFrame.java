@@ -59,8 +59,8 @@ public class LoginFrame extends JXFrame
 	private JXLabel passLabel = new JXLabel("Password:");
 	private JPasswordField passField;
 	private JToggleButton showPassBtn  = new JToggleButton();
-	FontIcon eyeIcon = FontIcon.of(MaterialDesign.MDI_EYE, 18);
-	FontIcon eyeOffIcon = FontIcon.of(MaterialDesign.MDI_EYE_OFF, 18);
+	private FontIcon eyeIcon = FontIcon.of(MaterialDesign.MDI_EYE, 18);
+	private FontIcon eyeOffIcon = FontIcon.of(MaterialDesign.MDI_EYE_OFF, 18);
 	private JXButton loginBtn = new JXButton("Login");
 	private JXLabel orLabel = new JXLabel("Oppure, se non sei ancora registrato");
 	private JXButton registerBtn  = new JXButton("Registrati");
@@ -161,7 +161,6 @@ public class LoginFrame extends JXFrame
 		
 		userField.addFocusListener(new FocusAdapter()
 								   {
-		    	
 		    							@Override
 									    public void focusGained(FocusEvent e)
 		    							{ 
@@ -173,8 +172,7 @@ public class LoginFrame extends JXFrame
 		
 
 		passField.addFocusListener(new FocusAdapter()
-								   {
-										
+								   {	
 										@Override
 									    public void focusGained(FocusEvent e) 
 										{ 

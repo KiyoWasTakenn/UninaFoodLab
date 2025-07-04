@@ -18,6 +18,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
@@ -28,36 +29,28 @@ import com.github.lgooddatepicker.components.DatePicker;
 import UninaFoodLab.Controller.Controller;
 
 import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 
-import org.jdesktop.swingx.JXLabel.TextAlignment;
 import org.kordamp.ikonli.materialdesign.MaterialDesign;
 import org.kordamp.ikonli.swing.FontIcon;
 
-import javax.swing.SwingConstants;
-import javax.swing.JButton;
-
-public class RegisterFrame extends JFrame
+public class RegisterFrame extends JXFrame
 {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
 	private ButtonGroup buttonGroup= new ButtonGroup();
 	private JXPanel panel;
 	private ImageIcon windowLogo;
@@ -113,6 +106,7 @@ public class RegisterFrame extends JFrame
 		setSize(850, 720);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setResizable(false);
 		
 		windowLogo = new ImageIcon(getClass().getResource("/logo_finestra.png"));
 		setIconImage(windowLogo.getImage());
