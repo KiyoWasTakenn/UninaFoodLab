@@ -1,6 +1,7 @@
 package UninaFoodLab.Boundary;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -22,13 +23,32 @@ public class CoursesFrame extends JXFrame
 	private ImageIcon windowLogo;
 	private ImageIcon paneLogo;
 
+	public static void main(String[] args)
+	{
+		EventQueue.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				try
+				{
+					CoursesFrame frame = new CoursesFrame();
+					frame.setVisible(true);
+				} catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	
 	public CoursesFrame()
 	{
 		setTitle("UninaFoodLab - I miei corsi");
-		setSize(1920, 1080);
+		setSize(1000, 700);
 		setLocationRelativeTo(null);
+		setExtendedState(JXFrame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
-		setResizable(false);
+		setResizable(true);
 	}
 
 }
