@@ -18,6 +18,8 @@ import UninaFoodLab.DAO.*;
 import UninaFoodLab.DAO.Postgres.*;
 import UninaFoodLab.Exceptions.*;
 
+import java.time.LocalDate;
+
 public class Controller
 {
 	private static final Logger LOGGER = Logger.getLogger(Controller.class.getName());
@@ -236,6 +238,11 @@ public class Controller
         String hashed = BCrypt.hashpw(new String(plainPassword), BCrypt.gensalt(11));
         Arrays.fill(plainPassword, ' ');
         return hashed;
+    }
+    
+    public void checkRegister (RegisterFrame currFrame, boolean partecipante, boolean chef, String nome, String cognome, LocalDate data, String luogo, String codFisc, String email, String username, char[] pass, String path)
+    {
+    	
     }
 
     // LoginFrame

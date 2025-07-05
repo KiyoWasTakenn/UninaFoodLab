@@ -98,6 +98,7 @@ public class RegisterFrame extends JXFrame
 	private JXButton scegliBtn;
 	private JFileChooser fileChooser;
 	private JXLabel fileLabel;
+	private File selectedFile;
 	private JXLabel curriculumErrorLabel;
 	
 	public RegisterFrame()
@@ -326,7 +327,7 @@ public class RegisterFrame extends JXFrame
 		        int returnValue = fileChooser.showOpenDialog(RegisterFrame.this);
 
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-		            File selectedFile = fileChooser.getSelectedFile();
+		        	selectedFile = fileChooser.getSelectedFile();
 		            fileLabel.setText(selectedFile.getName());
 		            // Qui si può aggiungere il codice per elaborare il file selezionato
 		        } else {
@@ -380,7 +381,7 @@ public class RegisterFrame extends JXFrame
 		        else
 		        {
 		        	registerBtn.setEnabled(false);
-		        	//Controller.getController().checkRegister(RegisterFrame.this, userField.getText().trim(), passwordField.getPassword());
+		        	Controller.getController().checkRegister(RegisterFrame.this, partecipanteButton.isSelected(), chefButton.isSelected(), nomeField.getText(), cognomeField.getText(),dataPicker.getDate(), luogoField.getText(), codFiscField.getText(), emailField.getText(), userField.getText().trim(), passwordField.getPassword(), selectedFile.getAbsolutePath());
 		        }
 		    }
 		}
