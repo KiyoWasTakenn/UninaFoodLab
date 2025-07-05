@@ -1,5 +1,6 @@
 package UninaFoodLab.Controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -242,7 +243,69 @@ public class Controller
     
     public void checkRegister (RegisterFrame currFrame, boolean partecipante, boolean chef, String nome, String cognome, LocalDate data, String luogo, String codFisc, String email, String username, char[] pass, String path)
     {
-    	
+    	try
+    	{
+    		tryGetUser(username);
+			registerFailed(currFrame, "Username già utilizzato.");   		
+    	}
+    	catch(RecordNotFoundException e)
+    	{
+    		if(partecipante==true)
+    		{
+    			try
+    			{
+    				if(getPartecipanteDAO().getPartecipanteByCodEmail(codFisc, email))
+    				{
+    					registerFailed(currFrame, "Partecipante già registrato.");
+    				}
+    				else
+    				{
+    					try
+    					{
+    						getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
+    					}
+    					catch(DAOException e1)
+    					{
+    						LOGGER.log(Level.SEVERE, "Errore login DB", e);
+    						registerFailed(currFrame, "Errore di accesso al database.");
+    					}
+    				}
+    			}
+    			catch(DAOException  e2)
+    			{
+    				LOGGER.log(Level.SEVERE, "Errore login DB", e);
+    				registerFailed(currFrame, "Errore di accesso al database.");
+    			}
+    		}
+    		else
+    		{
+    			try
+    			{
+    				if(getChefDAO().getChefByCodEmail(codFisc, email))
+    				{
+    					registerFailed(currFrame, "Chef già registrato.");
+    				}
+    				else
+    				{
+    					try
+    					{
+    						getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), path, null, null));
+    					}
+    					catch(DAOException e1)
+    					{
+    						LOGGER.log(Level.SEVERE, "Errore login DB", e);
+    						registerFailed(currFrame, "Errore di accesso al database.");
+    					}	
+    				}
+    			}
+    			catch(ChefNotFoundException e3)
+    			{
+    				LOGGER.log(Level.SEVERE, "Errore login DB", e);
+    				registerFailed(currFrame, "Errore di accesso al database.");
+    			}
+    			
+    		}
+    	}
     }
 
     // LoginFrame

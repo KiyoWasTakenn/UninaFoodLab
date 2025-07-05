@@ -5,6 +5,12 @@ import java.awt.EventQueue;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -328,8 +334,18 @@ public class RegisterFrame extends JXFrame
 
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
 		        	selectedFile = fileChooser.getSelectedFile();
+		            String projectFolderPath = System.getProperty("user.dir")+"\\src//main//sources\\Curriculum";
+		            Path destinationPath = Paths.get(projectFolderPath, selectedFile.getName());
+
+		            try {
+		                Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
+		                System.out.println("File salvato con successo in: " + destinationPath);
+		            } catch (IOException e1) {
+		                System.err.println("Errore durante il salvataggio del file: " + e1.getMessage());
+		        	
 		            fileLabel.setText(selectedFile.getName());
 		            // Qui si può aggiungere il codice per elaborare il file selezionato
+		            }
 		        } else {
 		            System.out.println("Selezione annullata.");
 		        }
