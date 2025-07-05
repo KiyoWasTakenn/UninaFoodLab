@@ -10,11 +10,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.time.Period;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.border.CompoundBorder;
@@ -334,7 +337,7 @@ public class RegisterFrame extends JXFrame
 
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
 		        	selectedFile = fileChooser.getSelectedFile();
-		            String projectFolderPath = System.getProperty("user.dir")+"\\src//main//sources\\Curriculum";
+		            String projectFolderPath = System.getProperty("user.dir")+"\\src\\main\\sources\\Curriculum";
 		            Path destinationPath = Paths.get(projectFolderPath, selectedFile.getName());
 
 		            try {
@@ -701,11 +704,18 @@ public class RegisterFrame extends JXFrame
 	private boolean checkData()
 	{
 		boolean check = true;
+		LocalDate oggi = LocalDate.now();
 
 	    if(!dataPicker.isTextFieldValid()||dataPicker.getText().isEmpty())
 	    {
 	    	dataPicker.setBorder(errorBorder);
 	    	dataErrorLabel.setText("Bisogna inserire la data di nascita!");
+	    	check = false;
+	    }
+	    else if(Period.between(dataPicker.getDate(), oggi).getYears()<18)
+	    {
+	    	dataPicker.setBorder(errorBorder);
+	    	dataErrorLabel.setText("L'utente deve avere almeno 18 anni!");
 	    	check = false;
 	    }
 	    else
@@ -813,6 +823,17 @@ public class RegisterFrame extends JXFrame
 	    }
 	    
 	    return check; 
+	}
+	
+	public void showError(String msg)
+	{
+		JOptionPane.showMessageDialog(this, msg, "Errore", JOptionPane.ERROR_MESSAGE);
+	}	
+	
+	public void enableButtons()
+	{
+	    registerBtn.setEnabled(true);
+	    accediBtn.setEnabled(true);
 	}
 }
 

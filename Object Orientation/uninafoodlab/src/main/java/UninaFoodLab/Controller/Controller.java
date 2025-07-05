@@ -307,6 +307,13 @@ public class Controller
     		}
     	}
     }
+    
+    private void registerFailed(RegisterFrame currFrame, String message) 
+    {
+    	LOGGER.log(Level.WARNING, "Tentativo di Login fallito: {0}", message);
+        currFrame.showError(message);
+        currFrame.enableButtons();
+    }
 
     // LoginFrame
     private boolean checkPassword(String hashedPassword, char[] inputPassword)
