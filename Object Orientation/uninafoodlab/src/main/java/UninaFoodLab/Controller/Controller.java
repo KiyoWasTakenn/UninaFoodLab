@@ -172,11 +172,63 @@ public class Controller
     
     public void goToHomepage(JFrame currFrame)
     {
-    	currFrame.dispose();
-        new HomepageFrame().setVisible(true);
+    	if(!(currFrame instanceof HomepageFrame))
+    	{
+    		currFrame.dispose();
+            new HomepageFrame().setVisible(true);
+    	}
     }
 
+    public void goToCourses(JFrame currFrame)
+	{
+    	if(!(currFrame instanceof CoursesFrame))
+    	{
+	    	currFrame.dispose();
+	        new CoursesFrame().setVisible(true);	
+    	}
+    	else
+    		((CoursesFrame) currFrame).resetView();
+	}
     
+    public void goToRecipes(JFrame currFrame)
+	{
+    	if(!(currFrame instanceof RecipesFrame))
+    	{
+	    	currFrame.dispose();
+	        new RecipesFrame().setVisible(true);	
+    	}
+    	else
+    		((RecipesFrame) currFrame).resetView();
+	}
+    
+    public void goToReport(JFrame currFrame)
+   	{
+    	if(!(currFrame instanceof ReportFrame))
+    	{
+	       	currFrame.dispose();
+	        new ReportFrame().setVisible(true);	
+    	}
+    	else
+    		((ReportFrame) currFrame).resetView();
+   	}
+    
+    public void goToProfile(JFrame currFrame)
+	{
+    	if(!(currFrame instanceof ProfileFrame))
+    	{
+	    	currFrame.dispose();
+	        new ProfileFrame().setVisible(true);	
+    	}
+    	else
+    		((ProfileFrame) currFrame).resetView();
+	}
+    
+    public void logout(JFrame currFrame)
+    {
+        currFrame.dispose();
+        loggedUser = null; // metto i riferimenti di tutto quello salvato attualmente nel controller a null
+        new LoginFrame().setVisible(true);
+    }
     
     // RegisterFrame
     public String hashPassword(char[] plainPassword)
@@ -252,6 +304,10 @@ public class Controller
 	        Arrays.fill(pass, ' '); // It is recommended that the returned character array be cleared after use by setting each character to zero.
 	    }
 	}
+
+	
+
+	
 	
 	// HomepageFrame
 
