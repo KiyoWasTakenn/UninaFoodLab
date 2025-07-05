@@ -102,6 +102,27 @@ public class ChefDAO_Postgres implements ChefDAO
         	throw new DAOException("Errore DB durante ricerca Chef per username", e);
         }
     }
+    
+    public boolean getChefByCodEmail(String codFisc, String email)
+    {
+        String sql = "SELECT * FROM Chef WHERE CodiceFiscale = ? OR Email = ?";
+
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
+        {
+            s.setString(1, codFisc);
+            s.setString(2, email);
+            ResultSet rs = s.executeQuery();
+
+            if(rs.next())
+            	return true;
+            else
+            	return false;
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante ricerca Chef per codice fiscale e email", e);
+        }
+    }
 
     public List<Chef> getChefsByName(String name, String surname)
     {
