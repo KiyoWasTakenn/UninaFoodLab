@@ -412,7 +412,8 @@ public class CoursesFrame extends JXFrame
 								 @Override
 								 public void actionPerformed(ActionEvent e)
 								 {
-									 Controller.getController().goToReport(CoursesFrame.this);
+									 Controller.getController().openMonthlyReport(CoursesFrame.this);
+
 								 }
 							 };
 		reportBtn.addActionListener(reportBtnListener);		
