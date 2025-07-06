@@ -32,7 +32,11 @@ public class Controller
 {
 	private static final Logger LOGGER = Logger.getLogger(Controller.class.getName());
     private static Controller instance = null;
+    
+    // Variabili di Sessione
     private Utente loggedUser;
+    
+    
     
     private AdesioneDAO_Postgres adesioneDAO;
     private ArgomentoDAO_Postgres argomentoDAO;
@@ -271,25 +275,13 @@ public class Controller
     			try
     			{
     				if(getPartecipanteDAO().getPartecipanteByCodEmail(codFisc, email))
-    				{
     					registerFailed(currFrame, "Partecipante già registrato.");
-    				}
     				else
-    				{
-    					try
-    					{
-    						getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
-    					}
-    					catch(DAOException e1)
-    					{
-    						LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
-    						registerFailed(currFrame, "Errore di accesso al database.");
-    					}
-    				}
+    					getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
     			}
-    			catch(DAOException  e2)
+    			catch(DAOException e1)
     			{
-    				LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
+    				LOGGER.log(Level.SEVERE, "Errore registrazione DB", e1);
     				registerFailed(currFrame, "Errore di accesso al database.");
     			}
     		}
@@ -417,14 +409,17 @@ public class Controller
 	    }
 	}
 
-	
-
-	
-	
 	// HomepageFrame
 
 	// CoursesFrame
 	
-	
+	// ReportFrame
+		public void openMonthlyReport(JFrame parent)
+		{
+		    ReportFrame report = new ReportFrame();
+		    report.setReportData(500,249,40,2,900,2);
+		    report.setVisible(true);
+		}
+
 	
 }
