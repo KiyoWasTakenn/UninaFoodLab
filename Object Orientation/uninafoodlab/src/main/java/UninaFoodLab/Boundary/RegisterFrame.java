@@ -4,6 +4,11 @@ import java.awt.EventQueue;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
+
 import java.io.File;
 
 import java.nio.file.Path;
@@ -653,6 +658,22 @@ public class RegisterFrame extends JXFrame
 		
 		partecipanteButton.addActionListener(partecipanteButtonActionListener);
 		
+		((PlainDocument) codFiscField.getDocument()).setDocumentFilter(new DocumentFilter() {
+		    @Override
+		    public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+		        if (fb.getDocument().getLength() + string.length() <= 16) {
+		            super.insertString(fb, offset, string.toUpperCase(), attr);
+		        }
+		    }
+
+		    @Override
+		    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+		        if (fb.getDocument().getLength() - length + text.length() <= 16) {
+		            super.replace(fb, offset, length, text.toUpperCase(), attrs);
+		        }
+		    }
+		});
+		
 		}
 	
 	private boolean checkNome()
@@ -706,10 +727,11 @@ public class RegisterFrame extends JXFrame
 	    	codFiscErrorLabel.setText("Bisogna inserire un codice fiscale!");
 	    	check = false;
 	    }
-	    else if(text.length()!=16)
+	    else if(!text.matches("^[A-Z0-9]{16}$"))
 	    {
+	    	
 	    	codFiscField.setBorder(errorBorder);
-	    	codFiscErrorLabel.setText("Il codice fiscale deve avere 16 caratteri!");
+	    	codFiscErrorLabel.setText("Bisogna inserire caratteri validi!");
 	    	check = false;	    	
 	    }
 	    else
