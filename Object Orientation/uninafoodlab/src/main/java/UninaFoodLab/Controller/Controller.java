@@ -277,21 +277,28 @@ public class Controller
     	{   	
     		try
     		{
-    			if(getPartecipanteDAO().getPartecipanteByCodEmail(codFisc, email) || getChefDAO().getChefByCodEmail(codFisc, email))
-    				registerFailed(currFrame, "Utente già registrato per questa modalità.");
-    			else
-    			{
-    				if(partecipante==true)
-    				{
-	    				getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
-	    				registerSuccess(currFrame, username);   					
-    				}
-    				else
-    				{
-    					String percorsoComposto = System.getProperty("user.dir") + "\\src\\main\\resources\\"+ username +"\\Curriculum";		                	     		           
-    					Path destinationPath = Paths.get(percorsoComposto, selectedFile.getName());
-    					String toSavePath = "\\src\\main\\resources\\"+ username +"\\Curriculum";
-    					getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), toSavePath, null, null));
+    			
+				if(partecipante==true)
+				{
+					if(getPartecipanteDAO().getPartecipanteByCodEmail(codFisc, email))
+						registerFailed(currFrame, "Partecipante già registrato per questa modalità.");
+					else
+					{
+						getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
+						registerSuccess(currFrame, username); 
+					}
+  					
+				}
+				else
+				{
+					if(getChefDAO().getChefByCodEmail(codFisc, email))
+						registerFailed(currFrame, "Partecipante già registrato per questa modalità.");
+					else
+					{
+						String percorsoComposto = System.getProperty("user.dir") + "\\src\\main\\resources\\"+ username +"\\Curriculum";		                	     		           
+						Path destinationPath = Paths.get(percorsoComposto, selectedFile.getName());
+						String toSavePath = "\\src\\main\\resources\\"+ username +"\\Curriculum";
+						getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), toSavePath, null, null));
 						registerSuccess(currFrame, username);	
 						
 		        		File cartellaComposta = new File(percorsoComposto);
@@ -316,8 +323,10 @@ public class Controller
 		                }		              		                
 		                Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
 		                System.out.println("File salvato con successo in: " + destinationPath);
-    				}    					
-    			}
+					}
+					
+				}    					
+    			
     		}
     		catch(DAOException e1)
     		{
