@@ -56,7 +56,6 @@ public class LoginFrame extends JXFrame
 	private CompoundBorder errorBorder = BorderFactory.createCompoundBorder(
 	        	new LineBorder(Color.RED, 1),
 	        	new EmptyBorder(0, 6, 0, 0));
-	private JToggleButton darkModeToggle;
 	private ImageIcon windowLogo;
 	private ImageIcon paneLogo;
 	private JXLabel logoLabel;
@@ -110,22 +109,11 @@ public class LoginFrame extends JXFrame
 		
 		paneLogo = new ImageIcon(getClass().getResource("/logo_schermata.png"));
 		logoLabel = new JXLabel(new ImageIcon(paneLogo.getImage().getScaledInstance(200, 160, Image.SCALE_SMOOTH)));
-		panel.add(logoLabel, "gapright push, split 2");		
-		
-		darkModeToggle = new JToggleButton("🌙");
-		darkModeToggle.setPreferredSize(new Dimension(50, 30));
-		darkModeToggle.setFocusPainted(false);
-		darkModeToggle.setBorderPainted(false);
-		darkModeToggle.setContentAreaFilled(false);
-		darkModeToggle.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		darkModeToggle.setToolTipText("Attiva/disattiva Dark Mode");
-		panel.add(darkModeToggle, "align right, wrap0");
+		panel.add(logoLabel, "span 2, align center, gapbottom 15");		
 		
 		userErrorLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
 		userErrorLabel.setForeground(Color.RED);
 		panel.add(userErrorLabel, "span 2, center, gapbottom 3");
-		
-		
 		
 		userLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
 		userField = new JXTextField();
