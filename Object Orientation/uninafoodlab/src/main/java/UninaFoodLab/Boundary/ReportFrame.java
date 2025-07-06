@@ -1,25 +1,43 @@
 package UninaFoodLab.Boundary;
 
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
+import javax.swing.*;
 
-import org.jdesktop.swingx.JXFrame;
+import org.jdesktop.swingx.*;
 
-public class ReportFrame extends JXFrame
+
+public class ReportFrame extends JXFrame 
 {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-
-
-	public ReportFrame()
-	{
-		setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-
-	}
-
+	
+    public ReportFrame() 
+    {
+       initComponents();
+       initListeners();
+       
+    }
+    
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new ReportFrame().setVisible(true);
+        });
+    }
+    
+    
+    
+    private void initComponents()
+    {
+    	
+    }
+    
+    private void initListeners()
+    {
+    	
+    }
+    
+    
+    public void resetView()
+    {
+    	
+    }
 }

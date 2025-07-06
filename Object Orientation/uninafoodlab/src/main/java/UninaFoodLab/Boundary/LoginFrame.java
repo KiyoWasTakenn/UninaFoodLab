@@ -36,12 +36,19 @@ import java.awt.event.FocusEvent;
 
 public class LoginFrame extends JXFrame
 {
+	private static final long serialVersionUID = 1L;
+	
+	// Costanti di controllo
 	private static final int USERNAME_MIN_LENGTH = 4;
 	private static final int USERNAME_MAX_LENGTH = 20;
 	private static final int PASSWORD_MIN_LENGTH = 8;
 	private static final int PASSWORD_MAX_LENGTH = 30;
-
-	private static final long serialVersionUID = 1L;
+	
+	// Icone 
+	private FontIcon eyeIcon = FontIcon.of(MaterialDesign.MDI_EYE, 18);
+	private FontIcon eyeOffIcon = FontIcon.of(MaterialDesign.MDI_EYE_OFF, 18);
+	
+	// Componenti Swing e Bordi
 	private JXPanel panel;
 	private CompoundBorder defaultBorder = BorderFactory.createCompoundBorder(
 				new LineBorder(Color.LIGHT_GRAY, 1), 
@@ -49,21 +56,28 @@ public class LoginFrame extends JXFrame
 	private CompoundBorder errorBorder = BorderFactory.createCompoundBorder(
 	        	new LineBorder(Color.RED, 1),
 	        	new EmptyBorder(0, 6, 0, 0));
+	private JToggleButton darkModeToggle;
 	private ImageIcon windowLogo;
 	private ImageIcon paneLogo;
 	private JXLabel logoLabel;
-	private JXLabel userErrorLabel = new JXLabel(" ");
-	private JXLabel passErrorLabel = new JXLabel(" ");
-	private JXLabel userLabel = new JXLabel("Username:");
+	private JXLabel userErrorLabel;
+	private JXLabel passErrorLabel;
+	private JXLabel userLabel;
 	private JXTextField userField;
-	private JXLabel passLabel = new JXLabel("Password:");
+	private JXLabel passLabel;
 	private JPasswordField passField;
-	private JToggleButton showPassBtn  = new JToggleButton();
-	private FontIcon eyeIcon = FontIcon.of(MaterialDesign.MDI_EYE, 18);
-	private FontIcon eyeOffIcon = FontIcon.of(MaterialDesign.MDI_EYE_OFF, 18);
-	private JXButton loginBtn = new JXButton("Login");
-	private JXLabel orLabel = new JXLabel("Oppure, se non sei ancora registrato");
-	private JXButton registerBtn  = new JXButton("Registrati");
+	private JToggleButton showPassBtn;
+	private JXButton loginBtn;
+	private JXLabel orLabel;
+	private JXButton registerBtn;
+	
+	DocumentListener userFieldDocumentListener;
+	DocumentListener passFieldDocumentListener;
+	FocusAdapter userFieldFocusListener;
+	FocusAdapter passFieldFocusListener;
+	ActionListener showPassBtnActionListener;
+	ActionListener registerBtnActionListener;
+	ActionListener loginBtnActionListener;	
 	
 	public LoginFrame()
 	{
@@ -73,6 +87,21 @@ public class LoginFrame extends JXFrame
 		setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		
+		initComponents();
+		initListeners();
+	}
+	
+	private void initComponents()
+	{
+		userErrorLabel = new JXLabel(" ");
+		passErrorLabel = new JXLabel(" ");
+		userLabel = new JXLabel("Username:");
+		passLabel = new JXLabel("Password:");
+		showPassBtn = new JToggleButton();
+		loginBtn = new JXButton("Login");
+		orLabel = new JXLabel("Oppure, se non sei ancora registrato");
+		registerBtn  = new JXButton("Registrati");
+		
 		windowLogo = new ImageIcon(getClass().getResource("/logo_finestra.png"));
 		setIconImage(windowLogo.getImage());
 		
@@ -81,11 +110,22 @@ public class LoginFrame extends JXFrame
 		
 		paneLogo = new ImageIcon(getClass().getResource("/logo_schermata.png"));
 		logoLabel = new JXLabel(new ImageIcon(paneLogo.getImage().getScaledInstance(200, 160, Image.SCALE_SMOOTH)));
-		panel.add(logoLabel, "span 2, align center, gapbottom 15");		
+		panel.add(logoLabel, "gapright push, split 2");		
+		
+		darkModeToggle = new JToggleButton("🌙");
+		darkModeToggle.setPreferredSize(new Dimension(50, 30));
+		darkModeToggle.setFocusPainted(false);
+		darkModeToggle.setBorderPainted(false);
+		darkModeToggle.setContentAreaFilled(false);
+		darkModeToggle.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		darkModeToggle.setToolTipText("Attiva/disattiva Dark Mode");
+		panel.add(darkModeToggle, "align right, wrap0");
 		
 		userErrorLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
 		userErrorLabel.setForeground(Color.RED);
 		panel.add(userErrorLabel, "span 2, center, gapbottom 3");
+		
+		
 		
 		userLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
 		userField = new JXTextField();
@@ -135,43 +175,44 @@ public class LoginFrame extends JXFrame
 		registerBtn.setBorderPainted(false);
 		registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		panel.add(registerBtn, "span 2, center");
-			
-		// Action Listeners 
-		userField.getDocument().addDocumentListener(new DocumentListener()
-													{
-														@Override
-													    public void insertUpdate(DocumentEvent e) { checkUser(); }
-													    @Override
-													    public void removeUpdate(DocumentEvent e) { checkUser(); }
-													    @Override
-													    public void changedUpdate(DocumentEvent e) { checkUser(); }
-													}
-												   );
+	}
+	
+	private void initListeners()
+	{
+		userFieldDocumentListener = new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkUser(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkUser(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkUser(); }
+		};
+		userField.getDocument().addDocumentListener(userFieldDocumentListener);
 		
-		passField.getDocument().addDocumentListener(new DocumentListener()
-													{
-														@Override
-													    public void insertUpdate(DocumentEvent e) { checkPass(); }
-													    @Override
-													    public void removeUpdate(DocumentEvent e) { checkPass(); }
-													    @Override
-													    public void changedUpdate(DocumentEvent e) { checkPass(); }
-													}
-												   );
+		passFieldDocumentListener = new DocumentListener()
+							{
+								@Override
+							    public void insertUpdate(DocumentEvent e) { checkPass(); }
+							    @Override
+							    public void removeUpdate(DocumentEvent e) { checkPass(); }
+							    @Override
+							    public void changedUpdate(DocumentEvent e) { checkPass(); }
+							};
+		passField.getDocument().addDocumentListener(passFieldDocumentListener);
 		
-		userField.addFocusListener(new FocusAdapter()
+		userFieldFocusListener = new FocusAdapter()
 								   {
-		    							@Override
-									    public void focusGained(FocusEvent e)
-		    							{ 
-		    								if(!userField.getText().isEmpty())
-		    								    userField.selectAll();
-		    							}
-								   }
-								  );
+									@Override
+								    public void focusGained(FocusEvent e)
+									{ 
+										if(!userField.getText().isEmpty())
+										    userField.selectAll();
+									}
+								   };
+		userField.addFocusListener(userFieldFocusListener);
 		
-
-		passField.addFocusListener(new FocusAdapter()
+		passFieldFocusListener = new FocusAdapter()
 								   {	
 										@Override
 									    public void focusGained(FocusEvent e) 
@@ -179,16 +220,16 @@ public class LoginFrame extends JXFrame
 											if(!(passField.getPassword().length == 0))
 												passField.selectAll(); 
 										}
-								   }
-								  );
-		
-		showPassBtn.addActionListener(new ActionListener()
+								   };
+	    passField.addFocusListener(passFieldFocusListener);
+	    
+	    showPassBtnActionListener = new ActionListener()
 									  {
 										@Override 
 										public void actionPerformed(ActionEvent e)
 										{
 											if(showPassBtn.isSelected())
-			    							{
+											{
 										    	passField.setEchoChar('•');
 										    	showPassBtn.setIcon(eyeOffIcon);
 										    } 
@@ -198,44 +239,97 @@ public class LoginFrame extends JXFrame
 										    	showPassBtn.setIcon(eyeIcon);
 										    }
 										}				
-									  });
-
-		loginBtn.addActionListener(new ActionListener()
-									{
-										@Override 
-										public void actionPerformed(ActionEvent e)
-										{
-									        if(!checkUser())
-									        	userField.requestFocus();
-									        else if(!checkPass())
-									        	passField.requestFocus();
-									        else
-									        {
-									        	loginBtn.setEnabled(false);
-									        	registerBtn.setEnabled(false);
-									        	Controller.getController().checkLogin(LoginFrame.this, userField.getText().trim(), passField.getPassword());
-									        }
-									    }
-									}
-								  );
+									  };
+		showPassBtn.addActionListener(showPassBtnActionListener);
 		
-		registerBtn.addActionListener(new ActionListener()
+		loginBtnActionListener = new ActionListener()
+						{
+							@Override 
+							public void actionPerformed(ActionEvent e)
+							{
+						        if(!checkUser())
+						        	userField.requestFocus();
+						        else if(!checkPass())
+						        	passField.requestFocus();
+						        else
+						        {
+						        	loginBtn.setEnabled(false);
+						        	registerBtn.setEnabled(false);
+						        	Controller.getController().checkLogin(LoginFrame.this, userField.getText().trim(), passField.getPassword());
+						        }
+						    }
+						};
+		loginBtn.addActionListener(loginBtnActionListener);
+				
+		registerBtnActionListener = new ActionListener()
 									  {
 										@Override 
 										public void actionPerformed(ActionEvent e)
 										{	
 											Controller.getController().goToRegister(LoginFrame.this);
 										}
-									  }
-									);
+									  };
+		registerBtn.addActionListener(registerBtnActionListener);
+		
 	}
 	
+	/**
+     * Rimuove tutti i listener registrati per evitare
+     * memory leak o comportamenti indesiderati alla chiusura.
+     */
+	private void disposeListeners() 
+	{
+        if(userField != null && userFieldDocumentListener != null)
+            userField.getDocument().removeDocumentListener(userFieldDocumentListener);
+
+        if(passField != null && passFieldDocumentListener != null)
+            passField.getDocument().removeDocumentListener(passFieldDocumentListener);
+
+        if(userField != null && userFieldFocusListener != null)
+            userField.removeFocusListener(userFieldFocusListener);
+
+        if(passField != null && passFieldFocusListener != null)
+            passField.removeFocusListener(passFieldFocusListener);
+
+        if(showPassBtn != null && showPassBtnActionListener != null)
+            showPassBtn.removeActionListener(showPassBtnActionListener);
+
+        if(loginBtn != null && loginBtnActionListener != null)
+        	loginBtn.removeActionListener(loginBtnActionListener);
+
+        if(registerBtn != null && registerBtnActionListener != null)
+            registerBtn.removeActionListener(registerBtnActionListener);
+    }
+    
+    /**
+     * Rimuove tutti i listener registrati e libera risorse
+     * prima di chiudere la finestra, per evitare memory leak.
+     */
+    @Override
+    public void dispose()
+    {
+    	disposeListeners();
+        super.dispose();
+    }
+    
+    /**
+     * Riabilita i pulsanti di login e registrazione
+     * (usato dopo il fallimento di un login).
+     */
 	public void enableButtons()
 	{
 	    loginBtn.setEnabled(true);
 	    registerBtn.setEnabled(true);
 	}
 	
+	/**
+     * Valida il campo username in tempo reale.
+     * Controlla che:
+     * - non ci siano spazi, tab o newline
+     * - la lunghezza sia tra 4 e 20 caratteri
+     *
+     * @return true se il campo è valido, false altrimenti
+     */
 	private boolean checkUser() 
 	{
 		boolean check = true;
@@ -262,6 +356,12 @@ public class LoginFrame extends JXFrame
 	    return check;
 	} 
 
+	/**
+     * Valida il campo password in tempo reale.
+     * Controlla che la lunghezza sia tra 8 e 30 caratteri.
+     *
+     * @return true se il campo è valido, false altrimenti
+     */
 	private boolean checkPass()
 	{
 		boolean check = true;
@@ -282,6 +382,11 @@ public class LoginFrame extends JXFrame
 	    return check; 
 	}
 
+    /**
+     * Mostra un messaggio di errore tramite dialog.
+     *
+     * @param msg messaggio da mostrare
+     */
 	public void showError(String msg)
 	{
 		JOptionPane.showMessageDialog(this, msg, "Errore", JOptionPane.ERROR_MESSAGE);

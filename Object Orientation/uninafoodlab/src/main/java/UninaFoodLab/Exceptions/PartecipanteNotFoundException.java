@@ -2,7 +2,9 @@ package UninaFoodLab.Exceptions;
 
 public class PartecipanteNotFoundException extends RecordNotFoundException 
 {
-    public PartecipanteNotFoundException(String msg) 
+	private static final long serialVersionUID = 1L;
+
+	public PartecipanteNotFoundException(String msg) 
     {
         super(msg);
     }

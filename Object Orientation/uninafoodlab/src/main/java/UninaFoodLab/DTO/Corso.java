@@ -122,40 +122,6 @@ public class Corso
         return isPratico;
     }
 
-
-    public int getReport()
-    {
-        int numSessionePratica=0;
-        int numSessioneOnline=0;
-
-        int min=0;
-        int max=0;
-        double mediaRicette=0.0;
-        int sommaRicette=0;
-        int numeroRicette=0;
-
-        for (Sessione x: sessioni)
-        {
-            if(x.getData().toLocalDate().isAfter(LocalDate.now().minusDays(30)) && x.getData().toLocalDate().isBefore(LocalDate.now()))
-                if(x instanceof SessionePratica)
-                {
-                    ++numSessionePratica;
-                    numeroRicette=((SessionePratica) x).getNumeroRicette();
-                    if(min>numeroRicette)
-                        min=numeroRicette;
-                    if(max<numeroRicette)
-                        max=numeroRicette;
-                    sommaRicette=sommaRicette+numeroRicette;
-                }
-                else
-                    ++numSessioneOnline;
-        }
-
-        mediaRicette=sommaRicette/numSessionePratica;
-
-        return numSessionePratica;
-    }
-
     public ArrayList<Sessione> getSessioni()
     {
         return sessioni;

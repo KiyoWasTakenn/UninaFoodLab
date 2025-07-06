@@ -162,7 +162,6 @@ public class Controller
     }
     
     // Navigation methods
-    
     public void goToLogin(JFrame currFrame)
     {
     	currFrame.dispose();

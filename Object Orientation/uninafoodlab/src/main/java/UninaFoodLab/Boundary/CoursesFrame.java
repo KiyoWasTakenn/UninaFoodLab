@@ -42,7 +42,8 @@ import com.formdev.flatlaf.FlatLightLaf;
 import UninaFoodLab.Controller.Controller;
 import net.miginfocom.swing.MigLayout;
 
-public class CoursesFrame extends JXFrame {
+public class CoursesFrame extends JXFrame 
+{
 
     private static final long serialVersionUID = 1L;
 
@@ -56,36 +57,33 @@ public class CoursesFrame extends JXFrame {
     private ImageIcon windowLogo;
     private ImageIcon paneLogo;
     
-    // Componenti e bordi swingX
+    // Componenti Swing e Bordi
     private JXLabel logoLabel;
     private final CompoundBorder defaultBorder = BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(220, 220, 220), 1, true),
-            new EmptyBorder(10, 12, 10, 12)
-    );
-    private JXPanel rootPanel = new JXPanel(new MigLayout("fill, insets 0", "[grow]", "[60!][grow]"));
-    private JXPanel header = new JXPanel(new MigLayout(
-            "insets 5 15 5 15",
-            "[35!]10[10!]10[80!]10[20!]0[80!]0[grow, 50::1400]0[80!]10[grow, 10::89][35!][20!]",
-            "[60!]"
-    ));
-    private JXButton hamburgerBtn = new JXButton();
-    private JXButton filterBtn = new JXButton("Filtri");
-    private JXTextField searchField = new JXTextField();
-    private JXButton searchBtn = new JXButton("Cerca");
-    private JXButton profileBtn = new JXButton();
-    private JXPanel dropdownPanel = new JXPanel(new MigLayout("insets 10, wrap 1", "[fill, grow]"));
-    private JXLabel userLabel = new JXLabel("ciao", userIcon, JXLabel.LEFT);/*Controller.getController().getLoggedUser().getUsername()*/
-    private JXPanel separator = new JXPanel();
-    private JXButton profileItemBtn = new JXButton("  Profilo", profileIconMenu);
-    private JXButton logoutItemBtn = new JXButton("  Logout", logoutIcon);
-    private JXPanel sidebarPanel = new JXPanel();
-    private JXButton homeBtn = new JXButton("  Homepage");
-    private JXButton coursesBtn = new JXButton("  I miei corsi");
-    private JXButton recipesBtn = new JXButton(" Le mie ricette");
-    private JXButton reportBtn = new JXButton(" Visualizza Report");
-    
+									             new LineBorder(new Color(220, 220, 220), 1, true),
+									             new EmptyBorder(10, 12, 10, 12));
+    private JXPanel rootPanel;
+    private JXPanel header;
+    private JXButton hamburgerBtn;
+    private JXButton filterBtn;
+    private JXTextField searchField;
+    private JXButton searchBtn;
+    private JXButton profileBtn;
+    private JXPanel dropdownPanel;
+    private JXLabel userLabel;
+    private JXPanel separator;
+    private JXButton profileItemBtn;
+    private JXButton logoutItemBtn;
+    private JXPanel sidebarPanel;
+    private JXButton homeBtn;
+    private JXButton coursesBtn;
+    private JXButton recipesBtn;
+    private JXButton reportBtn;
+    private JXPanel mainContentPanel;
+
     // Listeners
-    private ActionListener profileBtnListener;
+    private AWTEventListener dropdownClickListener;
+    private ActionListener profileBtnListener;  
     private ActionListener hamburgerBtnListener;
     private MouseListener logoLabelMouseListener;
     private ActionListener homeBtnListener;
@@ -94,19 +92,16 @@ public class CoursesFrame extends JXFrame {
     private ActionListener reportBtnListener;
     private ActionListener profileItemBtnListener;
     private ActionListener logoutItemBtnListener;
-    private MouseListener sidebarBtnMouseListener;
-    private MouseListener dropdownBtnMouseListener;
+    private MouseListener hoverListener;
     private ComponentAdapter frameComponentListener;
-    private AWTEventListener dropdownClickListener;
     
+
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(new FlatLightLaf());
                 new CoursesFrame().setVisible(true);
-                
-                
-
+    
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
@@ -122,10 +117,44 @@ public class CoursesFrame extends JXFrame {
         setExtendedState(JXFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
         setResizable(true);
-        getRootPane().setDefaultButton(searchBtn);
-
         
-        windowLogo = new ImageIcon(getClass().getResource("/logo_finestra.png"));
+        initComponents();
+        getRootPane().setDefaultButton(searchBtn);
+        styleComponents();
+        initListeners();
+
+        // Setto il focus iniziale sul bottone search (prima era sul menu hamburger)
+        EventQueue.invokeLater(() -> searchField.requestFocusInWindow());
+    }
+   
+    /**
+     * Serve per inizializzare i componenti UI, creare e aggiungere tutti i pannelli e pulsanti.
+     */
+    private void initComponents()
+    {
+    	rootPanel = new JXPanel(new MigLayout("fill, insets 0", "[grow]", "[][grow]"));
+    	header = new JXPanel(new MigLayout(
+                "insets 5 15 5 15",
+                "[35!]10[10!]10[80!]10[20!]0[80!]0[grow, 50::1400]0[80!]10[grow, 10::89][35!][20!]",
+                "[60!]"
+        ));
+    	hamburgerBtn = new JXButton();
+    	filterBtn = new JXButton("Filtri");
+    	searchField = new JXTextField();
+    	searchBtn = new JXButton("Cerca");
+    	profileBtn = new JXButton();
+    	dropdownPanel = new JXPanel(new MigLayout("insets 10, wrap 1", "[fill, grow]"));
+    	userLabel = new JXLabel("ciao", userIcon, JXLabel.LEFT); /*Controller.getController().getLoggedUser().getUsername()*/
+    	separator = new JXPanel();
+    	profileItemBtn = new JXButton("  Profilo", profileIconMenu);
+    	logoutItemBtn = new JXButton("  Logout", logoutIcon);
+    	sidebarPanel = new JXPanel();
+    	homeBtn = new JXButton("  Homepage");
+    	coursesBtn = new JXButton("  I miei corsi");
+    	recipesBtn = new JXButton(" Le mie ricette");
+    	reportBtn = new JXButton(" Visualizza Report");
+    	
+    	windowLogo = new ImageIcon(getClass().getResource("/logo_finestra.png"));
         setIconImage(windowLogo.getImage());
 
         rootPanel.setBackground(new Color(0xFAFAFA));
@@ -142,29 +171,29 @@ public class CoursesFrame extends JXFrame {
         header.add(hamburgerBtn, "cell 0 0, w 35!, h 35!, shrink 0");
 
         paneLogo = new ImageIcon(getClass().getResource("/logo_schermata.png"));
-        logoLabel = new JXLabel(new ImageIcon(paneLogo.getImage().getScaledInstance(74, 60, Image.SCALE_SMOOTH)));
+       	logoLabel = new JXLabel(new ImageIcon(paneLogo.getImage().getScaledInstance(74, 60, Image.SCALE_SMOOTH)));;
         logoLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         logoLabel.setToolTipText("Torna alla homepage");
         header.add(logoLabel, "cell 2 0, w 80!, h 60!, gapleft 0, shrink 0");
-
+        
         filterBtn.setIcon(filterIcon);
         filterBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         filterBtn.setFocusPainted(false);
         filterBtn.setContentAreaFilled(true);
         filterBtn.setBackground(new Color(245, 245, 245));
         filterBtn.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(200, 200, 200), 1, true),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
+                 new LineBorder(new Color(200, 200, 200), 1, true),
+                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
+         ));
         filterBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         header.add(filterBtn, "cell 4 0, h 35!, w 80!, shrink 0");
-      
+       
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         searchField.setPrompt("Cerca per nome corso...");
         searchField.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(200, 200, 200), 1, true),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
+                 new LineBorder(new Color(200, 200, 200), 1, true),
+                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
+         ));
         searchField.setBackground(Color.WHITE);
         searchField.setOpaque(true);
         header.add(searchField, "cell 5 0, h 35!, growx, wmin 100, wmax 1400");
@@ -175,9 +204,9 @@ public class CoursesFrame extends JXFrame {
         searchBtn.setForeground(Color.WHITE);
         searchBtn.setOpaque(true);
         searchBtn.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(225, 126, 47), 1, true),
-                BorderFactory.createEmptyBorder(5, 15, 5, 15)
-        ));
+                 new LineBorder(new Color(225, 126, 47), 1, true),
+                 BorderFactory.createEmptyBorder(5, 15, 5, 15)
+         ));
         searchBtn.setPreferredSize(new Dimension(80, 35));
         searchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         header.add(searchBtn, "cell 6 0, h 35!, w 80!, shrink 0");
@@ -187,8 +216,8 @@ public class CoursesFrame extends JXFrame {
         profileBtn.setBorder(BorderFactory.createEmptyBorder());
         profileBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         header.add(profileBtn, "cell 8 0, w 35!, h 35!, align right");
-   
-        
+    
+         
         dropdownPanel.setBackground(Color.WHITE);
         dropdownPanel.setBorder(defaultBorder);
         dropdownPanel.setOpaque(true);
@@ -203,43 +232,71 @@ public class CoursesFrame extends JXFrame {
         separator.setPreferredSize(new Dimension(1, 2));
         separator.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
         dropdownPanel.add(separator, "h 2!, gapbottom 8");
-
-        styleDropdownButton(profileItemBtn);
+         
         dropdownPanel.add(profileItemBtn);
-        styleDropdownButton(logoutItemBtn);
         dropdownPanel.add(logoutItemBtn);
-        
+         
         // Aggiungo il dropdown come popup (quindi che viene messo su un layer superiore a tutti) 
         getLayeredPane().add(dropdownPanel, JLayeredPane.POPUP_LAYER);
+         
+        // Menu hamburger 
+        sidebarPanel.setLayout(new MigLayout("insets 20, wrap 1", "[grow, fill]"));
+        sidebarPanel.setBackground(Color.WHITE);
+        sidebarPanel.setBorder(new MatteBorder(0, 0, 0, 1, new Color(220, 220, 220)));
+        sidebarPanel.setPreferredSize(new Dimension(190, 800));
+        sidebarPanel.setVisible(false); 
 
-        /**
+        // Lo mettiamo su un layer superiore, come il dropdown
+        getLayeredPane().add(sidebarPanel, JLayeredPane.POPUP_LAYER);
+         
+        sidebarPanel.add(homeBtn);
+        sidebarPanel.add(coursesBtn);
+        sidebarPanel.add(recipesBtn);
+        sidebarPanel.add(reportBtn);  
+        
+        mainContentPanel = new JXPanel(new MigLayout("fill", "[grow]", "[grow]"));
+        rootPanel.add(mainContentPanel, "grow, wrap");
+
+
+
+
+    }
+ 
+    /**
+     * Registra tutti i listener per pulsanti, eventi di mouse e
+     * gestione dell'interfaccia.
+     */
+    private void initListeners()
+    {
+    	/**
          * Gestisce il click sul pulsante del profilo.
          * Mostra o nasconde il pannello dropdown del profilo posizionandolo correttamente
          * sotto l'header e allineato al bordo destro della finestra.
          * Garantisce che il dropdown appaia sempre nella posizione visibile e corretta.
          */
-        profileBtn.addActionListener(new ActionListener()
-        {
-        	@Override 
-			public void actionPerformed(ActionEvent e)
-			{
-	   		     dropdownPanel.setSize(dropdownPanel.getPreferredSize());
-	       		 Point headerBottomLeft = SwingUtilities.convertPoint(header, 0, header.getHeight(), getLayeredPane());
-	             int x = getLayeredPane().getWidth() - dropdownPanel.getWidth() - 1;
-	             int y = headerBottomLeft.y;
-	             dropdownPanel.setLocation(x, y);
-	             dropdownPanel.setVisible(!dropdownPanel.isVisible());
-			}
-        });
-
-        /**
+    	profileBtnListener = new ActionListener()
+					         {
+					        	 @Override 
+								 public void actionPerformed(ActionEvent e)
+								 {
+						   		     dropdownPanel.setSize(dropdownPanel.getPreferredSize());
+						       		 Point headerBottomLeft = SwingUtilities.convertPoint(header, 0, header.getHeight(), getLayeredPane());
+						             int x = getLayeredPane().getWidth() - dropdownPanel.getWidth() - 1;
+						             int y = headerBottomLeft.y;
+						             dropdownPanel.setLocation(x, y);
+						             dropdownPanel.setVisible(!dropdownPanel.isVisible());
+								 }
+					         };
+		profileBtn.addActionListener(profileBtnListener);	
+		
+		/**
          * Listener globale per intercettare tutti i click del mouse nella finestra.
          * Se il click avviene fuori dal pannello dropdown del profilo e dal pulsante profilo,
          * nasconde automaticamente il dropdown.
          * Serve a chiudere il menu dropdown cliccando ovunque fuori da esso,
          * migliorando l'usabilità e la gestione del focus.
          */
-        dropdownClickListener = new AWTEventListener() 
+		dropdownClickListener = new AWTEventListener() 
 						        {
 						            @Override
 						            public void eventDispatched(AWTEvent event) 
@@ -268,26 +325,7 @@ public class CoursesFrame extends JXFrame {
 						                }
 						            }
 						        };     
-		Toolkit.getDefaultToolkit().addAWTEventListener(dropdownClickListener, AWTEvent.MOUSE_EVENT_MASK);
-        
-        // Menu hamburger 
-        sidebarPanel.setLayout(new MigLayout("insets 20, wrap 1", "[grow, fill]"));
-        sidebarPanel.setBackground(Color.WHITE);
-        sidebarPanel.setBorder(new MatteBorder(0, 0, 0, 1, new Color(220, 220, 220)));
-        sidebarPanel.setPreferredSize(new Dimension(190, 800));
-        sidebarPanel.setVisible(false); 
-
-        // Lo mettiamo su un layer superiore, come il dropdown
-        getLayeredPane().add(sidebarPanel, JLayeredPane.POPUP_LAYER);
-
-        styleSidebarButton(homeBtn);
-        sidebarPanel.add(homeBtn);
-        styleSidebarButton(coursesBtn);
-        sidebarPanel.add(coursesBtn);
-        styleSidebarButton(recipesBtn);
-        sidebarPanel.add(recipesBtn);
-        styleSidebarButton(reportBtn);
-        sidebarPanel.add(reportBtn);
+        Toolkit.getDefaultToolkit().addAWTEventListener(dropdownClickListener, AWTEvent.MOUSE_EVENT_MASK);
         
         /**
          * Gestisce il click sul pulsante hamburger del menu.
@@ -295,138 +333,232 @@ public class CoursesFrame extends JXFrame {
          * Quando la sidebar viene mostrata, viene posizionata sotto l'header
          * e adattata all'altezza della finestra corrente.
          * Quando la sidebar viene nascosta, viene semplicemente disabilitata.
-         * Assicura un menu laterale accessibile e correttamente dimensionato.
          */
-        hamburgerBtn.addActionListener(new ActionListener() 
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                if(!sidebarPanel.isVisible())
-                {
-                    // Posizione e dimensioni
-                    // Calcola la posizione Y del pannello header all'interno del layered pane
-                    Point headerBottomLeft = SwingUtilities.convertPoint(header, 0, header.getHeight(), getLayeredPane());
-
-                    sidebarPanel.setBounds(
-                        0,
-                        headerBottomLeft.y,
-                        190,
-                        getHeight() - headerBottomLeft.y
-                    );
-
-                    // Porta in primo piano
-                    getLayeredPane().setLayer(sidebarPanel, JLayeredPane.POPUP_LAYER);
-
-                    sidebarPanel.setVisible(true);
-                }
-                else
-                	sidebarPanel.setVisible(false);
-            }
-        });
+        hamburgerBtnListener = new ActionListener() 
+						        {
+						            @Override
+						            public void actionPerformed(ActionEvent e)
+						            {
+						                if(!sidebarPanel.isVisible())
+						                {
+						                    // Posizione e dimensioni
+						                    // Calcola la posizione Y del pannello header all'interno del layered pane
+						                    Point headerBottomLeft = SwingUtilities.convertPoint(header, 0, header.getHeight(), getLayeredPane());
+						
+						                    sidebarPanel.setBounds(
+						                        0,
+						                        headerBottomLeft.y,
+						                        190,
+						                        getHeight() - headerBottomLeft.y
+						                    );
+						
+						                    // Porta in primo piano
+						                    getLayeredPane().setLayer(sidebarPanel, JLayeredPane.POPUP_LAYER);
+						
+						                    sidebarPanel.setVisible(true);
+						                }
+						                else
+						                	sidebarPanel.setVisible(false);
+						            }
+						        };
+        hamburgerBtn.addActionListener(hamburgerBtnListener);
         
-        logoLabel.addMouseListener(new MouseAdapter()
-				        		   {
-				        			 @Override
-				        			 public void mouseClicked(MouseEvent e)
-				        			 {
-				        				 Controller.getController().goToHomepage(CoursesFrame.this);
-				        			 }
-				        		   });
-        
-        homeBtn.addActionListener(new ActionListener()
-        						  {
-        							 @Override
-        							 public void actionPerformed(ActionEvent e)
-        							 {
-        								 Controller.getController().goToHomepage(CoursesFrame.this);
-        							 }
-        						  });
-        
-        coursesBtn.addActionListener(new ActionListener()
-								  {
+        /*
+         * Listeners di navigazione
+         */
+        logoLabelMouseListener = new MouseAdapter()
+								   {
+									 @Override
+									 public void mouseClicked(MouseEvent e)
+									 {
+										 Controller.getController().goToHomepage(CoursesFrame.this);
+									 }
+								   };
+		logoLabel.addMouseListener(logoLabelMouseListener);					 
+		
+		homeBtnListener = new ActionListener()
+						  {
+							 @Override
+							 public void actionPerformed(ActionEvent e)
+							 {
+								 Controller.getController().goToHomepage(CoursesFrame.this);
+							 }
+						  };
+		homeBtn.addActionListener(homeBtnListener);
+		
+		coursesBtnListener = new ActionListener()
+							  {
+								 @Override
+								 public void actionPerformed(ActionEvent e)
+								 {
+									 Controller.getController().goToCourses(CoursesFrame.this);
+								 }
+							  };
+		coursesBtn.addActionListener(coursesBtnListener);
+		
+		recipesBtnListener = new ActionListener()
+							 {
+								 @Override
+								 public void actionPerformed(ActionEvent e)
+								 {
+									 Controller.getController().goToRecipes(CoursesFrame.this);
+								 }
+							 };
+		recipesBtn.addActionListener(recipesBtnListener);
+		
+
+		reportBtnListener = new ActionListener()
+							 {
+								 @Override
+								 public void actionPerformed(ActionEvent e)
+								 {
+									 Controller.getController().goToReport(CoursesFrame.this);
+								 }
+							 };
+		reportBtn.addActionListener(reportBtnListener);		
+		
+		profileItemBtnListener = new ActionListener()
+								 {
 									 @Override
 									 public void actionPerformed(ActionEvent e)
 									 {
-										 Controller.getController().goToCourses(CoursesFrame.this);
+										 Controller.getController().goToProfile(CoursesFrame.this);
 									 }
-								  });
-        
-        recipesBtn.addActionListener(new ActionListener()
+								 };
+		profileItemBtn.addActionListener(profileItemBtnListener);
+		
+		
+		logoutItemBtnListener = new ActionListener()
+								 {
+									 @Override
+									 public void actionPerformed(ActionEvent e)
 									 {
-										 @Override
-										 public void actionPerformed(ActionEvent e)
-										 {
-											 Controller.getController().goToRecipes(CoursesFrame.this);
-										 }
-									 });
-        reportBtn.addActionListener(new ActionListener()
-									 {
-										 @Override
-										 public void actionPerformed(ActionEvent e)
-										 {
-											 Controller.getController().goToReport(CoursesFrame.this);
-										 }
-									 });
-        
-        profileItemBtn.addActionListener(new ActionListener()
-									 {
-										 @Override
-										 public void actionPerformed(ActionEvent e)
-										 {
-											 Controller.getController().goToProfile(CoursesFrame.this);
-										 }
-									 });
-        
-        logoutItemBtn.addActionListener(new ActionListener()
-										 {
-											 @Override
-											 public void actionPerformed(ActionEvent e)
-											 {
-												 Controller.getController().logout(CoursesFrame.this);
-											 }
-										 });
-        
-        /**
+										 Controller.getController().logout(CoursesFrame.this);
+									 }
+								 };
+		logoutItemBtn.addActionListener(logoutItemBtnListener);
+		
+	    /**
          * Listener per eventi di ridimensionamento e spostamento della finestra.
          * Aggiorna la posizione e dimensione della sidebar e del dropdown del profilo
          * per mantenere un corretto posizionamento rispetto all'header e alla finestra.
          * Garantisce che i componenti popup rimangano ben allineati e visibili anche al resize o spostamento.
          */
-        addComponentListener(new ComponentAdapter()
-        					 {
-        						@Override
-        						public void componentResized(ComponentEvent e)
-        						{
-        							updateDropDownPosition();
-        							updateSidebarPosition();
-        						}
-        						@Override
-        						public void componentMoved(ComponentEvent e)
-        						{
-        							updateDropDownPosition();
-        							updateSidebarPosition();
-        						}
-        					 });
+        frameComponentListener = new ComponentAdapter()
+	        					 {
+	        						@Override
+	        						public void componentResized(ComponentEvent e)
+	        						{
+	        							updateDropDownPosition();
+	        							updateSidebarPosition();
+	        						}
+	        						@Override
+	        						public void componentMoved(ComponentEvent e)
+	        						{
+	        							updateDropDownPosition();
+	        							updateSidebarPosition();
+	        						}
+	        					 };
+		addComponentListener(frameComponentListener);
+		
+		hoverListener = new MouseAdapter() 
+						{
+						    @Override
+						    public void mouseEntered(MouseEvent e) 
+						    {
+						        if (e.getSource() instanceof JXButton) 
+						        {
+						            JXButton btn = (JXButton) e.getSource();
+						            btn.setBackground(new Color(230, 230, 230));
+						            btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+						        }
+						    }
+						    @Override
+						    public void mouseExited(MouseEvent e) 
+						    {
+						        if (e.getSource() instanceof JXButton) 
+						        {
+						            JXButton btn = (JXButton) e.getSource();
+						            btn.setBackground(new Color(245, 245, 245));
+						        }
+						    }
+						};
 
-        // Setto il focus iniziale sul bottone search (prima era sul menu hamburger)
-        EventQueue.invokeLater(() -> searchField.requestFocusInWindow());
+		homeBtn.addMouseListener(hoverListener);
+		coursesBtn.addMouseListener(hoverListener);
+		recipesBtn.addMouseListener(hoverListener);
+		reportBtn.addMouseListener(hoverListener);
+		profileItemBtn.addMouseListener(hoverListener);
+		logoutItemBtn.addMouseListener(hoverListener);
     }
     
     /**
-     * Sovrascrive il metodo dispose per rimuovere il listener AWT globale
-     * prima di distruggere la finestra, evitando memory leak.
+     * Rimuove tutti i listener registrati per evitare
+     * memory leak o comportamenti indesiderati alla chiusura.
+     */
+    private void disposeListeners() 
+    {
+
+        if(dropdownClickListener != null)
+            Toolkit.getDefaultToolkit().removeAWTEventListener(dropdownClickListener);
+
+
+        if(homeBtn != null && homeBtnListener != null)
+            homeBtn.removeActionListener(homeBtnListener);
+        
+        if(coursesBtn != null && coursesBtnListener != null)
+            coursesBtn.removeActionListener(coursesBtnListener);
+        
+        if(recipesBtn != null && recipesBtnListener != null)
+            recipesBtn.removeActionListener(recipesBtnListener);
+        
+        if(reportBtn != null && reportBtnListener != null)
+            reportBtn.removeActionListener(reportBtnListener);
+        
+        if(profileItemBtn != null && profileItemBtnListener != null)
+            profileItemBtn.removeActionListener(profileItemBtnListener);
+        
+        if(logoutItemBtn != null && logoutItemBtnListener != null)
+            logoutItemBtn.removeActionListener(logoutItemBtnListener);
+        
+        if(profileBtn != null && profileBtnListener != null)
+            profileBtn.removeActionListener(profileBtnListener);
+        
+        if(hamburgerBtn != null && hamburgerBtnListener != null)
+            hamburgerBtn.removeActionListener(hamburgerBtnListener);
+
+        if(hoverListener != null) 
+        {
+            if (homeBtn != null) homeBtn.removeMouseListener(hoverListener);
+            if (coursesBtn != null) coursesBtn.removeMouseListener(hoverListener);
+            if (recipesBtn != null) recipesBtn.removeMouseListener(hoverListener);
+            if (reportBtn != null) reportBtn.removeMouseListener(hoverListener);
+            if (profileItemBtn != null) profileItemBtn.removeMouseListener(hoverListener);
+            if (logoutItemBtn != null) logoutItemBtn.removeMouseListener(hoverListener);
+        }
+
+        if(logoLabel != null && logoLabelMouseListener != null)
+            logoLabel.removeMouseListener(logoLabelMouseListener);
+
+        if(frameComponentListener != null)
+            removeComponentListener(frameComponentListener);
+    }
+ 
+    /**
+     * Rimuove tutti i listener registrati e libera risorse
+     * prima di chiudere la finestra, per evitare memory leak.
      */
     @Override
     public void dispose()
     {
-        Toolkit.getDefaultToolkit().removeAWTEventListener(dropdownClickListener);
+    	disposeListeners();
         super.dispose();
     }
     
     /**
-     * Resetta i campi e lo stato della vista dei corsi.
-     * Pulisce il campo di ricerca e ripristina il focus su di esso.
+     * Resetta la vista della finestra pulendo il campo di ricerca
+     * e ripristinando il focus su di esso.
+     * Può essere usato per aggiornare la vista ad uno stato iniziale.
      */
     public void resetView() 
     {
@@ -434,6 +566,55 @@ public class CoursesFrame extends JXFrame {
         searchField.requestFocusInWindow();
         // scrollPane.getVerticalScrollBar().setValue(0); // se hai scroll
         // refreshTableModel(); // se carichi dati
+    }
+   
+    /**
+     * Applica uno stile coerente a un pulsante della sidebar.
+     * Imposta font, cursore, colori e bordi.
+     *
+     * @param button Il pulsante JXButton da stilizzare.
+     */
+    private void styleSidebarButton(JXButton button)
+    {
+        button.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setContentAreaFilled(true);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        button.setOpaque(true);
+        button.setBackground(new Color(245, 245, 245));
+    }
+    
+    /**
+     * Applica uno stile coerente a un pulsante all'interno del menu dropdown del profilo.
+     * Imposta allineamento, font, colori e bordi.
+     *
+     * @param button Il pulsante JXButton da stilizzare.
+     */
+    private void styleDropdownButton(JXButton button)
+    {
+        button.setHorizontalAlignment(JXButton.LEFT);
+        button.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        button.setContentAreaFilled(true);
+        button.setBackground(new Color(245, 245, 245));
+        button.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setOpaque(true);
+        button.setForeground(new Color(60, 60, 60));
+    }
+    
+    /**
+     * Applica uno stile coerente ai componenti grafici,
+     * inclusi pulsanti della sidebar e del menu dropdown.
+     */
+    private void styleComponents()
+    {
+    	styleDropdownButton(profileItemBtn);
+        styleDropdownButton(logoutItemBtn);
+        
+        styleSidebarButton(homeBtn);
+        styleSidebarButton(coursesBtn);
+        styleSidebarButton(recipesBtn);
+        styleSidebarButton(reportBtn);
     }
 
     /**
@@ -468,69 +649,4 @@ public class CoursesFrame extends JXFrame {
             sidebarPanel.setBounds(0, headerBottomLeft.y, 200, getHeight() - headerBottomLeft.y);
         }
     }
-
-    /**
-     * Applica uno stile coerente a un pulsante della sidebar.
-     * Imposta font, cursore, colori, bordi e comportamenti al passaggio del mouse.
-     *
-     * @param button Il pulsante JXButton da stilizzare.
-     */
-    private void styleSidebarButton(JXButton button)
-    {
-        button.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.setContentAreaFilled(true);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
-        button.setOpaque(true);
-        button.setBackground(new Color(245, 245, 245));
-        
-        button.addMouseListener(new MouseAdapter() 
-						        {
-						            @Override
-						            public void mouseEntered(MouseEvent e)
-						            {
-						                button.setBackground(new Color(230, 230, 230));
-						            }
-						            @Override
-						            public void mouseExited(MouseEvent e)
-						            {
-						                button.setBackground(new Color(245, 245, 245));
-						            }
-						        });
-    }
-
-    /**
-     * Applica uno stile coerente a un pulsante all'interno del menu dropdown del profilo.
-     * Imposta allineamento, font, colori, bordi e comportamenti al passaggio del mouse.
-     *
-     * @param button Il pulsante JXButton da stilizzare.
-     */
-    private void styleDropdownButton(JXButton button) 
-    {
-        button.setHorizontalAlignment(JXButton.LEFT);
-        button.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        button.setContentAreaFilled(true);
-        button.setBackground(new Color(245, 245, 245));
-        button.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.setOpaque(true);
-        button.setForeground(new Color(60, 60, 60));
-
-        button.addMouseListener(new MouseAdapter() 
-        						{
-						            public void mouseEntered(MouseEvent e) 
-						            {
-						                button.setBackground(new Color(230, 230, 230));
-						            }
-						
-						            public void mouseExited(MouseEvent e)
-						            {
-						                button.setBackground(new Color(245, 245, 245));
-						            }
-						        });
-    }
-
-
-  
-
 }

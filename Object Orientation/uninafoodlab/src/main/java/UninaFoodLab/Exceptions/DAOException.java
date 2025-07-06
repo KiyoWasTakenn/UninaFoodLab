@@ -2,7 +2,9 @@ package UninaFoodLab.Exceptions;
 
 public class DAOException extends RuntimeException
 {
-    public DAOException(String msg, Throwable cause)
+	private static final long serialVersionUID = 1L;
+
+	public DAOException(String msg, Throwable cause)
     {
         super(msg, cause);
     }
