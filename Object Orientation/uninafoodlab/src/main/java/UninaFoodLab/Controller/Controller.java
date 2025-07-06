@@ -21,6 +21,8 @@ import UninaFoodLab.DAO.*;
 import UninaFoodLab.DAO.Postgres.*;
 import UninaFoodLab.Exceptions.*;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -261,7 +263,7 @@ public class Controller
         return hashed;
     }
     
-    public void checkRegister (RegisterFrame currFrame, boolean partecipante, boolean chef, String nome, String cognome, LocalDate data, String luogo, String codFisc, String email, String username, char[] pass, Path path, String percorsoComposto, File selectedFile)
+    public void checkRegister(RegisterFrame currFrame, boolean partecipante, boolean chef, String nome, String cognome, LocalDate data, String luogo, String codFisc, String email, String username, char[] pass, Path path, String percorsoComposto, File selectedFile)
     {
     	try
     	{
@@ -277,7 +279,11 @@ public class Controller
     				if(getPartecipanteDAO().getPartecipanteByCodEmail(codFisc, email))
     					registerFailed(currFrame, "Partecipante già registrato.");
     				else
+    				{
     					getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
+    					registerSuccess(currFrame, username);
+    				}
+    					
     			}
     			catch(DAOException e1)
     			{
@@ -298,6 +304,7 @@ public class Controller
     					try
     					{
     						getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), path.toString(), null, null));
+    						registerSuccess(currFrame, username);
     					}
     					catch(DAOException e1)
     					{
@@ -310,18 +317,27 @@ public class Controller
 		        		
 		        		File cartellaComposta = new File(percorsoComposto);
 		        				
-		                if (!cartellaComposta.exists()) {
-		                    if (cartellaComposta.mkdirs()) {
+		                if (!cartellaComposta.exists()) 
+		                {
+		                    if (cartellaComposta.mkdirs()) 
+		                    {
 		                        System.out.println("Cartella composta creata con successo: " + percorsoComposto);
-		                    } else {
+		                    } 
+		                    else 
+		                    {
 		                        System.out.println("Impossibile creare la cartella composta.");
 		                    }
-		                } else {
+		                } 
+		                else 
+		                {
 		                    System.out.println("La cartella composta esiste già: " + percorsoComposto);
 		                }
+		                
 		                Files.copy(selectedFile.toPath(), path, StandardCopyOption.REPLACE_EXISTING);
 		                System.out.println("File salvato con successo in: " + path);
-		            } catch (IOException e1) {
+		            } 
+    				catch (IOException e1) 
+    				{
 		                System.err.println("Errore durante il salvataggio del file: " + e1.getMessage());
 		            }
     			}
@@ -335,6 +351,15 @@ public class Controller
     	}
     }
     
+    
+	
+	private void registerSuccess(RegisterFrame currFrame, String username) 
+    {
+		LOGGER.log(Level.INFO, "Registrazione riuscita per utente: {0}", username);
+    	goToLogin(currFrame);
+    	
+    }
+	
     private void registerFailed(RegisterFrame currFrame, String message) 
     {
     	LOGGER.log(Level.WARNING, "Tentativo di registrazione fallito: {0}", message);
@@ -414,12 +439,14 @@ public class Controller
 	// CoursesFrame
 	
 	// ReportFrame
-		public void openMonthlyReport(JFrame parent)
-		{
-		    ReportFrame report = new ReportFrame();
-		    report.setReportData(500,249,40,2,900,2);
-		    report.setVisible(true);
-		}
+	public void openMonthlyReport(JFrame parent)
+	{
+	    ReportFrame report = new ReportFrame();
+	    report.setReportData(0,249,0,0,900,2);
+	    report.setVisible(true);
+
+
+	}
 
 	
 }

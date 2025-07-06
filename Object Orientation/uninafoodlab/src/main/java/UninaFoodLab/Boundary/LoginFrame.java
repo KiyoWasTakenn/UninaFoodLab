@@ -56,27 +56,16 @@ public class LoginFrame extends JXFrame
 	private CompoundBorder errorBorder = BorderFactory.createCompoundBorder(
 	        	new LineBorder(Color.RED, 1),
 	        	new EmptyBorder(0, 6, 0, 0));
-	private ImageIcon windowLogo;
-	private ImageIcon paneLogo;
-	private JXLabel logoLabel;
-	private JXLabel userErrorLabel;
-	private JXLabel passErrorLabel;
-	private JXLabel userLabel;
+	private ImageIcon windowLogo, paneLogo;
+	private JXLabel logoLabel, userErrorLabel, passErrorLabel, userLabel, passLabel, orLabel;
 	private JXTextField userField;
-	private JXLabel passLabel;
 	private JPasswordField passField;
 	private JToggleButton showPassBtn;
-	private JXButton loginBtn;
-	private JXLabel orLabel;
-	private JXButton registerBtn;
+	private JXButton loginBtn, registerBtn;
 	
-	DocumentListener userFieldDocumentListener;
-	DocumentListener passFieldDocumentListener;
-	FocusAdapter userFieldFocusListener;
-	FocusAdapter passFieldFocusListener;
-	ActionListener showPassBtnActionListener;
-	ActionListener registerBtnActionListener;
-	ActionListener loginBtnActionListener;	
+	DocumentListener userFieldDocumentListener, passFieldDocumentListener;
+	FocusAdapter userFieldFocusListener, passFieldFocusListener;
+	ActionListener showPassBtnActionListener, registerBtnActionListener, loginBtnActionListener;	
 	
 	public LoginFrame()
 	{
@@ -88,6 +77,7 @@ public class LoginFrame extends JXFrame
 		
 		initComponents();
 		initListeners();
+		setVisible(true);
 	}
 	
 	private void initComponents()
