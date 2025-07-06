@@ -117,7 +117,7 @@ public class RegisterFrame extends JXFrame
 	DocumentListener nomeFieldDocumentListener;		
 	FocusAdapter cognomeFieldFocusListener;		
 	DocumentListener cognomeFieldDocumentListener;		
-	FocusAdapter codFiscFocusAdapter;		
+	FocusAdapter codFiscFocusListener;		
 	DocumentListener codFiscFieldDocumentListener;		
 	FocusAdapter luogoFieldFocusListener;		
 	DocumentListener luogoFieldDocumentListener;			
@@ -484,7 +484,7 @@ public class RegisterFrame extends JXFrame
 		};
 		cognomeField.getDocument().addDocumentListener(cognomeFieldDocumentListener);
 		
-		codFiscFocusAdapter = new FocusAdapter()
+		codFiscFocusListener = new FocusAdapter()
 		   {
 
 			@Override
@@ -495,7 +495,7 @@ public class RegisterFrame extends JXFrame
 			}
 		   };
 		  
-		codFiscField.addFocusListener(codFiscFocusAdapter);
+		codFiscField.addFocusListener(codFiscFocusListener);
 		
 		codFiscFieldDocumentListener = new DocumentListener()
 		{
@@ -877,7 +877,7 @@ public class RegisterFrame extends JXFrame
 	    accediBtn.setEnabled(true);
 	}
 	
-	private void disposeListener()
+	private void disposeListeners()
 	{
 		if(scegliBtn != null && scegliBtnActionListener != null)
 			scegliBtn.removeActionListener(scegliBtnActionListener);
@@ -900,177 +900,47 @@ public class RegisterFrame extends JXFrame
 		if(cognomeField != null && cognomeFieldDocumentListener != null)
 			cognomeField.getDocument().removeDocumentListener(cognomeFieldDocumentListener);
 		
-		FocusAdapter codFiscFocusAdapter = new FocusAdapter()
-		   {
+		if(codFiscField != null && codFiscFocusListener != null)
+			codFiscField.removeFocusListener(codFiscFocusListener);
 
-			@Override
-		    public void focusGained(FocusEvent e)
-			{ 
-				if(!codFiscField.getText().isEmpty())
-				    codFiscField.selectAll();
-			}
-		   };
-		  
-		codFiscField.addFocusListener(codFiscFocusAdapter);
+		if(codFiscField != null && codFiscFieldDocumentListener != null)
+			codFiscField.getDocument().removeDocumentListener(codFiscFieldDocumentListener);
 		
-		DocumentListener codFiscFieldDocumentListener = new DocumentListener()
-		{
-			@Override
-		    public void insertUpdate(DocumentEvent e) { checkCod(); }
-		    @Override
-		    public void removeUpdate(DocumentEvent e) { checkCod(); }
-		    @Override
-		    public void changedUpdate(DocumentEvent e) { checkCod(); }
-		};
-	   
-		codFiscField.getDocument().addDocumentListener(codFiscFieldDocumentListener);
+		if(luogoField != null && luogoFieldFocusListener != null)
+			luogoField.removeFocusListener(luogoFieldFocusListener);
 		
-		FocusAdapter luogoFieldFocusListener = new FocusAdapter()
-		   {
-			@Override
-		    public void focusGained(FocusEvent e)
-			{ 
-				if(!luogoField.getText().isEmpty())
-				    luogoField.selectAll();
-			}
-			
-		   };
-		  
-		luogoField.addFocusListener(luogoFieldFocusListener);
+		if(luogoField != null && luogoFieldDocumentListener != null)
+			luogoField.getDocument().removeDocumentListener(luogoFieldDocumentListener);
 		
-		DocumentListener luogoFieldDocumentListener = new DocumentListener()
-		{
-			@Override
-		    public void insertUpdate(DocumentEvent e) { checkLuogo(); }
-		    @Override
-		    public void removeUpdate(DocumentEvent e) { checkLuogo(); }
-		    @Override
-		    public void changedUpdate(DocumentEvent e) { checkLuogo(); }
-		};
+		if(emailField != null && emailFieldFocusListener != null)
+			emailField.removeFocusListener(emailFieldFocusListener);
 		
-		luogoField.getDocument().addDocumentListener(luogoFieldDocumentListener);
-			
-		FocusAdapter emailFieldFocusListener = new FocusAdapter()
-		   {
+		if(emailField != null && emailFieldDocumentListener != null)
+			emailField.getDocument().removeDocumentListener(emailFieldDocumentListener);
+		
+		if(emailField != null && emailFieldDocumentListener != null)
+			emailField.getDocument().removeDocumentListener(emailFieldDocumentListener);
+		
+		if(userField != null && userFieldDocumentListener != null)
+			userField.getDocument().removeDocumentListener(userFieldDocumentListener);
+		
+		if(passwordField != null && passwordFieldDocumentListener != null)
+			passwordField.getDocument().removeDocumentListener(passwordFieldDocumentListener);
+		
+		if(userField != null && userFieldFocusListener != null)
+			userField.removeFocusListener(userFieldFocusListener);
+		
+		if(passwordField != null && passwordFieldFocusListener != null)
+			passwordField.removeFocusListener(passwordFieldFocusListener);
 
-			@Override
-		    public void focusGained(FocusEvent e)
-			{ 
-				if(!emailField.getText().isEmpty())
-				    emailField.selectAll();
-			}
-		   };
-	
-		emailField.addFocusListener(emailFieldFocusListener);
+		if(accediBtn != null && accediBtnActionListener != null)
+			accediBtn.removeActionListener(accediBtnActionListener);
 		
-		DocumentListener emailFieldDocumentListener = new DocumentListener()
-		{
-			@Override
-		    public void insertUpdate(DocumentEvent e) { checkEmail(); }
-		    @Override
-		    public void removeUpdate(DocumentEvent e) { checkEmail(); }
-		    @Override
-		    public void changedUpdate(DocumentEvent e) { checkEmail(); }
-		};
-	   
-		emailField.getDocument().addDocumentListener(emailFieldDocumentListener);
+		if(chefButton != null && chefButtonActionListener != null)
+			chefButton.removeActionListener(chefButtonActionListener);
 		
-		DocumentListener userFieldDocumentListener = new DocumentListener()
-		{
-			@Override
-		    public void insertUpdate(DocumentEvent e) { checkUser(); }
-		    @Override
-		    public void removeUpdate(DocumentEvent e) { checkUser(); }
-		    @Override
-		    public void changedUpdate(DocumentEvent e) { checkUser(); }
-		};
-	   
-		userField.getDocument().addDocumentListener(userFieldDocumentListener);
-
-		DocumentListener passwordFieldDocumentListener = new DocumentListener()
-		{
-			@Override
-		    public void insertUpdate(DocumentEvent e) { checkPass(); }
-		    @Override
-		    public void removeUpdate(DocumentEvent e) { checkPass(); }
-		    @Override
-		    public void changedUpdate(DocumentEvent e) { checkPass(); }
-		};
-	   
-		passwordField.getDocument().addDocumentListener(passwordFieldDocumentListener);
-		
-		FocusAdapter userFieldFocusListener = new FocusAdapter()
-		   {
-
-				@Override
-			    public void focusGained(FocusEvent e)
-				{ 
-					if(!userField.getText().isEmpty())
-					    userField.selectAll();
-				}
-		   };
-		  
-		userField.addFocusListener(userFieldFocusListener);
-
-
-		FocusAdapter passwordFieldFocusListener= new FocusAdapter()
-		   {
-				
-				@Override
-			    public void focusGained(FocusEvent e) 
-				{ 
-					if(!(passwordField.getPassword().length == 0))
-						passwordField.selectAll(); 
-				}
-		   };
-		  
-		passwordField.addFocusListener(passwordFieldFocusListener);
-
-		ActionListener accediBtnActionListener = new ActionListener()
-		  {
-			@Override 
-			public void actionPerformed(ActionEvent e)
-			{										
-				Controller.getController().goToLogin(RegisterFrame.this);
-			}
-		  };
-		
-		accediBtn.addActionListener(accediBtnActionListener);
-		
-		ActionListener chefButtonActionListener = new ActionListener()
-		  {
-			@Override 
-			public void actionPerformed(ActionEvent e)
-			{				
-				curriculumErrorLabel.setEnabled(true);
-				curriculumErrorLabel.setVisible(true);
-				scegliBtn.setEnabled(true);
-				scegliBtn.setVisible(true);
-				fileLabel.setEnabled(true);
-				fileLabel.setVisible(true);
-			}
-		  };
-		
-		chefButton.addActionListener(chefButtonActionListener);
-		
-		ActionListener partecipanteButtonActionListener = new ActionListener()
-		  {
-			@Override 
-			public void actionPerformed(ActionEvent e)
-			{				
-				curriculumErrorLabel.setEnabled(false);
-				curriculumErrorLabel.setVisible(false);
-				scegliBtn.setEnabled(false);
-				scegliBtn.setVisible(false);
-				fileLabel.setText(" ");
-				fileLabel.setEnabled(false);
-				fileLabel.setVisible(false);
-			}
-		  };
-		
-		partecipanteButton.addActionListener(partecipanteButtonActionListener);
-		
-		}
+		if(partecipanteButton != null && partecipanteButtonActionListener != null)
+			partecipanteButton.removeActionListener(partecipanteButtonActionListener);
 
 	}
 	@Override
