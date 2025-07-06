@@ -108,8 +108,7 @@ public class RegisterFrame extends JXFrame
 	private JXLabel fileLabel;
 	private File selectedFile;
 	private JXLabel curriculumErrorLabel;
-	private Path destinationPath;
-	private String percorsoComposto;
+	
 	ActionListener scegliBtnActionListener;		
 	ActionListener showPassBtnBtnActionListener;		
 	ActionListener registerBtnActionListener;				
@@ -424,16 +423,13 @@ public class RegisterFrame extends JXFrame
 		        	scegliBtn.requestFocus();
 		        else
 		        {
-		        	percorsoComposto = System.getProperty("user.dir") + "\\src\\main\\resources\\"+ userField.getText().trim()+"\\Curriculum";		                	     		           
-			        destinationPath = Paths.get(percorsoComposto, selectedFile.getName());
-			        
 		        	
 		        	//registerBtn.setEnabled(false);
 		        	
 		        	Controller.getController().checkRegister(RegisterFrame.this, partecipanteButton.isSelected(), chefButton.isSelected(), 
 		        										     nomeField.getText(), cognomeField.getText(),dataPicker.getDate(), luogoField.getText(),
 		        										     codFiscField.getText(), emailField.getText(), userField.getText().trim(), 
-		        										     passwordField.getPassword(), destinationPath, percorsoComposto, selectedFile);
+		        										     passwordField.getPassword(), selectedFile);
 		        	
 		        }
 		    }

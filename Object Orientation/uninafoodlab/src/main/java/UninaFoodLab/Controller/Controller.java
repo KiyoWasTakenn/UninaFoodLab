@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 
@@ -263,7 +264,9 @@ public class Controller
         return hashed;
     }
     
-    public void checkRegister(RegisterFrame currFrame, boolean partecipante, boolean chef, String nome, String cognome, LocalDate data, String luogo, String codFisc, String email, String username, char[] pass, Path path, String percorsoComposto, File selectedFile)
+    public void checkRegister(RegisterFrame currFrame, boolean partecipante, boolean chef, String nome,
+    							String cognome, LocalDate data, String luogo, String codFisc, String email, 
+    							String username, char[] pass, File selectedFile)
     {
     	try
     	{
@@ -271,83 +274,61 @@ public class Controller
 			registerFailed(currFrame, "Username già utilizzato.");   		
     	}
     	catch(RecordNotFoundException e)
-    	{
-    		if(partecipante==true)
+    	{   	
+    		try
     		{
-    			try
+    			if(getPartecipanteDAO().getPartecipanteByCodEmail(codFisc, email) || getChefDAO().getChefByCodEmail(codFisc, email))
+    				registerFailed(currFrame, "Utente già registrato per questa modalità.");
+    			else
     			{
-    				if(getPartecipanteDAO().getPartecipanteByCodEmail(codFisc, email))
-    					registerFailed(currFrame, "Partecipante già registrato.");
-    				else
+    				if(partecipante==true)
     				{
-    					getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
-    					registerSuccess(currFrame, username);
-    				}
-    					
-    			}
-    			catch(DAOException e1)
-    			{
-    				LOGGER.log(Level.SEVERE, "Errore registrazione DB", e1);
-    				registerFailed(currFrame, "Errore di accesso al database.");
-    			}
-    		}
-    		else
-    		{
-    			try
-    			{
-    				if(getChefDAO().getChefByCodEmail(codFisc, email))
-    				{
-    					registerFailed(currFrame, "Chef già registrato.");
+	    				getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
+	    				registerSuccess(currFrame, username);   					
     				}
     				else
     				{
-    					try
-    					{
-    						getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), path.toString(), null, null));
-    						registerSuccess(currFrame, username);
-    					}
-    					catch(DAOException e1)
-    					{
-    						LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
-    						registerFailed(currFrame, "Errore di accesso al database.");
-    					}	
-    				}
-    				
-    				try {
-		        		
+    					String percorsoComposto = System.getProperty("user.dir") + "\\src\\main\\resources\\"+ username +"\\Curriculum";		                	     		           
+    					Path destinationPath = Paths.get(percorsoComposto, selectedFile.getName());
+    					String toSavePath = "\\src\\main\\resources\\"+ username +"\\Curriculum";
+    					getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), toSavePath, null, null));
+						registerSuccess(currFrame, username);	
+						
 		        		File cartellaComposta = new File(percorsoComposto);
 		        				
 		                if (!cartellaComposta.exists()) 
 		                {
-		                    if (cartellaComposta.mkdirs()) 
+		                    if (cartellaComposta.mkdirs()) 	    
 		                    {
-		                        System.out.println("Cartella composta creata con successo: " + percorsoComposto);
-		                    } 
+		                    	LOGGER.log(Level.INFO, "Creazione cartella avvenuta correttamente.");
+		                    	goToLogin(currFrame);
+		                    }	                    
 		                    else 
 		                    {
-		                        System.out.println("Impossibile creare la cartella composta.");
+		                    	LOGGER.log(Level.SEVERE, "Errore durante creazione cartella composta.");
+			        			registerFailed(currFrame, "Errore durante salvataggio cartelle.");
 		                    }
 		                } 
 		                else 
 		                {
-		                    System.out.println("La cartella composta esiste già: " + percorsoComposto);
-		                }
-		                
-		                Files.copy(selectedFile.toPath(), path, StandardCopyOption.REPLACE_EXISTING);
-		                System.out.println("File salvato con successo in: " + path);
-		            } 
-    				catch (IOException e1) 
-    				{
-		                System.err.println("Errore durante il salvataggio del file: " + e1.getMessage());
-		            }
+		                	LOGGER.log(Level.SEVERE, "Errore cartella già esistente.");
+		        			registerFailed(currFrame, "Errore durante salvataggio cartelle.");
+		                }		              		                
+		                Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
+		                System.out.println("File salvato con successo in: " + destinationPath);
+    				}    					
     			}
-    			catch(ChefNotFoundException e3)
-    			{
-    				LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
-    				registerFailed(currFrame, "Errore di accesso al database.");
-    			}
-    			
     		}
+    		catch(DAOException e1)
+    		{
+    			LOGGER.log(Level.SEVERE, "Errore registrazione DB", e1);
+    			registerFailed(currFrame, "Errore di accesso al database.");
+    		}
+    		catch (IOException e2) 
+			{
+    			LOGGER.log(Level.SEVERE, "Errore salvataggio file", e2);
+    			registerFailed(currFrame, "Errore di salvataggio file.");
+            }
     	}
     }
     
