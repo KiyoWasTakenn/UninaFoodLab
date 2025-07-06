@@ -5,11 +5,9 @@ import java.awt.EventQueue;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.Period;
 
@@ -36,6 +34,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.github.lgooddatepicker.components.DatePicker;
 
 import UninaFoodLab.Controller.Controller;
+import UninaFoodLab.Exceptions.DAOException;
 
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
@@ -109,6 +108,8 @@ public class RegisterFrame extends JXFrame
 	private JXLabel fileLabel;
 	private File selectedFile;
 	private JXLabel curriculumErrorLabel;
+	private Path destinationPath;
+	private String percorsoComposto;
 	
 	public RegisterFrame()
 	{
@@ -336,19 +337,12 @@ public class RegisterFrame extends JXFrame
 		        int returnValue = fileChooser.showOpenDialog(RegisterFrame.this);
 
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-		        	selectedFile = fileChooser.getSelectedFile();
-		            String projectFolderPath = System.getProperty("user.dir")+"\\src\\main\\sources\\Curriculum";
-		            Path destinationPath = Paths.get(projectFolderPath, selectedFile.getName());
+		        	selectedFile = fileChooser.getSelectedFile();		        	
 
-		            try {
-		                Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
-		                System.out.println("File salvato con successo in: " + destinationPath);
-		            } catch (IOException e1) {
-		                System.err.println("Errore durante il salvataggio del file: " + e1.getMessage());
-		        	
+		            
 		            fileLabel.setText(selectedFile.getName());
-		            // Qui si può aggiungere il codice per elaborare il file selezionato
-		            }
+		            
+		            
 		        } else {
 		            System.out.println("Selezione annullata.");
 		        }
@@ -399,8 +393,14 @@ public class RegisterFrame extends JXFrame
 		        	scegliBtn.requestFocus();
 		        else
 		        {
+		        	percorsoComposto = System.getProperty("user.dir")+"\\src\\main\\resources\\"+userField.getText().trim()+"\\Curriculum";		                	     		           
+			        destinationPath = Paths.get(percorsoComposto, selectedFile.getName());
+			        
+		        	
 		        	registerBtn.setEnabled(false);
-		        	Controller.getController().checkRegister(RegisterFrame.this, partecipanteButton.isSelected(), chefButton.isSelected(), nomeField.getText(), cognomeField.getText(),dataPicker.getDate(), luogoField.getText(), codFiscField.getText(), emailField.getText(), userField.getText().trim(), passwordField.getPassword(), selectedFile.getAbsolutePath());
+		        	
+		        	Controller.getController().checkRegister(RegisterFrame.this, partecipanteButton.isSelected(), chefButton.isSelected(), nomeField.getText(), cognomeField.getText(),dataPicker.getDate(), luogoField.getText(), codFiscField.getText(), emailField.getText(), userField.getText().trim(), passwordField.getPassword(), destinationPath, percorsoComposto, selectedFile);
+		        	
 		        }
 		    }
 		}

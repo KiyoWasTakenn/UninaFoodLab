@@ -21,6 +21,11 @@ import UninaFoodLab.DAO.*;
 import UninaFoodLab.DAO.Postgres.*;
 import UninaFoodLab.Exceptions.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 
 public class Controller
@@ -252,7 +257,7 @@ public class Controller
         return hashed;
     }
     
-    public void checkRegister (RegisterFrame currFrame, boolean partecipante, boolean chef, String nome, String cognome, LocalDate data, String luogo, String codFisc, String email, String username, char[] pass, String path)
+    public void checkRegister (RegisterFrame currFrame, boolean partecipante, boolean chef, String nome, String cognome, LocalDate data, String luogo, String codFisc, String email, String username, char[] pass, Path path, String percorsoComposto, File selectedFile)
     {
     	try
     	{
@@ -277,14 +282,14 @@ public class Controller
     					}
     					catch(DAOException e1)
     					{
-    						LOGGER.log(Level.SEVERE, "Errore login DB", e);
+    						LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
     						registerFailed(currFrame, "Errore di accesso al database.");
     					}
     				}
     			}
     			catch(DAOException  e2)
     			{
-    				LOGGER.log(Level.SEVERE, "Errore login DB", e);
+    				LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
     				registerFailed(currFrame, "Errore di accesso al database.");
     			}
     		}
@@ -300,18 +305,37 @@ public class Controller
     				{
     					try
     					{
-    						getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), path, null, null));
+    						getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), path.toString(), null, null));
     					}
     					catch(DAOException e1)
     					{
-    						LOGGER.log(Level.SEVERE, "Errore login DB", e);
+    						LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
     						registerFailed(currFrame, "Errore di accesso al database.");
     					}	
     				}
+    				
+    				try {
+		        		
+		        		File cartellaComposta = new File(percorsoComposto);
+		        				
+		                if (!cartellaComposta.exists()) {
+		                    if (cartellaComposta.mkdirs()) {
+		                        System.out.println("Cartella composta creata con successo: " + percorsoComposto);
+		                    } else {
+		                        System.out.println("Impossibile creare la cartella composta.");
+		                    }
+		                } else {
+		                    System.out.println("La cartella composta esiste già: " + percorsoComposto);
+		                }
+		                Files.copy(selectedFile.toPath(), path, StandardCopyOption.REPLACE_EXISTING);
+		                System.out.println("File salvato con successo in: " + path);
+		            } catch (IOException e1) {
+		                System.err.println("Errore durante il salvataggio del file: " + e1.getMessage());
+		            }
     			}
     			catch(ChefNotFoundException e3)
     			{
-    				LOGGER.log(Level.SEVERE, "Errore login DB", e);
+    				LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
     				registerFailed(currFrame, "Errore di accesso al database.");
     			}
     			
@@ -321,7 +345,7 @@ public class Controller
     
     private void registerFailed(RegisterFrame currFrame, String message) 
     {
-    	LOGGER.log(Level.WARNING, "Tentativo di Login fallito: {0}", message);
+    	LOGGER.log(Level.WARNING, "Tentativo di registrazione fallito: {0}", message);
         currFrame.showError(message);
         currFrame.enableButtons();
     }
