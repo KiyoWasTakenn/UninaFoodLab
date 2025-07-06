@@ -6,11 +6,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import UninaFoodLab.Boundary.*;
@@ -231,6 +233,16 @@ public class Controller
         currFrame.dispose();
         loggedUser = null; // metto i riferimenti di tutto quello salvato attualmente nel controller a null
         new LoginFrame().setVisible(true);
+    }
+    
+    public void toggleDarkMode(JFrame currFrame)
+    {
+    	if(UIManager.getLookAndFeel() instanceof FlatLightLaf)
+    		FlatDarkLaf.setup();
+    	else
+    		FlatLightLaf.setup();
+    		
+    	SwingUtilities.updateComponentTreeUI(currFrame);
     }
     
     // RegisterFrame
