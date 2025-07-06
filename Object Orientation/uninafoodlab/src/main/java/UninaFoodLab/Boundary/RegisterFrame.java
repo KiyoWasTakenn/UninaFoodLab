@@ -110,6 +110,26 @@ public class RegisterFrame extends JXFrame
 	private JXLabel curriculumErrorLabel;
 	private Path destinationPath;
 	private String percorsoComposto;
+	ActionListener scegliBtnActionListener;		
+	ActionListener showPassBtnBtnActionListener;		
+	ActionListener registerBtnActionListener;				
+	FocusAdapter nomeFieldFocusListener;		
+	DocumentListener nomeFieldDocumentListener;		
+	FocusAdapter cognomeFieldFocusListener;		
+	DocumentListener cognomeFieldDocumentListener;		
+	FocusAdapter codFiscFocusAdapter;		
+	DocumentListener codFiscFieldDocumentListener;		
+	FocusAdapter luogoFieldFocusListener;		
+	DocumentListener luogoFieldDocumentListener;			
+	FocusAdapter emailFieldFocusListener;		
+	DocumentListener emailFieldDocumentListener;		
+	DocumentListener userFieldDocumentListener;
+	DocumentListener passwordFieldDocumentListener;		
+	FocusAdapter userFieldFocusListener;
+	FocusAdapter passwordFieldFocusListener;
+	ActionListener accediBtnActionListener;		
+	ActionListener chefButtonActionListener;		
+	ActionListener partecipanteButtonActionListener;
 	
 	public RegisterFrame()
 	{
@@ -118,7 +138,6 @@ public class RegisterFrame extends JXFrame
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
-		
 		windowLogo = new ImageIcon(getClass().getResource("/logo_finestra.png"));
 		setIconImage(windowLogo.getImage());
 
@@ -130,7 +149,13 @@ public class RegisterFrame extends JXFrame
 		{
 			e.printStackTrace();
 		}
+		initComponents();
+		initListeners();
 		
+	}
+	
+	private void initComponents()
+	{
 		panel = new JXPanel(new MigLayout("", "20[grow]3[grow]20[grow]3[grow]", "[]30[]10[]10[]10[]10[]10[]10[]10[]10[]10[30]10[]10[]30[]10[]10[fill]"));
 		setContentPane(panel);
 		
@@ -319,8 +344,12 @@ public class RegisterFrame extends JXFrame
 		fileLabel.setVisible(false);
 		
         fileChooser = new JFileChooser();
-		
-		scegliBtn.addActionListener(new ActionListener()
+        
+	}
+	
+	private void initListeners()
+	{
+		scegliBtnActionListener = new ActionListener()
 		  {
 			
 			@Override 
@@ -348,9 +377,10 @@ public class RegisterFrame extends JXFrame
 		        }
 
 			}				
-		  });
+		  };
+		scegliBtn.addActionListener(scegliBtnActionListener);
 		
-		showPassBtn.addActionListener(new ActionListener()
+		showPassBtnBtnActionListener = new ActionListener()
 		  {
 			@Override 
 			public void actionPerformed(ActionEvent e)
@@ -366,9 +396,10 @@ public class RegisterFrame extends JXFrame
 			    	showPassBtn.setIcon(eyeIcon);
 			    }
 			}				
-		  });
+		  };
+		showPassBtn.addActionListener(showPassBtnBtnActionListener);
 		
-		registerBtn.addActionListener(new ActionListener()
+		registerBtnActionListener = new ActionListener()
 		{
 			@Override 
 			public void actionPerformed(ActionEvent e)
@@ -397,18 +428,17 @@ public class RegisterFrame extends JXFrame
 			        destinationPath = Paths.get(percorsoComposto, selectedFile.getName());
 			        
 		        	
-		        	registerBtn.setEnabled(false);
+		        	//registerBtn.setEnabled(false);
 		        	
 		        	Controller.getController().checkRegister(RegisterFrame.this, partecipanteButton.isSelected(), chefButton.isSelected(), nomeField.getText(), cognomeField.getText(),dataPicker.getDate(), luogoField.getText(), codFiscField.getText(), emailField.getText(), userField.getText().trim(), passwordField.getPassword(), destinationPath, percorsoComposto, selectedFile);
 		        	
 		        }
 		    }
-		}
-	  );
+		};
+		registerBtn.addActionListener(registerBtnActionListener);
 		
 		
-		
-		nomeField.addFocusListener(new FocusAdapter()
+		nomeFieldFocusListener = new FocusAdapter()
 		   {
 
 			@Override
@@ -417,10 +447,10 @@ public class RegisterFrame extends JXFrame
 				if(!nomeField.getText().isEmpty())
 				    nomeField.selectAll();
 			}
-		   }
-		  );
+		   };
+		nomeField.addFocusListener(nomeFieldFocusListener);
 		
-		nomeField.getDocument().addDocumentListener(new DocumentListener()
+		DocumentListener nomeFieldDocumentListener = new DocumentListener()
 		{
 			@Override
 		    public void insertUpdate(DocumentEvent e) { checkNome(); }
@@ -428,10 +458,10 @@ public class RegisterFrame extends JXFrame
 		    public void removeUpdate(DocumentEvent e) { checkNome(); }
 		    @Override
 		    public void changedUpdate(DocumentEvent e) { checkNome(); }
-		}
-	   );
+		};
+		nomeField.getDocument().addDocumentListener(nomeFieldDocumentListener);
 		
-		cognomeField.addFocusListener(new FocusAdapter()
+		cognomeFieldFocusListener = new FocusAdapter()
 		   {
 
 			@Override
@@ -440,10 +470,10 @@ public class RegisterFrame extends JXFrame
 				if(!cognomeField.getText().isEmpty())
 				    cognomeField.selectAll();
 			}
-		   }
-		  );
+		   };
+		cognomeField.addFocusListener(cognomeFieldFocusListener);
 		
-		cognomeField.getDocument().addDocumentListener(new DocumentListener()
+		cognomeFieldDocumentListener = new DocumentListener()
 		{
 			@Override
 		    public void insertUpdate(DocumentEvent e) { checkCognome(); }
@@ -451,10 +481,10 @@ public class RegisterFrame extends JXFrame
 		    public void removeUpdate(DocumentEvent e) { checkCognome(); }
 		    @Override
 		    public void changedUpdate(DocumentEvent e) { checkCognome(); }
-		}
-	   );
+		};
+		cognomeField.getDocument().addDocumentListener(cognomeFieldDocumentListener);
 		
-		codFiscField.addFocusListener(new FocusAdapter()
+		codFiscFocusAdapter = new FocusAdapter()
 		   {
 
 			@Override
@@ -463,10 +493,11 @@ public class RegisterFrame extends JXFrame
 				if(!codFiscField.getText().isEmpty())
 				    codFiscField.selectAll();
 			}
-		   }
-		  );
+		   };
+		  
+		codFiscField.addFocusListener(codFiscFocusAdapter);
 		
-		codFiscField.getDocument().addDocumentListener(new DocumentListener()
+		codFiscFieldDocumentListener = new DocumentListener()
 		{
 			@Override
 		    public void insertUpdate(DocumentEvent e) { checkCod(); }
@@ -474,10 +505,11 @@ public class RegisterFrame extends JXFrame
 		    public void removeUpdate(DocumentEvent e) { checkCod(); }
 		    @Override
 		    public void changedUpdate(DocumentEvent e) { checkCod(); }
-		}
-	   );
+		};
+	   
+		codFiscField.getDocument().addDocumentListener(codFiscFieldDocumentListener);
 		
-		luogoField.addFocusListener(new FocusAdapter()
+		luogoFieldFocusListener = new FocusAdapter()
 		   {
 			@Override
 		    public void focusGained(FocusEvent e)
@@ -486,10 +518,11 @@ public class RegisterFrame extends JXFrame
 				    luogoField.selectAll();
 			}
 			
-		   }
-		  );
+		   };
+		  
+		luogoField.addFocusListener(luogoFieldFocusListener);
 		
-		luogoField.getDocument().addDocumentListener(new DocumentListener()
+		luogoFieldDocumentListener = new DocumentListener()
 		{
 			@Override
 		    public void insertUpdate(DocumentEvent e) { checkLuogo(); }
@@ -497,12 +530,11 @@ public class RegisterFrame extends JXFrame
 		    public void removeUpdate(DocumentEvent e) { checkLuogo(); }
 		    @Override
 		    public void changedUpdate(DocumentEvent e) { checkLuogo(); }
-		}
-	   );
+		};
 		
-		
-		
-		emailField.addFocusListener(new FocusAdapter()
+		luogoField.getDocument().addDocumentListener(luogoFieldDocumentListener);
+			
+		emailFieldFocusListener = new FocusAdapter()
 		   {
 
 			@Override
@@ -511,10 +543,11 @@ public class RegisterFrame extends JXFrame
 				if(!emailField.getText().isEmpty())
 				    emailField.selectAll();
 			}
-		   }
-		  );
+		   };
+	
+		emailField.addFocusListener(emailFieldFocusListener);
 		
-		emailField.getDocument().addDocumentListener(new DocumentListener()
+		emailFieldDocumentListener = new DocumentListener()
 		{
 			@Override
 		    public void insertUpdate(DocumentEvent e) { checkEmail(); }
@@ -522,10 +555,11 @@ public class RegisterFrame extends JXFrame
 		    public void removeUpdate(DocumentEvent e) { checkEmail(); }
 		    @Override
 		    public void changedUpdate(DocumentEvent e) { checkEmail(); }
-		}
-	   );
+		};
+	   
+		emailField.getDocument().addDocumentListener(emailFieldDocumentListener);
 		
-		userField.getDocument().addDocumentListener(new DocumentListener()
+		userFieldDocumentListener = new DocumentListener()
 		{
 			@Override
 		    public void insertUpdate(DocumentEvent e) { checkUser(); }
@@ -533,10 +567,11 @@ public class RegisterFrame extends JXFrame
 		    public void removeUpdate(DocumentEvent e) { checkUser(); }
 		    @Override
 		    public void changedUpdate(DocumentEvent e) { checkUser(); }
-		}
-	   );
+		};
+	   
+		userField.getDocument().addDocumentListener(userFieldDocumentListener);
 
-		passwordField.getDocument().addDocumentListener(new DocumentListener()
+		passwordFieldDocumentListener = new DocumentListener()
 		{
 			@Override
 		    public void insertUpdate(DocumentEvent e) { checkPass(); }
@@ -544,10 +579,11 @@ public class RegisterFrame extends JXFrame
 		    public void removeUpdate(DocumentEvent e) { checkPass(); }
 		    @Override
 		    public void changedUpdate(DocumentEvent e) { checkPass(); }
-		}
-	   );
+		};
+	   
+		passwordField.getDocument().addDocumentListener(passwordFieldDocumentListener);
 		
-		userField.addFocusListener(new FocusAdapter()
+		userFieldFocusListener = new FocusAdapter()
 		   {
 
 				@Override
@@ -556,11 +592,12 @@ public class RegisterFrame extends JXFrame
 					if(!userField.getText().isEmpty())
 					    userField.selectAll();
 				}
-		   }
-		  );
+		   };
+		  
+		userField.addFocusListener(userFieldFocusListener);
 
 
-		passwordField.addFocusListener(new FocusAdapter()
+		passwordFieldFocusListener= new FocusAdapter()
 		   {
 				
 				@Override
@@ -569,20 +606,22 @@ public class RegisterFrame extends JXFrame
 					if(!(passwordField.getPassword().length == 0))
 						passwordField.selectAll(); 
 				}
-		   }
-		  );
+		   };
+		  
+		passwordField.addFocusListener(passwordFieldFocusListener);
 
-		accediBtn.addActionListener(new ActionListener()
+		accediBtnActionListener = new ActionListener()
 		  {
 			@Override 
 			public void actionPerformed(ActionEvent e)
 			{										
 				Controller.getController().goToLogin(RegisterFrame.this);
 			}
-		  }
-		);
+		  };
 		
-		chefButton.addActionListener(new ActionListener()
+		accediBtn.addActionListener(accediBtnActionListener);
+		
+		chefButtonActionListener = new ActionListener()
 		  {
 			@Override 
 			public void actionPerformed(ActionEvent e)
@@ -594,10 +633,11 @@ public class RegisterFrame extends JXFrame
 				fileLabel.setEnabled(true);
 				fileLabel.setVisible(true);
 			}
-		  }
-		);
+		  };
 		
-		partecipanteButton.addActionListener(new ActionListener()
+		chefButton.addActionListener(chefButtonActionListener);
+		
+		partecipanteButtonActionListener = new ActionListener()
 		  {
 			@Override 
 			public void actionPerformed(ActionEvent e)
@@ -610,8 +650,9 @@ public class RegisterFrame extends JXFrame
 				fileLabel.setEnabled(false);
 				fileLabel.setVisible(false);
 			}
-		  }
-		);
+		  };
+		
+		partecipanteButton.addActionListener(partecipanteButtonActionListener);
 		
 		}
 	
@@ -835,5 +876,208 @@ public class RegisterFrame extends JXFrame
 	    registerBtn.setEnabled(true);
 	    accediBtn.setEnabled(true);
 	}
+	
+	private void disposeListener()
+	{
+		if(scegliBtn != null && scegliBtnActionListener != null)
+			scegliBtn.removeActionListener(scegliBtnActionListener);
+		
+		if(showPassBtn != null && showPassBtnBtnActionListener != null)
+			showPassBtn.removeActionListener(showPassBtnBtnActionListener);
+		
+		if(registerBtn != null && registerBtnActionListener != null)
+			registerBtn.removeActionListener(registerBtnActionListener);
+		
+		if(nomeField != null && nomeFieldFocusListener != null)
+			nomeField.removeFocusListener(nomeFieldFocusListener);
+		
+		if(nomeField != null && nomeFieldDocumentListener != null)
+			nomeField.getDocument().removeDocumentListener(nomeFieldDocumentListener);
+		
+		if(cognomeField != null && cognomeFieldFocusListener != null)
+			cognomeField.removeFocusListener(cognomeFieldFocusListener);
+		
+		if(cognomeField != null && cognomeFieldDocumentListener != null)
+			cognomeField.getDocument().removeDocumentListener(cognomeFieldDocumentListener);
+		
+		FocusAdapter codFiscFocusAdapter = new FocusAdapter()
+		   {
+
+			@Override
+		    public void focusGained(FocusEvent e)
+			{ 
+				if(!codFiscField.getText().isEmpty())
+				    codFiscField.selectAll();
+			}
+		   };
+		  
+		codFiscField.addFocusListener(codFiscFocusAdapter);
+		
+		DocumentListener codFiscFieldDocumentListener = new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkCod(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkCod(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkCod(); }
+		};
+	   
+		codFiscField.getDocument().addDocumentListener(codFiscFieldDocumentListener);
+		
+		FocusAdapter luogoFieldFocusListener = new FocusAdapter()
+		   {
+			@Override
+		    public void focusGained(FocusEvent e)
+			{ 
+				if(!luogoField.getText().isEmpty())
+				    luogoField.selectAll();
+			}
+			
+		   };
+		  
+		luogoField.addFocusListener(luogoFieldFocusListener);
+		
+		DocumentListener luogoFieldDocumentListener = new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkLuogo(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkLuogo(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkLuogo(); }
+		};
+		
+		luogoField.getDocument().addDocumentListener(luogoFieldDocumentListener);
+			
+		FocusAdapter emailFieldFocusListener = new FocusAdapter()
+		   {
+
+			@Override
+		    public void focusGained(FocusEvent e)
+			{ 
+				if(!emailField.getText().isEmpty())
+				    emailField.selectAll();
+			}
+		   };
+	
+		emailField.addFocusListener(emailFieldFocusListener);
+		
+		DocumentListener emailFieldDocumentListener = new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkEmail(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkEmail(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkEmail(); }
+		};
+	   
+		emailField.getDocument().addDocumentListener(emailFieldDocumentListener);
+		
+		DocumentListener userFieldDocumentListener = new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkUser(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkUser(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkUser(); }
+		};
+	   
+		userField.getDocument().addDocumentListener(userFieldDocumentListener);
+
+		DocumentListener passwordFieldDocumentListener = new DocumentListener()
+		{
+			@Override
+		    public void insertUpdate(DocumentEvent e) { checkPass(); }
+		    @Override
+		    public void removeUpdate(DocumentEvent e) { checkPass(); }
+		    @Override
+		    public void changedUpdate(DocumentEvent e) { checkPass(); }
+		};
+	   
+		passwordField.getDocument().addDocumentListener(passwordFieldDocumentListener);
+		
+		FocusAdapter userFieldFocusListener = new FocusAdapter()
+		   {
+
+				@Override
+			    public void focusGained(FocusEvent e)
+				{ 
+					if(!userField.getText().isEmpty())
+					    userField.selectAll();
+				}
+		   };
+		  
+		userField.addFocusListener(userFieldFocusListener);
+
+
+		FocusAdapter passwordFieldFocusListener= new FocusAdapter()
+		   {
+				
+				@Override
+			    public void focusGained(FocusEvent e) 
+				{ 
+					if(!(passwordField.getPassword().length == 0))
+						passwordField.selectAll(); 
+				}
+		   };
+		  
+		passwordField.addFocusListener(passwordFieldFocusListener);
+
+		ActionListener accediBtnActionListener = new ActionListener()
+		  {
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{										
+				Controller.getController().goToLogin(RegisterFrame.this);
+			}
+		  };
+		
+		accediBtn.addActionListener(accediBtnActionListener);
+		
+		ActionListener chefButtonActionListener = new ActionListener()
+		  {
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{				
+				curriculumErrorLabel.setEnabled(true);
+				curriculumErrorLabel.setVisible(true);
+				scegliBtn.setEnabled(true);
+				scegliBtn.setVisible(true);
+				fileLabel.setEnabled(true);
+				fileLabel.setVisible(true);
+			}
+		  };
+		
+		chefButton.addActionListener(chefButtonActionListener);
+		
+		ActionListener partecipanteButtonActionListener = new ActionListener()
+		  {
+			@Override 
+			public void actionPerformed(ActionEvent e)
+			{				
+				curriculumErrorLabel.setEnabled(false);
+				curriculumErrorLabel.setVisible(false);
+				scegliBtn.setEnabled(false);
+				scegliBtn.setVisible(false);
+				fileLabel.setText(" ");
+				fileLabel.setEnabled(false);
+				fileLabel.setVisible(false);
+			}
+		  };
+		
+		partecipanteButton.addActionListener(partecipanteButtonActionListener);
+		
+		}
+
+	}
+	@Override
+    public void dispose()
+    {
+    	disposeListeners();
+        super.dispose();
+    }
 }
 
