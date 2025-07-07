@@ -5,7 +5,7 @@ import javax.swing.border.EmptyBorder;
 
 import org.jdesktop.swingx.JXFrame;
 
-public class RecipesFrame extends JXFrame
+public class MyRecipesFrame extends JXFrame
 {
 
 	private static final long serialVersionUID = 1L;
@@ -13,7 +13,7 @@ public class RecipesFrame extends JXFrame
 
 
 
-	public RecipesFrame()
+	public MyRecipesFrame()
 	{
 		setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);

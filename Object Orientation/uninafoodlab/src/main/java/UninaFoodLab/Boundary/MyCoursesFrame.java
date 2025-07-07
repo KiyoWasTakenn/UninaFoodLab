@@ -63,7 +63,7 @@ import net.miginfocom.swing.MigLayout;
  * @see Controller
  */
 
-public class CoursesFrame extends JXFrame 
+public class MyCoursesFrame extends JXFrame 
 {
 
     private static final long serialVersionUID = 1L;
@@ -91,7 +91,7 @@ public class CoursesFrame extends JXFrame
         EventQueue.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(new FlatLightLaf());
-                new CoursesFrame().setVisible(true);
+                new MyCoursesFrame().setVisible(true);
     
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
@@ -104,7 +104,7 @@ public class CoursesFrame extends JXFrame
      * Inizializza dimensioni, layout, componenti grafici e listener.
      * La finestra viene massimizzata e resa visibile.
      */  
-    public CoursesFrame()
+    public MyCoursesFrame()
     {
         setTitle("UninaFoodLab - I miei corsi");
         setMinimumSize(new Dimension(700, 600));
@@ -244,7 +244,7 @@ public class CoursesFrame extends JXFrame
 			 @Override
 			 public void mouseClicked(MouseEvent e)
 			 {
-				 Controller.getController().goToHomepage(CoursesFrame.this);
+				 Controller.getController().goToHomepage(MyCoursesFrame.this);
 			 }
 		   };
 		   logoLabel.addMouseListener(logoLabelMouseListener);	

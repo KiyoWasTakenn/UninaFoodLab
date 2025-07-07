@@ -213,28 +213,28 @@ public class Controller
         });
     }
 
-    public void goToCourses(JFrame currFrame)
+    public void goToMyCourses(JFrame currFrame)
     {
     	EventQueue.invokeLater(() -> 
         {
-            if(!(currFrame instanceof CoursesFrame)) 
+            if(!(currFrame instanceof MyCoursesFrame)) 
             {
                 currFrame.dispose();
-                new CoursesFrame().setVisible(true);
+                new MyCoursesFrame().setVisible(true);
             }
             else
-                ((CoursesFrame) currFrame).resetView();
+                ((MyCoursesFrame) currFrame).resetView();
         });
     }
 
-    public void goToRecipes(JFrame currFrame)
+    public void goToMyRecipes(JFrame currFrame)
     {
     	EventQueue.invokeLater(() -> 
         {
-            if(!(currFrame instanceof RecipesFrame))
+            if(!(currFrame instanceof MyRecipesFrame))
             {
                 currFrame.dispose();
-                new RecipesFrame().setVisible(true);
+                new MyRecipesFrame().setVisible(true);
             }
             //else
             	//((RecipesFrame) currFrame).resetView();

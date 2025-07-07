@@ -145,7 +145,7 @@ public class SidebarPanel extends JXPanel
 								 @Override
 								 public void actionPerformed(ActionEvent e)
 								 {
-									 Controller.getController().goToCourses(parentFrame);
+									 Controller.getController().goToMyCourses(parentFrame);
 								 }
 							  };
 		coursesBtn.addActionListener(coursesBtnListener);
@@ -183,7 +183,7 @@ public class SidebarPanel extends JXPanel
 				 @Override
 				 public void actionPerformed(ActionEvent e)
 				 {
-					 Controller.getController().goToRecipes(parentFrame);
+					 Controller.getController().goToMyRecipes(parentFrame);
 				 }
 			 };
 			 recipesBtn.addActionListener(recipesBtnListener);

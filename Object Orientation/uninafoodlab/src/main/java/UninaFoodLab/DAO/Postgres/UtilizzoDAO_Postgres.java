@@ -16,7 +16,7 @@ public class UtilizzoDAO_Postgres implements UtilizzoDAO
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
-            s.setInt(idRicetta);
+            s.setInt(1, idRicetta);
             ResultSet rs = s.executeQuery();
             while(rs.next())
                 utilizzi.add( new Utilizzo(
