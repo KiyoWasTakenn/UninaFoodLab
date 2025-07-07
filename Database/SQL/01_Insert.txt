@@ -99,13 +99,13 @@ INSERT INTO Corso (Nome, DataInizio, NumeroSessioni, FrequenzaSessioni, Limite, 
 -- Ricetta
 INSERT INTO Ricetta (Nome, Provenienza, Tempo, Calorie, Difficolta, Allergeni, IdChef) VALUES
 ('Pizza Margherita', 'Italia', 45, 280, 'Facile', 'Glutine, Lattosio', (SELECT IdChef FROM Chef WHERE Username = 'nonnaada')),
-('Risotto ai Funghi Porcini', 'Italia', 30, 320, 'Medio', 'Lattosio', (SELECT IdChef FROM Chef WHERE Username = 'nonnaada')),
+('Risotto Ai Funghi Porcini', 'Italia', 30, 320, 'Medio', 'Lattosio', (SELECT IdChef FROM Chef WHERE Username = 'nonnaada')),
 ('Sushi Misto', 'Giappone', 90, 300, 'Difficile', 'Pesce', (SELECT IdChef FROM Chef WHERE Username = 'mmorimoto')),
 ('Ramen Tradizionale', 'Giappone', 120, 350, 'Difficile', 'Glutine, Soia', (SELECT IdChef FROM Chef WHERE Username = 'mmorimoto')),
 ('Carbonara', 'Italia', 15, 420, 'Medio', 'Uova, Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'ennicocrippa')),
-('Coq au Vin', 'Francia', 120, 380, 'Difficile', NULL, (SELECT IdChef FROM Chef WHERE Username = 'alainducasse')),
+('Coq Au Vin', 'Francia', 120, 380, 'Difficile', NULL, (SELECT IdChef FROM Chef WHERE Username = 'alainducasse')),
 ('Croissant', 'Francia', 180, 400, 'Esperto', 'Glutine, Lattosio, Uova', (SELECT IdChef FROM Chef WHERE Username = 'alainducasse')),
-('Arancini di riso', 'Italia', 110, 2506, 'Medio', 'Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'wolfgangpuck')),
+('Arancini Di Riso', 'Italia', 110, 2506, 'Medio', 'Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'wolfgangpuck')),
 ('Hot Dog', 'USA', 55, 379.5, 'Facile', 'Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'wolfgangpuck')),
 ('Tiramisù', 'Italia', 20, 380, 'Facile', 'Uova, Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'antoninochef'));
 

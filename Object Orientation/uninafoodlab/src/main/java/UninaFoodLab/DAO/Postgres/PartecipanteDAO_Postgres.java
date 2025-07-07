@@ -80,26 +80,40 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
         }
     }
     
-    public boolean getPartecipanteByCodEmail(String codFisc, String email)
+    public boolean getPartecipanteByEmail(String email)
     {
-        String sql = "SELECT * FROM Partecipante WHERE CodiceFiscale = ? OR Email = ?";
+        String sql = "SELECT EXISTS (SELECT 1 FROM Partecipante WHERE Email = ?)";
+
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
+        {
+            s.setString(1, email);
+            ResultSet rs = s.executeQuery();
+
+            return rs.next() && rs.getBoolean(1);
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante ricerca di Partecipante per  email", e);
+        }
+    }
+    
+    public boolean getPartecipanteByCodiceFiscale(String codFisc)
+    {
+        String sql = "SELECT EXISTS (SELECT 1 FROM Partecipante WHERE CodiceFiscale = ?)";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setString(1, codFisc);
-            s.setString(2, email);
             ResultSet rs = s.executeQuery();
 
-            if(rs.next())
-            	return true;
-            else
-            	return false;
+            return rs.next() && rs.getBoolean(1);
         }
         catch(SQLException e)
         {
-        	throw new DAOException("Errore DB durante ricerca Partecipante per codice fiscale e email", e);
+        	throw new DAOException("Errore DB durante ricerca di Partecipante per codice fiscale", e);
         }
     }
+
 
     public Partecipante getPartecipanteByUsername(String username)
     {

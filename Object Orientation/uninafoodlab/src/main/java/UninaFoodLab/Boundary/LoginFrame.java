@@ -289,17 +289,7 @@ public class LoginFrame extends JXFrame
     	disposeListeners();
         super.dispose();
     }
-    
-    /**
-     * Riabilita i pulsanti di login e registrazione
-     * (usato dopo il fallimento di un login).
-     */
-	public void enableButtons()
-	{
-	    loginBtn.setEnabled(true);
-	    registerBtn.setEnabled(true);
-	}
-	
+
 	/**
      * Valida il campo username in tempo reale.
      * Controlla che:
@@ -362,11 +352,14 @@ public class LoginFrame extends JXFrame
 
     /**
      * Mostra un messaggio di errore tramite dialog.
-     *
+     * Riabilita i pulsanti di login e registrazione
+     * (usato dopo il fallimento di un login).
      * @param msg messaggio da mostrare
      */
 	public void showError(String msg)
 	{
 		JOptionPane.showMessageDialog(this, msg, "Errore", JOptionPane.ERROR_MESSAGE);
+		loginBtn.setEnabled(true);
+	    registerBtn.setEnabled(true);
 	}	
 }

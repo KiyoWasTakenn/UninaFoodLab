@@ -1,7 +1,5 @@
 package UninaFoodLab.Boundary;
 
-import java.awt.EventQueue;
-
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 

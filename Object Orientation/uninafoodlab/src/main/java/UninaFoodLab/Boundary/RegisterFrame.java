@@ -1,7 +1,5 @@
 package UninaFoodLab.Boundary;
 
-import java.awt.EventQueue;
-
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
@@ -11,8 +9,6 @@ import javax.swing.text.PlainDocument;
 
 import java.io.File;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.Period;
 
@@ -21,7 +17,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -39,7 +34,6 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.github.lgooddatepicker.components.DatePicker;
 
 import UninaFoodLab.Controller.Controller;
-import UninaFoodLab.Exceptions.DAOException;
 
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
@@ -301,7 +295,7 @@ public class RegisterFrame extends JXFrame
 		curriculumErrorLabel.setForeground(Color.RED);
 		panel.add(curriculumErrorLabel, "span 2, cell 0 11, center");
 		
-		scegliBtn = new JXButton("Scegli\n curriculum")	;
+		scegliBtn = new JXButton("<html><center>Scegli<br>curriculum</center></html>")	;
 		scegliBtn.setFont(new Font("SansSerif", Font.BOLD, 18));
 		scegliBtn.setPreferredSize(new Dimension(120, 30));
 		scegliBtn.setBackground(new Color(200, 200, 200));
@@ -428,14 +422,13 @@ public class RegisterFrame extends JXFrame
 		        	scegliBtn.requestFocus();
 		        else
 		        {
-		        	
-		        	//registerBtn.setEnabled(false);
+		        	registerBtn.setEnabled(false);
+		    	    accediBtn.setEnabled(false);
 		        	
 		        	Controller.getController().checkRegister(RegisterFrame.this, partecipanteButton.isSelected(), chefButton.isSelected(), 
 		        										     nomeField.getText(), cognomeField.getText(),dataPicker.getDate(), luogoField.getText(),
 		        										     codFiscField.getText(), emailField.getText(), userField.getText().trim(), 
 		        										     passwordField.getPassword(), selectedFile);
-		        	
 		        }
 		    }
 		};
@@ -454,7 +447,7 @@ public class RegisterFrame extends JXFrame
 		   };
 		nomeField.addFocusListener(nomeFieldFocusListener);
 		
-		DocumentListener nomeFieldDocumentListener = new DocumentListener()
+		nomeFieldDocumentListener = new DocumentListener()
 		{
 			@Override
 		    public void insertUpdate(DocumentEvent e) { checkNome(); }
@@ -799,6 +792,12 @@ public class RegisterFrame extends JXFrame
 	    	emailField.setBorder(errorBorder);
 	    	emailErrorLabel.setText("Bisogna inserire un' email!");
 	    	check = false;
+	    } 
+	    else if(!text.matches("^[\\w.-]+@[\\w.-]+\\.\\w{2,}$")) 
+	    {
+	        emailField.setBorder(errorBorder);
+	        emailErrorLabel.setText("Email non valida!");
+	        check = false;
 	    }
 	    else
 	    {
@@ -852,12 +851,6 @@ public class RegisterFrame extends JXFrame
 	        passwordErrorLabel.setText("La password deve essere tra 8 e 30 caratteri.");
 	        check = false;
 	    } 
-	    else if(text.isEmpty())
-	    {
-	    	userField.setBorder(errorBorder);
-	    	userErrorLabel.setText("Bisogna inserire una password!");
-	    	check = false;
-	    }
 	    else
 	    {
 	        passwordField.setBorder(defaultBorder);
@@ -880,8 +873,8 @@ public class RegisterFrame extends JXFrame
 	    } 
 	    else
 	    {
-	        passwordField.setBorder(defaultBorder);
-	        passwordErrorLabel.setText(" ");
+	    	scegliBtn.setBorder(defaultBorder);
+	    	curriculumErrorLabel.setText(" ");
 	    }
 	    
 	    return check; 
@@ -890,13 +883,9 @@ public class RegisterFrame extends JXFrame
 	public void showError(String msg)
 	{
 		JOptionPane.showMessageDialog(this, msg, "Errore", JOptionPane.ERROR_MESSAGE);
-	}	
-	
-	public void enableButtons()
-	{
-	    registerBtn.setEnabled(true);
+		registerBtn.setEnabled(true);
 	    accediBtn.setEnabled(true);
-	}
+	}	
 	
 	private void disposeListeners()
 	{
@@ -964,6 +953,7 @@ public class RegisterFrame extends JXFrame
 			partecipanteButton.removeActionListener(partecipanteButtonActionListener);
 
 	}
+	
 	@Override
     public void dispose()
     {

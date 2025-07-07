@@ -2,6 +2,7 @@ package UninaFoodLab.Controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,12 +35,13 @@ import java.time.LocalDate;
 public class Controller
 {
 	private static final Logger LOGGER = Logger.getLogger(Controller.class.getName());
+	private static final String ERR_CF_EXISTING = "Esiste già un account associato a questo codice fiscale.";
+	private static final String ERR_EMAIL_EXISTING = "Esiste già un account associato a questa email";
+	
     private static Controller instance = null;
     
     // Variabili di Sessione
     private Utente loggedUser;
-    
-    
     
     private AdesioneDAO_Postgres adesioneDAO;
     private ArgomentoDAO_Postgres argomentoDAO;
@@ -174,78 +176,105 @@ public class Controller
     }
     
     // Navigation methods
+  
     public void goToLogin(JFrame currFrame)
     {
-    	currFrame.dispose();
-        new LoginFrame().setVisible(true);
+        SwingUtilities.invokeLater(() -> 
+        {
+            currFrame.dispose();
+            new LoginFrame().setVisible(true);
+        });
     }
-    
+
     public void goToRegister(JFrame currFrame)
     {
-    	currFrame.dispose();
-        new RegisterFrame().setVisible(true);
+        SwingUtilities.invokeLater(() -> 
+        {
+            currFrame.dispose();
+            new RegisterFrame().setVisible(true);
+        });
     }
-    
+
     public void goToHomepage(JFrame currFrame)
     {
-    	if(!(currFrame instanceof HomepageFrame))
-    	{
-    		currFrame.dispose();
-            new HomepageFrame().setVisible(true);
-    	}
+        SwingUtilities.invokeLater(() -> 
+        {
+            if(!(currFrame instanceof HomepageFrame)) 
+            {
+                currFrame.dispose();
+                new HomepageFrame().setVisible(true);
+            }
+            else
+                ((HomepageFrame) currFrame).resetView();
+        });
     }
 
     public void goToCourses(JFrame currFrame)
-	{
-    	if(!(currFrame instanceof CoursesFrame))
-    	{
-	    	currFrame.dispose();
-	        new CoursesFrame().setVisible(true);	
-    	}
-    	else
-    		((CoursesFrame) currFrame).resetView();
-	}
-    
+    {
+        SwingUtilities.invokeLater(() -> 
+        {
+            if(!(currFrame instanceof CoursesFrame)) 
+            {
+                currFrame.dispose();
+                new CoursesFrame().setVisible(true);
+            }
+            else
+                ((CoursesFrame) currFrame).resetView();
+        });
+    }
+
     public void goToRecipes(JFrame currFrame)
-	{
-    	if(!(currFrame instanceof RecipesFrame))
-    	{
-	    	currFrame.dispose();
-	        new RecipesFrame().setVisible(true);	
-    	}
-    	else
-    		((RecipesFrame) currFrame).resetView();
-	}
-    
+    {
+        SwingUtilities.invokeLater(() -> 
+        {
+            if(!(currFrame instanceof RecipesFrame))
+            {
+                currFrame.dispose();
+                new RecipesFrame().setVisible(true);
+            }
+            else
+                ((RecipesFrame) currFrame).resetView();
+        });
+    }
+
     public void goToReport(JFrame currFrame)
-   	{
-    	if(!(currFrame instanceof ReportFrame))
-    	{
-	       	currFrame.dispose();
-	        new ReportFrame().setVisible(true);	
-    	}
-    	else
-    		((ReportFrame) currFrame).resetView();
-   	}
-    
+    {
+        SwingUtilities.invokeLater(() -> 
+        {
+            if(!(currFrame instanceof ReportFrame)) 
+            {
+                currFrame.dispose();
+                new ReportFrame().setVisible(true);
+            } 
+            else
+                ((ReportFrame) currFrame).resetView();
+        });
+    }
+
     public void goToProfile(JFrame currFrame)
-	{
-    	if(!(currFrame instanceof ProfileFrame))
-    	{
-	    	currFrame.dispose();
-	        new ProfileFrame().setVisible(true);	
-    	}
-    	else
-    		((ProfileFrame) currFrame).resetView();
-	}
-    
+    {
+        SwingUtilities.invokeLater(() -> 
+        {
+            if(!(currFrame instanceof ProfileFrame)) 
+            {
+                currFrame.dispose();
+                new ProfileFrame().setVisible(true);
+            } 
+            else 
+                ((ProfileFrame) currFrame).resetView();
+        });
+    }
+
     public void logout(JFrame currFrame)
     {
-        currFrame.dispose();
-        loggedUser = null; // metto i riferimenti di tutto quello salvato attualmente nel controller a null
-        new LoginFrame().setVisible(true);
+        SwingUtilities.invokeLater(() ->
+        {
+            currFrame.dispose();
+            loggedUser = null;
+            new LoginFrame().setVisible(true);
+        });
     }
-    
+
     public void toggleDarkMode(JFrame currFrame)
     {
     	if(UIManager.getLookAndFeel() instanceof FlatLightLaf)
@@ -264,6 +293,104 @@ public class Controller
         return hashed;
     }
     
+    private void registerSuccess(RegisterFrame currFrame, String username) 
+    {
+		LOGGER.log(Level.INFO, "Registrazione riuscita per utente: {0}", username);
+    	goToLogin(currFrame);
+    }
+	
+    private void registerFailed(RegisterFrame currFrame, String message) 
+    {
+    	LOGGER.log(Level.WARNING, "Tentativo di registrazione fallito: {0}", message);
+        currFrame.showError(message);
+    }
+    
+    private void registerPartecipante(RegisterFrame currFrame, String username, String nome, String cognome, String codFisc, 
+    								  LocalDate data, String luogo, String email, char[] pass) throws DAOException
+    {
+        if(getPartecipanteDAO().getPartecipanteByCodiceFiscale(codFisc))
+            registerFailed(currFrame, ERR_CF_EXISTING);
+        else if(getPartecipanteDAO().getPartecipanteByEmail(email))
+            registerFailed(currFrame, ERR_EMAIL_EXISTING);
+        else
+        {
+        	try
+            {
+                tryGetUser(username);
+                registerFailed(currFrame, "Username già utilizzato.");
+            }
+        	catch(RecordNotFoundException e)
+        	{
+        		Partecipante p = new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null);
+                getPartecipanteDAO().save(p);
+                registerSuccess(currFrame, username);
+        	}
+        }
+    }
+    
+    private void registerChef(RegisterFrame currFrame, String username, String nome, String cognome, String codFisc, LocalDate data, 
+    		 				  String luogo, String email, char[] pass, File selectedFile) throws DAOException, IOException
+    {
+        if(getChefDAO().getChefByCodiceFiscale(codFisc))
+            registerFailed(currFrame, ERR_CF_EXISTING);
+        else if(getChefDAO().getChefByEmail(email))
+            registerFailed(currFrame, ERR_EMAIL_EXISTING);
+        else
+        {
+        	try
+            {
+                tryGetUser(username);
+                registerFailed(currFrame, "Username già utilizzato.");
+            }
+            catch(RecordNotFoundException e)
+            {
+                String curriculumPath = saveCurriculumFile(username, selectedFile);
+                Chef c = new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), curriculumPath, null, null);
+                getChefDAO().save(c);
+                registerSuccess(currFrame, username);
+            }
+        }
+    }
+    
+    private String saveCurriculumFile(String username, File selectedFile) throws IOException
+    {
+        String relativePath = "resources" + File.separator + username + File.separator + "Curriculum";
+        String fullPathString = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + relativePath;
+
+        Path destinationDir = Paths.get(fullPathString);
+        Files.createDirectories(destinationDir); 
+
+        Path destinationPath = destinationDir.resolve(selectedFile.getName());
+        Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
+
+        LOGGER.log(Level.INFO, "File salvato con successo in: {0}", destinationPath);
+        return relativePath + File.separator + selectedFile.getName();
+    }
+    
+    public void checkRegister(RegisterFrame currFrame, boolean isPartecipante, String nome,
+            String cognome, LocalDate data, String luogo, String codFisc, String email,
+            String username, char[] pass, File selectedFile)
+    {
+		try
+		{
+			if(isPartecipante)
+				registerPartecipante(currFrame, username, nome, cognome, codFisc, data, luogo, email, pass);
+			else
+				registerChef(currFrame, username, nome, cognome, codFisc, data, luogo, email, pass, selectedFile);
+		}
+		catch(DAOException e)
+		{
+			LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
+			registerFailed(currFrame, "Errore di accesso al database.");
+		}
+		catch(IOException e)
+		{
+			LOGGER.log(Level.SEVERE, "Errore salvataggio file", e);
+			registerFailed(currFrame, "Errore di salvataggio file.");
+		}
+    }
+    
+ // -------------------------------------------- GUARDA SOPRA
     public void checkRegister(RegisterFrame currFrame, boolean partecipante, boolean chef, String nome,
     							String cognome, LocalDate data, String luogo, String codFisc, String email, 
     							String username, char[] pass, File selectedFile)
@@ -278,10 +405,12 @@ public class Controller
     		try
     		{
     			
-				if(partecipante==true)
+				if(partecipante)
 				{
-					if(getPartecipanteDAO().getPartecipanteByCodEmail(codFisc, email))
-						registerFailed(currFrame, "Partecipante già registrato per questa modalità.");
+					if(getPartecipanteDAO().getPartecipanteByCodiceFiscale(codFisc))
+						registerFailed(currFrame, ERR_CF_EXISTING);
+					else if(getPartecipanteDAO().getPartecipanteByEmail(email))
+						registerFailed(currFrame, ERR_EMAIL_EXISTING);
 					else
 					{
 						getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
@@ -291,8 +420,10 @@ public class Controller
 				}
 				else
 				{
-					if(getChefDAO().getChefByCodEmail(codFisc, email))
-						registerFailed(currFrame, "Partecipante già registrato per questa modalità.");
+					if(getChefDAO().getChefByCodiceFiscale(codFisc))
+						registerFailed(currFrame, ERR_CF_EXISTING);
+					else if(getChefDAO().getChefByEmail(email))
+						registerFailed(currFrame, ERR_EMAIL_EXISTING);
 					else
 					{
 						String percorsoComposto = System.getProperty("user.dir") + "\\src\\main\\resources\\"+ username +"\\Curriculum";		                	     		           
@@ -340,22 +471,9 @@ public class Controller
             }
     	}
     }
-    
+    // --------------------------------------------
     
 	
-	private void registerSuccess(RegisterFrame currFrame, String username) 
-    {
-		LOGGER.log(Level.INFO, "Registrazione riuscita per utente: {0}", username);
-    	goToLogin(currFrame);
-    	
-    }
-	
-    private void registerFailed(RegisterFrame currFrame, String message) 
-    {
-    	LOGGER.log(Level.WARNING, "Tentativo di registrazione fallito: {0}", message);
-        currFrame.showError(message);
-        currFrame.enableButtons();
-    }
 
     // LoginFrame
     private boolean checkPassword(String hashedPassword, char[] inputPassword)
@@ -395,7 +513,6 @@ public class Controller
     {
         LOGGER.log(Level.WARNING, "Tentativo di Login fallito: {0}", message);
         currFrame.showError(message);
-        currFrame.enableButtons();
     }
     
 	public void checkLogin(LoginFrame currFrame, String username, char[] pass)
@@ -415,7 +532,7 @@ public class Controller
 		}
 		catch(DAOException e)
 		{
-			LOGGER.log(Level.SEVERE, "Errore login DB", e);
+			LOGGER.log(Level.SEVERE, "Errore durante login nel DB: " + e.getMessage(), e);
 			loginFailed(currFrame, "Errore di accesso al database.");
 		}
 		finally
@@ -432,7 +549,7 @@ public class Controller
 	public void openMonthlyReport(JFrame parent)
 	{
 	    ReportFrame report = new ReportFrame();
-	    report.setReportData(0,249,0,0,900,2);
+	    report.setReportData();
 	    report.setVisible(true);
 
 
