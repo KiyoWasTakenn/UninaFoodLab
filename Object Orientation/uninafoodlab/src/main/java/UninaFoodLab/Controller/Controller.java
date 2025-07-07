@@ -66,20 +66,19 @@ public class Controller
 
     public static void main(String[] args)
     {
-        EventQueue.invokeLater(() -> {
-            try {
+        EventQueue.invokeLater(() -> 
+        {
+            try 
+            {
                 UIManager.setLookAndFeel(new FlatLightLaf());
-                System.out.println("FlatLaf applicato correttamente");
-            } catch (UnsupportedLookAndFeelException e) {
+            } 
+            catch(UnsupportedLookAndFeelException e) 
+            {
                 e.printStackTrace();
             }
 
-            System.out.println("Provo a creare LoginFrame");
-            try {
-                new LoginFrame().setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace(); 
-            }
+            new LoginFrame().setVisible(true);
+           
         });
     }
 
@@ -182,7 +181,7 @@ public class Controller
   
     public void goToLogin(JFrame currFrame)
     {
-        SwingUtilities.invokeLater(() -> 
+    	EventQueue.invokeLater(() -> 
         {
             currFrame.dispose();
             new LoginFrame().setVisible(true);
@@ -191,7 +190,7 @@ public class Controller
 
     public void goToRegister(JFrame currFrame)
     {
-        SwingUtilities.invokeLater(() -> 
+    	EventQueue.invokeLater(() -> 
         {
             currFrame.dispose();
             new RegisterFrame().setVisible(true);
@@ -200,7 +199,7 @@ public class Controller
 
     public void goToHomepage(JFrame currFrame)
     {
-        SwingUtilities.invokeLater(() -> 
+    	EventQueue.invokeLater(() -> 
         {
             if(!(currFrame instanceof HomepageFrame)) 
             {
@@ -214,7 +213,7 @@ public class Controller
 
     public void goToCourses(JFrame currFrame)
     {
-        SwingUtilities.invokeLater(() -> 
+    	EventQueue.invokeLater(() -> 
         {
             if(!(currFrame instanceof CoursesFrame)) 
             {
@@ -228,7 +227,7 @@ public class Controller
 
     public void goToRecipes(JFrame currFrame)
     {
-        SwingUtilities.invokeLater(() -> 
+    	EventQueue.invokeLater(() -> 
         {
             if(!(currFrame instanceof RecipesFrame))
             {
@@ -242,7 +241,7 @@ public class Controller
 
     public void goToReport(JFrame currFrame)
     {
-        SwingUtilities.invokeLater(() -> 
+    	EventQueue.invokeLater(() -> 
         {
             if(!(currFrame instanceof ReportFrame)) 
             {
@@ -256,7 +255,7 @@ public class Controller
 
     public void goToProfile(JFrame currFrame)
     {
-        SwingUtilities.invokeLater(() -> 
+    	EventQueue.invokeLater(() -> 
         {
             if(!(currFrame instanceof ProfileFrame)) 
             {
@@ -270,7 +269,7 @@ public class Controller
 
     public void logout(JFrame currFrame)
     {
-        SwingUtilities.invokeLater(() ->
+        EventQueue.invokeLater(() ->
         {
             currFrame.dispose();
             loggedUser = null;
