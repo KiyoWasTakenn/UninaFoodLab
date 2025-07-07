@@ -37,7 +37,7 @@
 
 FRAME INSIEME: Homepage
 
-FRAME MIEI: LoginScreen, IMieiCorsi, Report, CardCorsoCreazione, CardSessione, CorsoDettagli
+FRAME MIEI: **LoginScreen**, IMieiCorsi, **Report,** CardCorsoCreazione, CardSessione, CorsoDettagli
 
 FRAME VIRGINIA: RegisterScreen, Profilo, Ricette, CardRicetta, CardIngrediente, RicettaDettagli
 
