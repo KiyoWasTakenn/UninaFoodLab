@@ -22,6 +22,7 @@ import UninaFoodLab.DAO.*;
 import UninaFoodLab.DAO.Postgres.*;
 import UninaFoodLab.Exceptions.*;
 
+import java.awt.EventQueue;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -65,21 +66,23 @@ public class Controller
 
     public static void main(String[] args)
     {
-    	java.awt.EventQueue.invokeLater(() -> {
-    		
-    		try 
-    		{
-    	        UIManager.setLookAndFeel(new FlatLightLaf());
-    	    } 
-    		catch (UnsupportedLookAndFeelException e) 
-    		{
-    	        e.printStackTrace();
-    	    }
-    		
-            new LoginFrame().setVisible(true);
+        EventQueue.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(new FlatLightLaf());
+                System.out.println("FlatLaf applicato correttamente");
+            } catch (UnsupportedLookAndFeelException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println("Provo a creare LoginFrame");
+            try {
+                new LoginFrame().setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace(); 
+            }
         });
     }
-    
+
     public Utente getLoggedUser()
     {
         return loggedUser;
@@ -204,8 +207,8 @@ public class Controller
                 currFrame.dispose();
                 new HomepageFrame().setVisible(true);
             }
-            else
-                ((HomepageFrame) currFrame).resetView();
+            //else
+            	//((HomepageFrame) currFrame).resetView();
         });
     }
 
@@ -232,8 +235,8 @@ public class Controller
                 currFrame.dispose();
                 new RecipesFrame().setVisible(true);
             }
-            else
-                ((RecipesFrame) currFrame).resetView();
+            //else
+            	//((RecipesFrame) currFrame).resetView();
         });
     }
 
@@ -246,8 +249,8 @@ public class Controller
                 currFrame.dispose();
                 new ReportFrame().setVisible(true);
             } 
-            else
-                ((ReportFrame) currFrame).resetView();
+            // else
+            	//((ReportFrame) currFrame).resetView();
         });
     }
 
@@ -260,8 +263,8 @@ public class Controller
                 currFrame.dispose();
                 new ProfileFrame().setVisible(true);
             } 
-            else 
-                ((ProfileFrame) currFrame).resetView();
+            //else 
+                //((ProfileFrame) currFrame).resetView();
         });
     }
 
@@ -390,91 +393,6 @@ public class Controller
 		}
     }
     
- // -------------------------------------------- GUARDA SOPRA
-    public void checkRegister(RegisterFrame currFrame, boolean partecipante, boolean chef, String nome,
-    							String cognome, LocalDate data, String luogo, String codFisc, String email, 
-    							String username, char[] pass, File selectedFile)
-    {
-    	try
-    	{
-    		tryGetUser(username);
-			registerFailed(currFrame, "Username già utilizzato.");   		
-    	}
-    	catch(RecordNotFoundException e)
-    	{   	
-    		try
-    		{
-    			
-				if(partecipante)
-				{
-					if(getPartecipanteDAO().getPartecipanteByCodiceFiscale(codFisc))
-						registerFailed(currFrame, ERR_CF_EXISTING);
-					else if(getPartecipanteDAO().getPartecipanteByEmail(email))
-						registerFailed(currFrame, ERR_EMAIL_EXISTING);
-					else
-					{
-						getPartecipanteDAO().save(new Partecipante(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), null, null));
-						registerSuccess(currFrame, username); 
-					}
-  					
-				}
-				else
-				{
-					if(getChefDAO().getChefByCodiceFiscale(codFisc))
-						registerFailed(currFrame, ERR_CF_EXISTING);
-					else if(getChefDAO().getChefByEmail(email))
-						registerFailed(currFrame, ERR_EMAIL_EXISTING);
-					else
-					{
-						String percorsoComposto = System.getProperty("user.dir") + "\\src\\main\\resources\\"+ username +"\\Curriculum";		                	     		           
-						Path destinationPath = Paths.get(percorsoComposto, selectedFile.getName());
-						String toSavePath = "\\src\\main\\resources\\"+ username +"\\Curriculum";
-						getChefDAO().save(new Chef(username, nome, cognome, codFisc, data, luogo, email, hashPassword(pass), toSavePath, null, null));
-						registerSuccess(currFrame, username);	
-						
-		        		File cartellaComposta = new File(percorsoComposto);
-		        				
-		                if (!cartellaComposta.exists()) 
-		                {
-		                    if (cartellaComposta.mkdirs()) 	    
-		                    {
-		                    	LOGGER.log(Level.INFO, "Creazione cartella avvenuta correttamente.");
-		                    	goToLogin(currFrame);
-		                    }	                    
-		                    else 
-		                    {
-		                    	LOGGER.log(Level.SEVERE, "Errore durante creazione cartella composta.");
-			        			registerFailed(currFrame, "Errore durante salvataggio cartelle.");
-		                    }
-		                } 
-		                else 
-		                {
-		                	LOGGER.log(Level.SEVERE, "Errore cartella già esistente.");
-		        			registerFailed(currFrame, "Errore durante salvataggio cartelle.");
-		                }		              		                
-		                Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
-		                System.out.println("File salvato con successo in: " + destinationPath);
-					}
-					
-				}    					
-    			
-    		}
-    		catch(DAOException e1)
-    		{
-    			LOGGER.log(Level.SEVERE, "Errore registrazione DB", e1);
-    			registerFailed(currFrame, "Errore di accesso al database.");
-    		}
-    		catch (IOException e2) 
-			{
-    			LOGGER.log(Level.SEVERE, "Errore salvataggio file", e2);
-    			registerFailed(currFrame, "Errore di salvataggio file.");
-            }
-    	}
-    }
-    // --------------------------------------------
-    
-	
-
     // LoginFrame
     private boolean checkPassword(String hashedPassword, char[] inputPassword)
     {

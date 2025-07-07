@@ -425,7 +425,7 @@ public class RegisterFrame extends JXFrame
 		        	registerBtn.setEnabled(false);
 		    	    accediBtn.setEnabled(false);
 		        	
-		        	Controller.getController().checkRegister(RegisterFrame.this, partecipanteButton.isSelected(), chefButton.isSelected(), 
+		        	Controller.getController().checkRegister(RegisterFrame.this, partecipanteButton.isSelected(), 
 		        										     nomeField.getText(), cognomeField.getText(),dataPicker.getDate(), luogoField.getText(),
 		        										     codFiscField.getText(), emailField.getText(), userField.getText().trim(), 
 		        										     passwordField.getPassword(), selectedFile);

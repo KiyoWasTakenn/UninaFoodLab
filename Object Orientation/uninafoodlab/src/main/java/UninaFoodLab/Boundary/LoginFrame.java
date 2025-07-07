@@ -66,7 +66,7 @@ public class LoginFrame extends JXFrame
 	DocumentListener userFieldDocumentListener, passFieldDocumentListener;
 	FocusAdapter userFieldFocusListener, passFieldFocusListener;
 	ActionListener showPassBtnActionListener, registerBtnActionListener, loginBtnActionListener;	
-	
+
 	public LoginFrame()
 	{
 		setTitle("UninaFoodLab - Login");
