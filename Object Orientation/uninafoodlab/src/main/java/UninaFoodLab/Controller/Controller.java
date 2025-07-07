@@ -462,7 +462,14 @@ public class Controller
 
 	// HomepageFrame
 
-	// CoursesFrame
+	// MyCoursesFrame
+	// CreateCourseFrame
+	// DetailedCourseFrame
+	
+	
+	// MyRecipesFrame
+	// CreateRecipesFrame
+	// DetailedRecipeFrame
 	
 	// ReportFrame
 	public void openMonthlyReport(JFrame parent)
@@ -484,6 +491,9 @@ public class Controller
         	}
         });
 	}
+	
+	// ProfileFrame
+	
 
 	
 }

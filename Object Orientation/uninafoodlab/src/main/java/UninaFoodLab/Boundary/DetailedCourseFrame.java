@@ -2,15 +2,14 @@ package UninaFoodLab.Boundary;
 
 import org.jdesktop.swingx.JXFrame;
 
-public class CreateCourseFrame extends JXFrame
+public class DetailedCourseFrame extends JXFrame
 {
 	private static final long serialVersionUID = 1L;
 
 	
 	
 	
-	
-	public CreateCourseFrame()
+	public DetailedCourseFrame()
 	{
 
 	}
