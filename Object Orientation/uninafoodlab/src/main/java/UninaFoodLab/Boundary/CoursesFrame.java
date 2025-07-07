@@ -69,9 +69,6 @@ public class CoursesFrame extends JXFrame
     private static final long serialVersionUID = 1L;
 
     // Icone e immagini utilizzate 
-    private final FontIcon hamburgerIcon = FontIcon.of(MaterialDesign.MDI_MENU, 26, Color.DARK_GRAY);
-    private final FontIcon filterIcon = FontIcon.of(MaterialDesign.MDI_FILTER, 18, Color.DARK_GRAY);
-    private final FontIcon profileIcon = FontIcon.of(MaterialDesign.MDI_ACCOUNT_CIRCLE, 26, Color.DARK_GRAY);
     private ImageIcon windowLogo, paneLogo;
     
     // Componenti Swing
@@ -160,7 +157,7 @@ public class CoursesFrame extends JXFrame
         header.setBorder(new MatteBorder(0, 0, 1, 0, new Color(0xDDDDDD)));
         rootPanel.add(header, "dock north");
 
-        hamburgerBtn.setIcon(hamburgerIcon);
+        hamburgerBtn.setIcon(FontIcon.of(MaterialDesign.MDI_MENU, 26, Color.DARK_GRAY));
         hamburgerBtn.setContentAreaFilled(false);
         hamburgerBtn.setBorder(BorderFactory.createEmptyBorder());
         hamburgerBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -172,7 +169,7 @@ public class CoursesFrame extends JXFrame
         logoLabel.setToolTipText("Torna alla homepage");
         header.add(logoLabel, "cell 2 0, w 80!, h 60!, gapleft 0, shrink 0");
         
-        filterBtn.setIcon(filterIcon);
+        filterBtn.setIcon(FontIcon.of(MaterialDesign.MDI_FILTER, 18, Color.DARK_GRAY));
         filterBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         filterBtn.setFocusPainted(false);
         filterBtn.setContentAreaFilled(true);
@@ -207,13 +204,11 @@ public class CoursesFrame extends JXFrame
         searchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         header.add(searchBtn, "cell 6 0, h 35!, w 80!, shrink 0");
 
-        profileBtn.setIcon(profileIcon);
+        profileBtn.setIcon(FontIcon.of(MaterialDesign.MDI_ACCOUNT_CIRCLE, 26, Color.DARK_GRAY));
         profileBtn.setContentAreaFilled(false);
         profileBtn.setBorder(BorderFactory.createEmptyBorder());
         profileBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         header.add(profileBtn, "cell 8 0, w 35!, h 35!, align right");
-    
-         
        
         dropdownPanel.setVisible(false);
         // Aggiungo il dropdown come popup (quindi che viene messo su un layer superiore a tutti) 

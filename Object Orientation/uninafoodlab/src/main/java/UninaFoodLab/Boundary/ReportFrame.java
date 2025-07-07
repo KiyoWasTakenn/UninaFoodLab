@@ -76,7 +76,8 @@ public class ReportFrame extends JXFrame
         main.add(lblInfoRicette, "growx");
     }
 
-    public void setReportData(int corsi, int online, int presenza, int ricMin, int ricMax, double ricMedia) {
+    public void setReportData(int corsi, int online, int presenza, int ricMin, int ricMax, double ricMedia) 
+    {
         // --- CORSI ---
         if (corsi <= 0) 
         {
@@ -87,7 +88,6 @@ public class ReportFrame extends JXFrame
         } 
         else 
         {
-
             DefaultCategoryDataset datasetCorsi = new DefaultCategoryDataset();
             datasetCorsi.addValue(corsi, "Totale", "Corsi");
             datasetCorsi.addValue(online, "Totale", "Online");

@@ -95,7 +95,7 @@ public class SidebarPanel extends JXPanel
     	add(homeBtn);
         add(coursesBtn);
         
-        if(Controller.getController().isChefLogged())
+        if(true) // Controller.getController().isChefLogged()
         {
         	recipesBtn = new JXButton(" Le mie ricette");
         	reportBtn = new JXButton(" Visualizza Report");
@@ -176,7 +176,7 @@ public class SidebarPanel extends JXPanel
 		homeBtn.addMouseListener(hoverListener);
         coursesBtn.addMouseListener(hoverListener);
         
-        if(Controller.getController().isChefLogged())
+        if(true) // Controller.getController().isChefLogged()
 		{
 			recipesBtnListener = new ActionListener()
 			 {

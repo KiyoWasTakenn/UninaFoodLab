@@ -23,8 +23,6 @@ import UninaFoodLab.DAO.Postgres.*;
 import UninaFoodLab.Exceptions.*;
 
 import java.awt.EventQueue;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -77,8 +75,7 @@ public class Controller
                 e.printStackTrace();
             }
 
-            new LoginFrame().setVisible(true);
-           
+            new LoginFrame().setVisible(true);  
         });
     }
 
@@ -177,8 +174,7 @@ public class Controller
         return utilizzoDAO;
     }
     
-    // Navigation methods
-  
+    // Navigation methods 
     public void goToLogin(JFrame currFrame)
     {
     	EventQueue.invokeLater(() -> 
@@ -466,7 +462,7 @@ public class Controller
 	public void openMonthlyReport(JFrame parent)
 	{
 	    ReportFrame report = new ReportFrame();
-	    report.setReportData();
+	    report.setReportData(1,1,1444,323,4,5);
 	    report.setVisible(true);
 
 
