@@ -1,0 +1,1272 @@
+-- Setto lo schema come primo nella ricerca
+SET search_path TO UninaFoodLab, public;
+
+-- Creo lo schema per UninaFoodLab
+CREATE SCHEMA UninaFoodLab;
+
+-- 00_Create: Definizione Tabelle
+
+-- Partecipante
+CREATE TABLE Partecipante
+(
+	IdPartecipante SERIAL PRIMARY KEY,
+	Username TEXT UNIQUE NOT NULL,
+	Nome VARCHAR(100) NOT NULL,
+	Cognome VARCHAR(100) NOT NULL,
+	CodiceFiscale CHAR(17) UNIQUE NOT NULL, 
+	DataDiNascita DATE NOT NULL,
+	LuogoDiNascita VARCHAR(100) NOT NULL,
+	Email TEXT UNIQUE NOT NULL, 
+	Password VARCHAR(60) NOT NULL,
+	NumeroCorsi INTEGER DEFAULT 0,
+	CONSTRAINT check_usrpart_length CHECK (LENGTH(Username) BETWEEN 4 AND 20)
+);
+
+-- Chef
+CREATE TABLE Chef
+(
+	IdChef SERIAL PRIMARY KEY,
+	Username TEXT UNIQUE NOT NULL,
+	Nome VARCHAR(100) NOT NULL,
+	Cognome VARCHAR(100) NOT NULL,
+	CodiceFiscale CHAR(17) UNIQUE NOT NULL, 
+	DataDiNascita DATE NOT NULL,
+	LuogoDiNascita VARCHAR(100) NOT NULL,
+	Email TEXT UNIQUE NOT NULL, 
+	Password VARCHAR(60) NOT NULL,
+	Curriculum TEXT NOT NULL,
+	CONSTRAINT check_usrchef_length CHECK (LENGTH(Username) BETWEEN 4 AND 20)
+);
+
+-- Argomento
+CREATE TABLE Argomento
+(
+	IdArgomento SERIAL PRIMARY KEY,
+	Nome VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- Corso
+CREATE TABLE Corso 
+(
+	IdCorso SERIAL PRIMARY KEY,
+	Nome VARCHAR(100) NOT NULL,
+	DataInizio DATE,																											-- Prendiamo sempre la data della sessione più recente
+	NumeroSessioni INTEGER DEFAULT 0 NOT NULL,							
+	FrequenzaSessioni VARCHAR(100) NOT NULL,
+	Limite INTEGER DEFAULT NULL,
+	Descrizione TEXT NOT NULL,
+	Costo FLOAT8 NOT NULL,
+	isPratico BOOLEAN NOT NULL DEFAULT false,
+	IdChef INTEGER NOT NULL,																						
+	CONSTRAINT fk_chef_corso FOREIGN KEY(IdChef) REFERENCES Chef(IdChef) ON DELETE CASCADE,
+	CONSTRAINT check_costo_non_negativo CHECK (Costo >= 0.0),
+	CONSTRAINT check_limite_pratico CHECK ((NOT isPratico AND LIMITE IS NULL) OR (isPratico AND Limite IS NOT NULL))	 -- Il corso ha limite solo se ha almeno una sessione pratica			
+);
+
+-- SessionePratica
+CREATE TABLE SessionePratica
+(
+	IdSessionePratica SERIAL PRIMARY KEY, 
+	Durata INTEGER NOT NULL,																							-- La durata è in minuti
+	Orario TIME NOT NULL,
+	Data DATE NOT NULL, 
+	NumeroPartecipanti INTEGER NOT NULL DEFAULT 0,
+	Luogo VARCHAR(100),
+	IdCorso  INTEGER NOT NULL,
+	CONSTRAINT fk_corso_pratica FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE 			--Se eliminiamo il corso vengono eliminate anche tutte le sessioni pratiche associate
+);
+
+-- SessioneOnline
+CREATE TABLE SessioneOnline
+(
+	IdSessioneOnline SERIAL PRIMARY KEY, 
+	Durata INTEGER NOT NULL,			-- La durata è in minuti
+	Orario TIME NOT NULL,
+	Data DATE NOT NULL, 
+	LinkRiunione TEXT NOT NULL,
+	IdCorso  INTEGER NOT NULL,
+	CONSTRAINT fk_corso_online FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE			--Se eliminiamo il corso vengono eliminate anche tutte le sessioni online associate
+);
+
+-- Enum per il tipo di difficoltà della ricetta
+CREATE TYPE LivelloDifficolta AS ENUM ('Principiante', 'Facile', 'Medio', 'Difficile', 'Esperto');
+
+-- Ricetta
+CREATE TABLE Ricetta																												-- Rilassamento vincolo implementato lato java (una ricetta può essere creata senza ingrediente lato db)
+(
+	IdRicetta SERIAL PRIMARY KEY,
+	Nome VARCHAR(100) UNIQUE NOT NULL,
+	Provenienza VARCHAR(100) NOT NULL,
+	Tempo INTEGER NOT NULL,				-- La durata è in minuti
+	Calorie INTEGER NOT NULL,				-- in KCAL
+	Difficolta LivelloDifficolta NOT NULL,
+	Allergeni VARCHAR(100),
+	IdChef INTEGER NOT NULL,
+	CONSTRAINT fk_chef_ricetta FOREIGN KEY(IdChef) REFERENCES Chef(IdChef) ON DELETE CASCADE,
+	CONSTRAINT check_tempo_positivo CHECK (Tempo > 0),
+	CONSTRAINT check_calorie_positive CHECK (Calorie > 0)
+);
+
+-- Enum per l'origine dell'ingrediente
+CREATE TYPE NaturaIngrediente AS ENUM ('Vegetale', 'Animale', 'Minerale', 'Fungino', 'Sintetico', 'Microbico', 'Altro');
+
+-- Ingrediente
+CREATE TABLE Ingrediente
+(
+	IdIngrediente SERIAL PRIMARY KEY,
+	Nome VARCHAR(100) UNIQUE NOT NULL,
+	Origine NaturaIngrediente NOT NULL
+);
+
+-- Iscrizioni
+CREATE TABLE Iscrizioni
+(
+	IdPartecipante  INTEGER NOT NULL,
+	IdCorso  INTEGER NOT NULL,
+	CONSTRAINT pk_iscrizioni_corso PRIMARY KEY(IdPartecipante, IdCorso),					      	   			-- Lo stesso utente non puo' partecipare due volte allo stesso corso
+	CONSTRAINT fk_partecipante_iscrizioni FOREIGN KEY(IdPartecipante) REFERENCES Partecipante(IdPartecipante) ON DELETE CASCADE,
+	CONSTRAINT fk_corso_iscrizioni FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso)
+);
+
+-- Argomenti_Corso			-- Rilassamento vincolo altrimenti un corso non può nascere senza un argomento
+CREATE TABLE  Argomenti_Corso
+(
+	IdCorso  INTEGER NOT NULL,
+	IdArgomento  INTEGER NOT NULL,
+	CONSTRAINT pk_argomenti_corso PRIMARY KEY(IdCorso, IdArgomento),									-- Minimo un argomento e niente argomenti ripetuti per corso
+	CONSTRAINT fk_corso_argomenticorso FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE,
+	CONSTRAINT fk_argomenti_argomenticorso FOREIGN KEY(IdArgomento) REFERENCES Argomento(IdArgomento)
+);
+
+-- Adesioni
+CREATE TABLE Adesioni
+(
+	IdPartecipante  INTEGER NOT NULL,
+	IdSessionePratica  INTEGER NOT NULL,
+	DataAdesione DATE NOT NULL,
+	CONSTRAINT fk_partecipante_adesioni FOREIGN KEY(IdPartecipante) REFERENCES Partecipante(IdPartecipante) ON DELETE CASCADE,
+	CONSTRAINT fk_sessionepratica_adesioni FOREIGN KEY(IdSessionePratica) REFERENCES SessionePratica(IdSessionePratica) ON DELETE CASCADE
+);
+
+-- Preparazioni
+CREATE TABLE Preparazioni
+(
+	IdSessionePratica  INTEGER NOT NULL,
+	IdRicetta  INTEGER NOT NULL,
+	CONSTRAINT pk_sessionepratica_ricetta PRIMARY KEY (IdSessionePratica, IdRicetta),						-- Non si può ripetere la stessa ricetta nella stessa sessione
+	CONSTRAINT fk_sessionepratica_preparazioni FOREIGN KEY(IdSessionePratica) REFERENCES SessionePratica(IdSessionePratica) ON DELETE CASCADE,
+	CONSTRAINT fk_ricetta_preparazioni FOREIGN KEY(IdRicetta) REFERENCES Ricetta(IdRicetta) ON DELETE CASCADE
+);
+
+CREATE TYPE UnitaDiMisura AS ENUM ('Unita', 'Grammi', 'Kilogrammi', 'Litri', 'Millilitri', 'Bicchiere', 'Tazza', 'Tazzina', 'Cucchiaio', 'Cucchiaino');
+
+-- Utilizzi
+CREATE TABLE Utilizzi
+(
+	IdRicetta  INTEGER NOT NULL,
+	IdIngrediente  INTEGER NOT NULL,
+	Quantita FLOAT8 NOT NULL,										-- Per una porzione!
+	UDM	UnitaDiMisura,																	
+	CONSTRAINT pk_ricetta_ingrediente PRIMARY KEY(IdRicetta, IdIngrediente),			-- Gli ingredienti non devono essere ripetuti per la stessa ricetta e ce ne deve essere almeno 1
+	CONSTRAINT fk_ricetta_utilizzi FOREIGN KEY(IdRicetta) REFERENCES Ricetta(IdRicetta) ON DELETE CASCADE,
+	CONSTRAINT fk_ingrediente_utilizzi FOREIGN KEY(IdIngrediente) REFERENCES Ingrediente(IdIngrediente) ON DELETE CASCADE,
+	CONSTRAINT check_quantita CHECK (Quantita > 0)
+);
+
+-- 02_Triggers_Functions_Procedures
+
+-- Normalizza Partecipante/Chef con Username minuscolo, CodiceFiscale Maiuscolo, Email minuscolo, Nome e Cognome con l'iniziale Maiuscola
+
+CREATE OR REPLACE FUNCTION fun_normalizza_utente()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    NEW.Username := LOWER(NEW.Username);
+    NEW.CodiceFiscale := UPPER(NEW.CodiceFiscale);
+    NEW.Email := LOWER(NEW.Email);
+    NEW.Nome := INITCAP(NEW.Nome);
+    NEW.Cognome := INITCAP(NEW.Cognome);
+    RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_normalizza_partecipante
+BEFORE INSERT OR UPDATE ON Partecipante
+FOR EACH ROW
+EXECUTE FUNCTION fun_normalizza_utente();
+
+CREATE OR REPLACE TRIGGER trg_normalizza_chef
+BEFORE INSERT OR UPDATE ON Chef
+FOR EACH ROW
+EXECUTE FUNCTION fun_normalizza_utente();
+
+
+-- Normalizzo Ingrediente e Ricetta con l'iniziale del nome maiuscola
+
+CREATE OR REPLACE FUNCTION fun_normalizza_ingr_chef()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    NEW.Nome := INITCAP(NEW.Nome);
+    RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_normalizza_ingrediente
+BEFORE INSERT OR UPDATE ON Ingrediente
+FOR EACH ROW
+EXECUTE FUNCTION fun_normalizza_ingr_chef();
+
+CREATE OR REPLACE TRIGGER trg_normalizza_ricetta
+BEFORE INSERT OR UPDATE ON Ricetta
+FOR EACH ROW
+EXECUTE FUNCTION fun_normalizza_ingr_chef();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Interrelazionale: Impedire che due utenti – uno Chef e uno Partecipante – abbiano lo stesso Username, anche se sono in due tabelle diverse.
+
+CREATE OR REPLACE FUNCTION fun_username_unique()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	IF TG_OP = 'UPDATE' AND NEW.Username = OLD.Username THEN			-- Ottimizzazione se è una update e lo username non cambia
+    		RETURN NEW;
+	END IF;
+
+	IF TG_TABLE_NAME = 'Partecipante' THEN
+    		IF EXISTS (SELECT 1 FROM Chef WHERE Username = NEW.Username) THEN
+    			RAISE EXCEPTION 'Username già usato in Chef';
+		END IF;
+	END IF;
+	
+	IF TG_TABLE_NAME = 'Chef' THEN
+		IF EXISTS (SELECT 1 FROM Partecipante WHERE Username = NEW.Username) THEN
+    			RAISE EXCEPTION 'Username già usato in Partecipante';
+		END IF;
+	END IF;
+	RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_unico_username_partecipante
+BEFORE INSERT OR UPDATE ON Partecipante 
+FOR EACH ROW
+EXECUTE FUNCTION fun_username_unique();
+
+CREATE OR REPLACE TRIGGER trg_unico_username_chef
+BEFORE INSERT OR UPDATE ON Chef 
+FOR EACH ROW
+EXECUTE FUNCTION fun_username_unique();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Interrelazionale: Non ci possono essere più sessioni per lo stesso corso nello stesso giorno
+
+CREATE OR REPLACE FUNCTION fun_unicita_sessione_giorno()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    	IF EXISTS ( SELECT 1 FROM SessioneOnline WHERE Data = NEW.Data AND IdCorso = NEW.IdCorso ) THEN
+    		RAISE EXCEPTION 'C''è già una sessione online lo stesso giorno';
+	END IF;
+
+    	IF EXISTS ( SELECT 1 FROM SessionePratica WHERE Data = NEW.Data AND IdCorso = NEW.IdCorso) THEN
+    		RAISE EXCEPTION 'C''è già una sessione pratica lo stesso giorno';
+	END IF;
+    	RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_unicita_sessione_online_giorno
+BEFORE INSERT OR UPDATE OF Data ON SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_unicita_sessione_giorno();
+
+CREATE OR REPLACE TRIGGER trg_unicita_sessione_pratica_giorno
+BEFORE INSERT OR UPDATE OF Data ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_unicita_sessione_giorno();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Aggiornamento numero sessioni (increment)
+
+CREATE OR REPLACE FUNCTION fun_incrementa_num_sessioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    	UPDATE Corso
+    	SET NumeroSessioni = NumeroSessioni + 1
+    	WHERE IdCorso = NEW.IdCorso;
+    	RETURN NULL;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_incremento_numsessioni_online
+AFTER INSERT ON SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_incrementa_num_sessioni();
+
+CREATE OR REPLACE TRIGGER trg_incremento_numsessioni_pratiche
+AFTER INSERT ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_incrementa_num_sessioni();
+
+
+-- Aggiornamento numero sessioni (decrement)
+
+CREATE OR REPLACE FUNCTION fun_decrementa_num_sessioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	UPDATE Corso
+	SET NumeroSessioni = GREATEST(NumeroSessioni - 1, 0)
+	WHERE IdCorso = OLD.IdCorso;
+	RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_decrementa_num_sessioni_pratica
+AFTER DELETE ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_decrementa_num_sessioni();
+
+CREATE OR REPLACE TRIGGER trg_decrementa_num_sessioni_online
+AFTER DELETE ON SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_decrementa_num_sessioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Trigger aggiornamento numero utenti (increment)
+
+CREATE OR REPLACE FUNCTION fun_incrementa_num_utenti()
+RETURNS TRIGGER AS
+$$    
+BEGIN
+    UPDATE SessionePratica
+    SET NumeroPartecipanti = NumeroPartecipanti + 1
+    WHERE IdSessionePratica = NEW.IdSessionePratica;
+    RETURN NULL;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_incremento_numutenti
+AFTER INSERT ON Adesioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_incrementa_num_utenti();
+
+
+-- Trigger aggiornamento numero utenti (decrement)
+
+CREATE OR REPLACE FUNCTION fun_decrementa_num_utenti()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	UPDATE SessionePratica
+	SET NumeroPartecipanti = GREATEST(NumeroPartecipanti - 1, 0)
+	WHERE IdSessionePratica = OLD.IdSessionePratica;
+	RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_decrementa_num_utenti
+AFTER DELETE ON Adesioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_decrementa_num_utenti();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Trigger aggiornamento numero corsi(increment)
+
+CREATE OR REPLACE FUNCTION fun_incrementa_num_corsi()
+RETURNS TRIGGER AS
+$$    
+BEGIN
+    UPDATE Partecipante
+    SET NumeroCorsi = NumeroCorsi + 1
+    WHERE IdPartecipante = NEW.IdPartecipante;
+    RETURN NULL;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_incrementa_num_corsi
+AFTER INSERT ON Iscrizioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_incrementa_num_corsi();
+
+
+-- Trigger aggiornamento numero corsi(decrement)
+
+CREATE OR REPLACE FUNCTION fun_decrementa_num_corsi()
+RETURNS TRIGGER AS
+$$    
+BEGIN
+    UPDATE Partecipante
+    SET NumeroCorsi = GREATEST(NumeroCorsi - 1, 0)
+    WHERE IdPartecipante = OLD.IdPartecipante;
+    RETURN OLD;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_decrementa_num_corsi
+AFTER DELETE ON Iscrizioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_decrementa_num_corsi();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Interrelazionale: La data dell'adesione alla sessione pratica deve essere antecedente alla data della sessione pratica/ Se la sessione pratica è già avvenuta, l'utente non puo' più aderire
+
+CREATE OR REPLACE FUNCTION fun_data_adesione()
+RETURNS TRIGGER AS
+$$
+DECLARE
+    	Data_Sessione SessionePratica.Data%TYPE;
+
+BEGIN
+
+    	SELECT Data INTO Data_Sessione
+    	FROM SessionePratica
+    	WHERE IdSessionePratica = NEW.IdSessionePratica;
+
+    	IF NEW.DataAdesione >= Data_Sessione  THEN
+        	RAISE EXCEPTION 'L'' adesione deve essere antecedente alla data della sessione pratica';
+    	END IF;
+    	RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_data_adesione
+BEFORE INSERT OR UPDATE ON Adesioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_data_adesione();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Interrelazionale: Se viene inserita una partecipazione ma il limite di iscrizioni è già raggiunto, essa non viene inserita
+
+CREATE OR REPLACE FUNCTION fun_limite_iscrizioni()
+RETURNS TRIGGER AS
+$$
+DECLARE
+    	numero_iscritti INTEGER;
+    	limite_corso Corso.Limite%TYPE;
+	pratico Corso.isPratico%TYPE;
+BEGIN
+	
+	SELECT Limite, isPratico INTO limite_corso, pratico
+    	FROM Corso
+    	WHERE IdCorso = NEW.IdCorso;
+
+	IF pratico THEN
+    		SELECT COUNT(*) INTO numero_iscritti
+    		FROM Iscrizioni
+    		WHERE IdCorso = NEW.IdCorso;
+    	
+    		IF numero_iscritti >= limite_corso THEN
+        		RAISE EXCEPTION 'Il limite delle iscrizioni per il corso è stato già raggiunto';
+    		END IF;
+	END IF;
+    	RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_limite_iscrizioni 
+BEFORE INSERT OR UPDATE ON Iscrizioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_limite_iscrizioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Interrelazionale: Un utente non puo' partecipare a una sessione pratica se non iscritto al corso che la organizza
+
+CREATE OR REPLACE FUNCTION fun_iscrizione_before_adesione()
+RETURNS TRIGGER AS
+$$
+DECLARE
+    	idcorso_sessione SessionePratica.IdCorso%TYPE;
+
+BEGIN
+
+    	SELECT IdCorso INTO idcorso_sessione
+    	FROM SessionePratica
+    	WHERE IdSessionePratica = NEW.IdSessionePratica;
+
+	IF NOT EXISTS ( SELECT 1 FROM Iscrizioni WHERE IdPartecipante = NEW.IdPartecipante AND IdCorso = idcorso_sessione ) THEN
+    		RAISE EXCEPTION 'Partecipante non iscritto al corso, impossibile aderire alla sessione pratica';
+	END IF;
+    	RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_iscrizione_before_adesione
+BEFORE INSERT OR UPDATE ON Adesioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_iscrizione_before_adesione();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- BUSINESS IntraRelazionale: Gli argomenti del corso non possono essere più di 5
+
+CREATE OR REPLACE FUNCTION fun_limit_argomenti()
+RETURNS TRIGGER AS
+$$
+DECLARE
+    	num_argomenti INTEGER;
+
+BEGIN
+	
+	SELECT COUNT(*) INTO num_argomenti FROM Argomenti_Corso WHERE IdCorso = NEW.IdCorso;
+
+	IF num_argomenti >= 5 THEN
+		RAISE EXCEPTION 'E'' gia'' stato scelto il numero massimo di argomenti per questo corso'; 
+    	END IF;
+    	RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_limit_argomenti
+BEFORE INSERT OR UPDATE ON Argomenti_Corso
+FOR EACH ROW
+EXECUTE FUNCTION fun_limit_argomenti();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Interrelazionale: Lo chef non può usare ricette nelle sessioni pratiche che non sono sue
+
+CREATE OR REPLACE FUNCTION fun_ricette_chef_sessione()
+RETURNS TRIGGER AS
+$$
+DECLARE
+	id1 Chef.IdChef%TYPE;
+	id2 Chef.IdChef%TYPE;
+BEGIN
+	SELECT IdChef INTO id1 FROM Preparazioni NATURAL JOIN Ricetta WHERE IdRicetta = NEW.IdRicetta;
+
+	SELECT IdChef INTO id2 FROM Preparazioni NATURAL JOIN SessionePratica NATURAL JOIN Corso WHERE IdSessionePratica = NEW.IdSessionePratica;
+	
+	IF id1 <> id2 THEN
+		RAISE EXCEPTION 'Non si possono inserire ricette che non sono dello chef';
+	END IF;
+	RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_ricette_chef_sessione
+BEFORE INSERT OR UPDATE ON Preparazioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_ricette_chef_sessione();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- L'inserimento di una sessione pratica o online (se la data è maggiore della data odierna) aggiorna la data di inizio del corso (se è minore della data del corso oppure non c'è ancora una data di inizio), l'aggiornamento di sessioni già avvenute non deve essere possibile
+
+CREATE OR REPLACE FUNCTION fun_aggiorna_data_inizio()
+RETURNS TRIGGER AS 
+$$
+DECLARE
+	current_data Corso.DataInizio%TYPE;
+BEGIN
+
+	IF TG_OP = 'UPDATE' THEN
+			IF OLD.Data <= CURRENT_DATE THEN
+				RAISE EXCEPTION 'Non puoi modificare sessioni già avvenute';
+			END IF;
+	END IF;
+
+	IF NEW.Data <= CURRENT_DATE THEN
+		RAISE EXCEPTION 'La data di inizio della sessione non puo'' essere antecedente alla data odierna o inserita oggi!';
+	END IF;
+
+	SELECT DataInizio INTO current_data FROM Corso WHERE IdCorso = NEW.IdCorso;
+	
+	IF current_data IS NULL OR current_data > NEW.Data THEN
+		UPDATE Corso
+		SET DataInizio = NEW.Data
+		WHERE IdCorso = NEW.IdCorso;
+	END IF;
+	RETURN NEW;
+	
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_pratica
+BEFORE INSERT OR UPDATE ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_aggiorna_data_inizio();
+
+CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_online
+BEFORE INSERT OR UPDATE ON SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_aggiorna_data_inizio();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Il Codice Fiscale non è modificabile una volta creato l'utente
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_utente()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	RAISE EXCEPTION 'Non puoi modificare il tuo codice fiscale!!!';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna__chef
+BEFORE UPDATE OF CodiceFiscale ON Chef 
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_utente();
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_partecipante
+BEFORE UPDATE OF CodiceFiscale ON Partecipante
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_utente();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non si può modificare o eliminare un argomento
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_argomento()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	RAISE EXCEPTION 'Non puoi modificare o cancellare un argomento!!!';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_argomento
+BEFORE DELETE OR UPDATE  OF Nome ON Argomento
+FOR EACH ROW
+EXECUTE  FUNCTION fun_blocca_aggiorna_argomento();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non si può modificare o eliminare un ingrediente
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_ingrediente()
+RETURNS TRIGGER AS
+$$
+BEGIN
+	RAISE EXCEPTION 'Non puoi modificare o cancellare un ingrediente!!!';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_ingrediente
+BEFORE DELETE OR UPDATE  OF Nome, Origine ON Ingrediente
+FOR EACH ROW
+EXECUTE  FUNCTION fun_blocca_aggiorna_ingrediente();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non posso inserire una sessione pratica se ispratico  = false 
+
+CREATE OR REPLACE FUNCTION fun_ispratico_insert()
+RETURNS TRIGGER AS
+$$
+DECLARE
+	pratico Corso.isPratico%TYPE;
+BEGIN
+	SELECT isPratico INTO pratico FROM Corso WHERE IdCorso = NEW.IdCorso;
+
+	IF NOT pratico THEN
+		RAISE EXCEPTION 'Non puoi inserire una sessione pratica in un corso non pratico!!!';
+	END IF;
+	RETURN NEW;
+	
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_ispratico_insert
+BEFORE INSERT ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_ispratico_insert();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Del corso non  è possibile aggiornare IdCorso, Nome, FrequenzaSessioni, Costo, IdChef
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_corso()
+RETURNS TRIGGER AS
+$$
+BEGIN
+    RAISE EXCEPTION 'Non puoi modificare i campi IdCorso, Nome, FrequenzaSessioni, Costo o IdChef.';
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_corso
+BEFORE UPDATE  OF IdCorso, Nome, FrequenzaSessioni, Costo, IdChef ON Corso
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_corso();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Della ricetta non è possibile aggiornare IdRicetta e IdChef
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_ricetta()
+RETURNS TRIGGER AS 
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdRicetta e IdChef.';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_ricetta
+BEFORE UPDATE  OF IdRicetta, IdChef ON Ricetta
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_ricetta();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Delle sessioni non è possibile aggiornare IdSessione(pratica,online) e IdCorso
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_sessioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdSessione e IdCorso.';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_sessioni_online
+BEFORE UPDATE  OF IdSessioneOnline, IdCorso On SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_sessioni();
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_sessioni_pratiche
+BEFORE UPDATE  OF IdSessionePratica, IdCorso ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_sessioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Degli Ingredienti non deve essere possibile aggiornare IdIngrediente, Nome, Origine 
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_ingrediente()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdIngrediente, Nome, Origine.';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_ingrediente
+BEFORE UPDATE  OF IdIngrediente, Nome, Origine  ON Ingrediente
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_ingrediente();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare le  iscrizioni
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_iscrizioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdPartecipante, IdCorso.';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_iscrizioni
+BEFORE UPDATE  OF IdPartecipante, IdCorso  ON Iscrizioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_iscrizioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare gli argomenti_corso
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_argomenticorso()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdCorso, IdArgomento.';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_argomenticorso
+BEFORE UPDATE  OF IdCorso, IdArgomento ON Argomenti_Corso
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_argomenticorso();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare le adesioni
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_adesioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdPartecipante, IdSessionePratica, DataAdesione.';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_adesioni
+BEFORE UPDATE  OF IdPartecipante, IdSessionePratica, DataAdesione ON Adesioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_adesioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare le preparazioni
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_preparazioni()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi IdSessionePratica, IdRicetta.';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_preparazioni
+BEFORE UPDATE  OF IdSessionePratica, IdRicetta ON Preparazioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_preparazioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Non deve essere possibile aggiornare gli utilizzi
+
+CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_utilizzi()
+RETURNS TRIGGER AS
+$$
+BEGIN
+ 	RAISE EXCEPTION 'Non puoi modificare i campi  IdRicetta, IdIngrediente.';
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_utilizzi
+BEFORE UPDATE  OF IdRicetta, IdIngrediente ON Utilizzi
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_aggiorna_utilizzi();
+
+-- 01_Insert: Popolamento Tabelle
+
+-- Partecipante
+INSERT INTO Partecipante (Username, Nome, Cognome, CodiceFiscale, DataDiNascita, LuogoDiNascita, Email, Password, NumeroCorsi) VALUES
+('kiyo', 'Giuseppe Paolo', 'Esposito', 'SPSGPP03H17F839U', '2003-06-17', 'Napoli', 'giuseppep.esposito@studenti.unina.it', '$2a$11$YDepwIlVMHeru34z47crB.QsrpEc5CppCIV97XiIGPPHCBrCarjIm', 0),
+('virgi', 'Virginia Antonia', 'Esposito', 'SPSVGN04M61G964D', '2004-08-21', 'Pozzuoli', 'virginiaa.esposito@studenti.unina.it', '$2a$11$V6d/Gymya1BzSmrPP/cZdepkOhmjf9uLgE.dyF6TQNFaOXlqskyPm', 0),
+('gennarino', 'Gennaro', 'Iacuaniello', 'CNLGNR04B09F839J', '2004-02-09', 'Napoli', 'gennaro.iacuaniello@studenti.unina.it', '$2a$11$n4s8ouFWZBdDMa3YEmZpHO4ayn4tjIZ51u7Ih2u8gVcrReNDipQNa', 0),
+('chicolococon', 'Luca', 'Fiorentino Heredia', 'FRTLCA03H31F839C', '2003-05-31', 'Lima', 'luca.fiorentinoh@studenti.unina.it', '$2a$11$YfEJqbB/fS54uOyMjQUkme1e.nOWY2DlmDRwLpF3.oJLzHbWrcT/G', 0),
+('mariorossi', 'Mario', 'Rossi', 'RSSMRA75B01L219D', '1975-05-15', 'Milano', 'mario.rossi@example.com', '$2a$11$aZLcelUJOmXHchJrtP.vh.ncwE9jVTDpqZOdvkpbjEwzBoOpGJlvy', 0),
+('laurabianchi', 'Laura', 'Bianchi', 'BNCLRA80C01H501E', '1980-11-20', 'Torino', 'laura.bianchi@example.com', '$2a$11$N5Jdvrmk2SICJQ7quO0yh.d4wmRi5RMTiF35H7toSZGGx.k9X0dCu', 0),
+('francescoverdi', 'Francesco', 'Verdi', 'VRDFRC92A01F839F', '1992-03-08', 'Firenze', 'francesco.verdi@example.com', '$2a$11$Cbci8Yov.rBousvTBhTTUOFO90c2OxIwNy/0.XT3JR4DTSQpYQJvS', 0),
+('elenagallo', 'Elena', 'Gallo', 'GLLLEN88D01A123G', '1988-07-25', 'Bologna', 'elena.gallo@example.com', '$2a$11$JZN2itw4SFjxiqsJTBTg3.gUO.ZtV99X1ThEcG/BAVhIH9Y6ckqEe', 0),
+('andrearizzo', 'Andrea', 'Rizzo', 'RZZNDR70E01L789H', '1970-09-10', 'Palermo', 'andrea.rizzo@example.com', '$2a$11$HTJU4J9RLOQ4F4dzt/sOr.N9ezjSQLS.4l4W47mP.8O9R6M/9utSi', 0),
+('sofianeri', 'Sofia', 'Neri', 'NRESFO95F01F839I', '1995-01-30', 'Genova', 'sofia.neri@example.com', '$2a$11$zNMrIG.VpPVywSBwaUxinONsAMb0oNUU671NOalkoDgHThHxsm7Ba', 0),
+('giacomobruno', 'Giacomo', 'Bruno', 'BRNGCM85G01C345J', '1985-04-03', 'Bari', 'giacomo.bruno@example.com', '$2a$11$a45u.8KLUr1CkbzHSEJTBObOr97iXDwUNh5XdizPDzP/epXKvgRKm', 0),
+('chiaraconti', 'Chiara', 'Conti', 'CNTCHR90H01B678K', '1990-08-12', 'Venezia', 'chiara.conti@example.com', '$2a$11$uvF/bqsy8N2YoT/1vVvOvuV7s7t61v4UYSTlYNnuMuf8k3DcfwlOG', 0);
+
+-- Chef
+INSERT INTO Chef (Username, Nome, Cognome, CodiceFiscale, DataDiNascita, LuogoDiNascita, Email, Password, Curriculum) VALUES
+('nonnaada', 'Adelaide', 'Salemme', 'SLMADL35M61G964D', '1935-05-06', 'Bacoli', 'nonnaada@libero.it', '$2a$11$Fmjn15a9L868IBwL9ueeoesySF8.FCYV5FZRpJpSPOVooYuVi35v6', 'Chef Bacolese specializzata in cucina tradizionale italiana, bacolese/napoletana. Tra le sue specialità troviamo il casatiello e i crocchè, ha lavorato in numerosi ristoranti stellati in tutto il mondo guadagnando una fama internazionale.'),
+('massimobottura', 'Massimo', 'Bottura', 'BTTMSS62A01F839D', '1962-09-30', 'Modena', 'massimo.bottura@osteriaconcesco.com', '$2a$11$cO0F5REHON21drgTmtSJWOEQSfKONJXAXSqF2DnfdbtpzVtUyhb9K', 'Chef patron dell''Osteria Francescana di Modena, tre stelle Michelin e più volte nominato miglior ristorante al mondo. Conosciuto per la sua cucina concettuale che reinterpreta la tradizione italiana con audacia e intelligenza. È attivo anche in iniziative sociali contro lo spreco alimentare con il progetto Food for Soul.'),
+('alainducasse', 'Alain', 'Ducasse', 'DCSALN56F01I839I', '1956-09-13', 'Orthez', 'alain.ducasse@ducasse-paris.com', '$2a$11$fxBEchDG12Q16TAHRvgiaeQiAEH5gKtmBkefGSKbQi2h/zJPUD/B.', 'Uno degli chef più decorati al mondo, con numerosi ristoranti pluristellati Michelin. Famoso per la sua haute cuisine francese e per un impero gastronomico globale. La sua filosofia culinaria celebra la purezza dei sapori e l''eccellenza del prodotto, con un forte impegno per la sostenibilità.'),
+('gordonramsay', 'Gordon', 'Ramsay', 'RMSGRD66D01G839G', '1966-11-08', 'Johnstone', 'gordon.ramsay@hellskitchen.com', '$2a$11$EH4uO2WR82IW7/Fp42FwdeItsjt.u6Y/V/HvFGcKyS.c2RQxpLfhW', 'Chef scozzese, ristoratore, imprenditore e celebrità televisiva di fama globale. Gestisce numerosi ristoranti stellati in tutto il mondo ed è universalmente noto per programmi televisivi come "Hell''s Kitchen" e "MasterChef", che mostrano il suo stile energico e l''attenzione maniacale alla qualità.'),
+('thomasmkeller', 'Thomas', 'Keller', 'KLLTHM55H01K123L', '1955-10-14', 'Oceanside', 'thomas.keller@frenchlaundry.com', '$2a$11$o4aFhQnOuAaPWwfKUqYDluyCgWM/Ib.oza2UD9cgDOHBSbvUZtkJW', 'Chef americano pluristellato Michelin, celebre per i suoi ristoranti The French Laundry in California e Per Se a New York. Ha elevato la cucina americana a livelli di eccellenza globale, distinguendosi per la sua precisione, l''attenzione al dettaglio e l''uso di ingredienti di altissima qualità.'),
+('reneredzepi', 'René', 'Redzepi', 'RDZRNE77I01M456N', '1977-12-16', 'Copenhagen', 'rene.redzepi@noma.dk', '$2a$11$yggwVjNq5l1Rm19dNbusfurYWyUvLBMjRwTBY1COy4atNnlriNZQa', 'Chef danese e co-proprietario del ristorante Noma a Copenhagen, riconosciuto più volte come il miglior ristorante del mondo. Ha rivoluzionato la cucina nordica con un approccio innovativo, iper-locale e stagionale, diventando una figura di riferimento per la sostenibilità e la ricerca culinaria.'),
+('hestonblumen', 'Heston', 'Blumenthal', 'BLMHST66M01C567P', '1966-05-17', 'Londra', 'heston.blumenthal@thefatduck.com', '$2a$11$7TsXx1hQYoR.k2SHc71Ede38EEZruGBX6NOte/sAwlGxE6hdBQYry', 'Chef britannico pioniere della gastronomia molecolare, noto per il suo ristorante tre stelle Michelin The Fat Duck. Le sue creazioni sono un mix di scienza, arte e nostalgia, progettate per stimolare tutti i sensi e giocare con le percezioni. È un inventore di sapori e texture inaspettati.'),
+('ennicocrippa', 'Enrico', 'Crippa', 'CRPECC69N01D789Q', '1969-10-09', 'Carate Brianza', 'enrico.crippa@piazzaduomoalba.com', '$2a$11$Qt/s5FdvdiFWO/kdYCLblev72J.zsBCEKq4wLQYjibeLngHHn/M/u', 'Chef italiano del ristorante Piazza Duomo ad Alba, tre stelle Michelin. Conosciuto per la sua cucina raffinata che esalta la qualità e la stagionalità delle materie prime, in particolare le verdure del suo orto biodinamico. La sua è una cucina che racconta il territorio piemontese con eleganza e precisione.'),
+('wolfgangpuck', 'Wolfgang', 'Puck', 'PUCKWLF49O01E901R', '1949-07-08', 'Sankt Veit an der Glan', 'wolfgang.puck@wolfgangpuck.com', '$2a$11$5CswY2gPr/R6m1kyp0XO7.7W44g46o5scNuzD8WmQwD6ERVvCgNsa', 'Chef austro-americano e ristoratore di fama mondiale. Ha costruito un impero culinario con ristoranti come Spago, ed è stato una figura chiave nell''evoluzione della "California cuisine". È molto conosciuto anche per la sua partecipazione a eventi di alto profilo come il Governors Ball degli Oscar.'),
+('danielhumm', 'Daniel', 'Humm', 'HUMMDNL76P01F012S', '1976-09-21', 'Strengelbach', 'daniel.humm@elevenmadisonpark.com', '$2a$11$Jn/d/KENObtiS5pKIBgOmehr8/A9LyX9QSp2sVuwM681G4VYBOzCC', 'Chef svizzero noto per il suo lavoro all''Eleven Madison Park di New York, un ristorante pluristellato Michelin e premiato come miglior ristorante al mondo. La sua cucina è elegante, minimalista e focalizzata sull''eccellenza degli ingredienti, spesso con un approccio vegetale innovativo.'),
+('carlo.cracco', 'Carlo', 'Cracco', 'CRCCRL65B01F839E', '1965-10-08', 'Vicenza', 'carlo.cracco@craccoristorante.com', '$2a$11$nP50i1baxnfbpkHj28Aq3ujXFE9jtoD5NSyTZbik.pFm3lZnmgnXu', 'Chef di fama nazionale, noto per la sua presenza televisiva in "MasterChef Italia" e per i suoi ristoranti stellati. La sua cucina è un''interpretazione moderna della tradizione italiana, con un focus sulla tecnica e sull''equilibrio dei sapori. È un imprenditore di successo nel settore della ristorazione.'),
+('antoninochef', 'Antonino', 'Cannavacciuolo', 'CNNANT75C01F839F', '1975-04-16', 'Vico Equense', 'antonino.cannavacciuolo@villacrespi.com', '$2a$11$EXV80HVOBGJveVixz1yHvOl14/KUWW738n55XYhlWWrFp1qSZ.ZhG', 'Chef patron di Villa Crespi, due stelle Michelin. Celebre volto televisivo di "Cucine da Incubo" e "MasterChef Italia". La sua cucina è un omaggio alle radici campane, con piatti ricchi di sapore che uniscono la tradizione partenopea a una raffinata modernità. È un mentore per molti giovani chef.'),
+('brunobarbieri', 'Bruno', 'Barbieri', 'BRNBRN62P01E839X', '1962-01-12', 'Medicina', 'bruno.barbieri@example.com', '$2a$11$DteBv8gwVQlJ5lOzarVMuO3jfn31Vn8OzWLYrVcErO.UnJ53XWUT2', 'Chef pluristellato e popolare giudice di "MasterChef Italia". È noto per la sua cucina elegante e ricercata, che unisce sapientemente tradizione e innovazione. Ha collezionato un numero elevato di stelle Michelin nella sua carriera ed è un riferimento per la cucina d''autore.'),
+('antonellacolonna', 'Antonello', 'Colonna', 'CLNANT56A01F987Y', '1956-07-27', 'Roma', 'antonello.colonna@resort.com', '$2a$11$AE7ueEshrsDNstUgg4Mie.fp8TAVePMFs8ie2EWBSrTEmR.ujwr5K', 'Icona della cucina laziale, chef e imprenditore. Gestisce l''Antonello Colonna Resort & Spa e il ristorante Oppio Caffè alle Terme di Caracalla. La sua cucina è radicata nel territorio romano, ma con un tocco di eleganza e modernità, celebrando gli ingredienti locali.'),
+('angelofumagalli', 'Angelo', 'Fumagalli', 'FUMANG70B01G123Z', '1970-03-05', 'Milano', 'angelo.fumagalli@ristorante.com', '$2a$11$iBbJyUfEBPxWLnovE0DJTOFkZGHN.y1h1M2RVkPORjTj07ESnDyOS', 'Chef e docente di fama, specializzato in pasticceria e panificazione. Conosciuto per la sua precisione e innovazione nel mondo dei dolci e dei lievitati, è un punto di riferimento per le nuove generazioni di pasticceri e fornai, spesso collaborando con scuole di cucina di alto livello.'),
+('mmorimoto', 'Masaharu', 'Morimoto', 'MRMMSH55B22Z404Y', '1955-05-22', 'Hiroshima', 'm.morimoto@chefmail.com', '$2a$11$uhy.GNMQCKh8HAPUtqwV.uuF8kG0ffaSWXhgy4o8Nt97jt.Z1U.Zu', 'Conosciuto a livello globale per la cucina fusion giapponese-americana. Ex Iron Chef e fondatore della catena Morimoto.'),
+('nigi.nigella', 'Nigella', 'Lawson', 'LWSNGL60E01H839H', '1960-01-06', 'Londra', 'nigella.lawson@cookbooks.com', '$2a$11$U285Po7uja1bmPrUCPnDau7zJDbv3xEWj0FFZvpfZM6A800R6DDQ.', 'Food writer e conduttrice televisiva britannica, famosa per il suo approccio sensuale e accessibile alla cucina casalinga. Non è una chef stellata nel senso tradizionale, ma una figura influente che ispira milioni di persone a cucinare con passione, proponendo ricette gustose e confortanti.'),
+('ynarisawa', 'Yoshihiro', 'Narisawa', 'NRSYSH70A01Z404X', '1970-03-01', 'Nagoya', 'y.narisawa@chefmail.com', '$2a$11$0K823jpBqhI.XBhyBL2lDu4enSqY.WOwufEDDt.kR1A1okFyViD9m', 'Chef stellato fondatore del ristorante NARISAWA a Tokyo, celebre per la cucina sostenibile giapponese (Satoyama cuisine).'),
+('cristina.bowerman', 'Cristina', 'Bowerman', 'BWRCRS70G01L839J', '1970-07-26', 'Taranto', 'cristina.bowerman@glasshostaria.com', '$2a$11$VG4aquAOprHuMIP7FrSYFeZVdImIPXSYEBkahSmi3fVUf5tQEsNBe', 'Chef italiana, unica donna ad avere una stella Michelin a Roma con il suo ristorante Glass Hostaria. La sua cucina è audace, innovativa e cosmopolita, influenzata dalle sue esperienze internazionali. È un esempio di creatività e determinazione nel panorama culinario italiano.');
+
+-- Argomento
+INSERT INTO Argomento (Nome) VALUES
+('Cucina'),
+('Pasticceria'),
+('Panificazione e Grandi Lievitati'),
+('Finger Food e Aperitivi'),
+('Street Food'),
+('Molecolare'),
+('Cioccolateria'),
+('Etica e Sostenibile'),
+('Tecniche di Base e Avanzate'),
+('Basi per Principianti'),
+('Food Styling e Presentazione dei Piatti'),
+('Vegetariana'),
+('Vegana'),
+('Senza Glutine'),
+('Senza Lattosio'),
+('Fusion e Creativa'),
+('Veloce e Quotidiana'),
+('Fermentata e Conservazione Naturale'),
+('Eventi e Feste'),
+('Benessere e Light'),
+('Bambini e Famiglie'),
+('Erbe Aromatiche e Spezie'),
+('Internazionale'),
+('Italiana'),
+('Francese'),
+('Spagnola'),
+('Portoghese'),
+('Giapponese'),
+('Cinese'),
+('Indiana'),
+('Thailandese'),
+('Vietnamita'),
+('Messicana'),
+('Africana'),
+('USA'),
+('Brasiliana'),
+('Argentina'),
+('Sudamericana'),
+('Nordamericana'),
+('Mediterranea'),
+('Regionale'),
+('Europea');
+
+-- Corso
+INSERT INTO Corso (Nome, DataInizio, NumeroSessioni, FrequenzaSessioni, Limite, Descrizione, Costo, isPratico, IdChef) VALUES
+
+('In cucina con Nonna', '2026-06-17', 0, 'Settimanale', 34, 'Cucina classica napoletana con ingredienti tipici della tradizione', 90.0, true, (SELECT IdChef FROM Chef WHERE Username = 'nonnaada')),
+('La tradizione giapponese', '2026-05-17', 0, 'Mensile', 50, 'Piatti e dolci tipici giapponesi', 250.0, true, (SELECT IdChef FROM Chef WHERE Username = 'mmorimoto')),
+('Cucina Fusion Asiatica', '2026-11-12', 0, 'Settimanale', 30, 'Fusione tra cucina asiatica e italiana con tecniche innovative', 200.0, true, (SELECT IdChef FROM Chef WHERE Username = 'ynarisawa')),
+('Il messico in casa tua', '2025-08-17', 0, 'Settimanale', NULL, 'Guacamole, zuppa di fagioli e involtini', 100.0, false, (SELECT IdChef FROM Chef WHERE Username = 'wolfgangpuck')),
+('Piatti semplici per principianti', '2026-01-01', 0, 'Giornaliero', 90, 'Se non riesci a cuocere neanche un uovo senza far scoppiare la cucina, questo è il corso per te!!', 30.0, true, (SELECT IdChef FROM Chef WHERE Username = 'ennicocrippa')),
+('Street Food Internazionale', '2027-01-15', 0, 'Settimanale', 35, 'Tecniche per creare street food di qualità da diverse tradizioni', 90.0, true, (SELECT IdChef FROM Chef WHERE Username = 'wolfgangpuck')),
+('Cucina Molecolare Base', '2025-08-20', 0, 'Bisettimanale', NULL, 'Introduzione alle tecniche di gastronomia molecolare e sferificazione', 320.0, false, (SELECT IdChef FROM Chef WHERE Username = 'hestonblumen')),
+('Cucina per Bambini', '2027-04-05', 0, 'Settimanale', 40, 'Ricette sane e divertenti per coinvolgere i più piccoli', 80.0, true, (SELECT IdChef FROM Chef WHERE Username = 'antoninochef')),
+('Panificazione Artesanale', '2026-10-05', 0, 'Settimanale', NULL, 'Tecniche tradizionali e moderne per pane e grandi lievitati', 140.0, false, (SELECT IdChef FROM Chef WHERE Username = 'brunobarbieri')),
+('Cucina Francese Classica', '2027-03-10', 0, 'Bisettimanale', 69, 'Fondamenti teorici della cucina francese tradizionale', 200.0, true, (SELECT IdChef FROM Chef WHERE Username = 'alainducasse'));
+
+-- Ricetta
+INSERT INTO Ricetta (Nome, Provenienza, Tempo, Calorie, Difficolta, Allergeni, IdChef) VALUES
+('Pizza Margherita', 'Italia', 45, 280, 'Facile', 'Glutine, Lattosio', (SELECT IdChef FROM Chef WHERE Username = 'nonnaada')),
+('Risotto Ai Funghi Porcini', 'Italia', 30, 320, 'Medio', 'Lattosio', (SELECT IdChef FROM Chef WHERE Username = 'nonnaada')),
+('Sushi Misto', 'Giappone', 90, 300, 'Difficile', 'Pesce', (SELECT IdChef FROM Chef WHERE Username = 'mmorimoto')),
+('Ramen Tradizionale', 'Giappone', 120, 350, 'Difficile', 'Glutine, Soia', (SELECT IdChef FROM Chef WHERE Username = 'mmorimoto')),
+('Carbonara', 'Italia', 15, 420, 'Medio', 'Uova, Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'ennicocrippa')),
+('Coq Au Vin', 'Francia', 120, 380, 'Difficile', NULL, (SELECT IdChef FROM Chef WHERE Username = 'alainducasse')),
+('Croissant', 'Francia', 180, 400, 'Esperto', 'Glutine, Lattosio, Uova', (SELECT IdChef FROM Chef WHERE Username = 'alainducasse')),
+('Arancini Di Riso', 'Italia', 110, 2506, 'Medio', 'Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'wolfgangpuck')),
+('Hot Dog', 'USA', 55, 379.5, 'Facile', 'Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'wolfgangpuck')),
+('Tiramisù', 'Italia', 20, 380, 'Facile', 'Uova, Lattosio, Glutine', (SELECT IdChef FROM Chef WHERE Username = 'antoninochef'));
+
+-- SessioneOnline
+INSERT INTO SessioneOnline (Durata, Orario, Data, LinkRiunione, IdCorso) VALUES
+(120, '09:00', '2026-11-29', 'https://meet.google.com/fgh-ijkl-mnop', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Fusion Asiatica')),
+(120, '10:00', '2025-08-17', 'https://meet.google.com/abc-defg-hij', (SELECT IdCorso FROM Corso WHERE Nome = 'Il messico in casa tua')),
+(90, '14:30', '2025-08-24', 'https://meet.google.com/klm-nopq-rst', (SELECT IdCorso FROM Corso WHERE Nome = 'Il messico in casa tua')),
+(120, '16:00', '2026-10-10', 'https://meet.google.com/xyz-uvwx-yzab', (SELECT IdCorso FROM Corso WHERE Nome = 'Panificazione Artesanale')),
+(90, '18:00', '2026-10-17', 'https://meet.google.com/cde-fghi-jklm', (SELECT IdCorso FROM Corso WHERE Nome = 'Panificazione Artesanale')),
+(120, '10:30', '2026-11-15', 'https://meet.google.com/nop-qrst-uvwx', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Fusion Asiatica')),
+(90, '15:00', '2026-11-22', 'https://meet.google.com/yza-bcde-fghi', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Fusion Asiatica')),
+(120, '11:00', '2026-08-25', 'https://meet.google.com/jkl-mnop-qrst', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Molecolare Base')),
+(90, '17:30', '2026-09-08', 'https://meet.google.com/uvw-xyza-bcde', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Molecolare Base')),
+(90, '14:00', '2026-09-22', 'https://meet.google.com/qrs-tuvw-xyza', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Molecolare Base'));
+
+-- SessionePratica
+INSERT INTO SessionePratica (Durata, Orario, Data, NumeroPartecipanti, Luogo, IdCorso) VALUES
+(180, '09:00', '2026-06-20', 0, 'Laboratorio A - Piano Terra', (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna')),
+(240, '14:00', '2026-06-27', 0, 'Laboratorio B - Primo Piano', (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna')),
+(180, '10:00', '2026-05-20', 0, 'Laboratorio C - Secondo Piano', (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese')),
+(240, '15:30', '2026-06-20', 0, 'Laboratorio A - Piano Terra', (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese')),
+(160, '09:00', '2027-03-15', 0, 'Laboratorio Cucina Francese', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica')),
+(180, '14:30', '2027-03-29', 0, 'Laboratorio Cucina Francese', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica')),
+(140, '11:30', '2026-01-01', 0, 'Via Scarlatti 3', (SELECT IdCorso FROM Corso WHERE Nome = 'Piatti semplici per principianti')),
+(120, '10:30', '2027-01-20', 0, 'Laboratorio Street Food', (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale')),
+(150, '16:00', '2027-01-27', 0, 'Laboratorio Street Food', (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale')),
+(140, '11:30', '2027-04-05', 0, 'Via Roma 3', (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina per Bambini'));
+
+-- Iscrizioni (che aggiornerà automaticamente NumeroCorsi tramite trigger)
+INSERT INTO Iscrizioni (IdPartecipante, IdCorso) VALUES
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'virgi'), (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'virgi'), (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'gennarino'), (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'gennarino'), (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'kiyo'), (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Molecolare Base')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'kiyo'), (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Fusion Asiatica')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'chiaraconti'), (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'chicolococon'), (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'chicolococon'), (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina per Bambini')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'giacomobruno'), (SELECT IdCorso FROM Corso WHERE Nome = 'Il messico in casa tua')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'giacomobruno'), (SELECT IdCorso FROM Corso WHERE Nome = 'Panificazione Artesanale')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'andrearizzo'), (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica')),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'elenagallo'), (SELECT IdCorso FROM Corso WHERE Nome = 'Piatti semplici per principianti'));
+
+-- Argomenti_Corso
+INSERT INTO Argomenti_Corso (IdCorso, IdArgomento) VALUES
+((SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Italiana')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Regionale')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Cucina')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Giapponese')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Internazionale')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Pasticceria')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Molecolare Base'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Molecolare')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Molecolare Base'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Tecniche di Base e Avanzate')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Molecolare Base'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Fusion e Creativa')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Panificazione Artesanale'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Panificazione e Grandi Lievitati')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Panificazione Artesanale'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Tecniche di Base e Avanzate')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Panificazione Artesanale'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Italiana')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Fusion Asiatica'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Fusion e Creativa')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Fusion Asiatica'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Giapponese')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Fusion Asiatica'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Cinese')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Street Food')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Internazionale')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Veloce e Quotidiana')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Francese')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Europea')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Tecniche di Base e Avanzate')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina per Bambini'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Bambini e Famiglie')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina per Bambini'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Veloce e Quotidiana')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Cucina per Bambini'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Benessere e Light')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Il messico in casa tua'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Messicana')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Il messico in casa tua'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Cucina')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Il messico in casa tua'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Internazionale')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Piatti semplici per principianti'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Veloce e Quotidiana')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Piatti semplici per principianti'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Basi per Principianti')),
+((SELECT IdCorso FROM Corso WHERE Nome = 'Piatti semplici per principianti'), (SELECT IdArgomento FROM Argomento WHERE Nome = 'Benessere e Light'));
+
+-- Adesioni (che aggiornerà automaticamente NumeroUtenti tramite trigger)
+INSERT INTO Adesioni (IdPartecipante, IdSessionePratica, DataAdesione) VALUES
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'virgi'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'))), '2026-06-15'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'virgi'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-27' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'))), '2026-06-16'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'virgi'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-05-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'))), '2026-05-15'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'virgi'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'))), '2026-06-15'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'gennarino'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'))), '2026-06-15'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'gennarino'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-27' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'))), '2026-06-16'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'gennarino'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-05-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'))), '2026-05-15'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'gennarino'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'))), '2026-06-15'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'chiaraconti'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-01-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'))), '2027-01-10'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'chiaraconti'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-01-27' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'))), '2027-01-10'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'chicolococon'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-01-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'))), '2027-01-15'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'chicolococon'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-01-27' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'))), '2027-01-15'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'chicolococon'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-04-05' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina per Bambini'))), '2027-04-04'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'andrearizzo'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-03-15' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica'))), '2027-01-20'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'andrearizzo'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-03-29' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica'))), '2027-01-20'),
+((SELECT IdPartecipante FROM Partecipante WHERE Username = 'elenagallo'), (SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-01-01' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Piatti semplici per principianti'))), '2025-12-31');
+
+-- Preparazioni
+INSERT INTO Preparazioni (IdSessionePratica, IdRicetta) VALUES
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-27' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'In cucina con Nonna'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-05-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-06-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'La tradizione giapponese'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2026-01-01' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Piatti semplici per principianti'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Carbonara')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-03-15' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-03-29' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina Francese Classica'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-01-20' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-01-27' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Street Food Internazionale'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Hot Dog')),
+((SELECT IdSessionePratica FROM SessionePratica WHERE (Data='2027-04-05' AND IdCorso = (SELECT IdCorso FROM Corso WHERE Nome = 'Cucina per Bambini'))), (SELECT IdRicetta FROM Ricetta WHERE Nome = 'Tiramisù'));
+
+-- Ingredienti
+INSERT INTO Ingrediente (Nome, Origine) VALUES
+('Farina 00', 'Vegetale'),
+('Pomodoro San Marzano', 'Vegetale'),
+('Mozzarella di Bufala', 'Animale'),
+('Basilico', 'Vegetale'),
+('Olio Extra Vergine di Oliva', 'Vegetale'),
+('Sale', 'Minerale'),
+('Lievito di birra fresco', 'Microbico'),
+('Acqua', 'Minerale'),
+('Riso Carnaroli', 'Vegetale'),
+('Funghi Porcini', 'Fungino'),
+('Parmigiano Reggiano', 'Animale'),
+('Burro', 'Animale'),
+('Cipolla', 'Vegetale'),
+('Brodo Vegetale', 'Altro'),
+('Vino Bianco Secco', 'Altro'),
+('Prezzemolo', 'Vegetale'),
+('Aglio', 'Vegetale'),
+('Riso per Sushi', 'Vegetale'),
+('Salmone', 'Animale'),
+('Tonno', 'Animale'),
+('Gamberi', 'Animale'),
+('Alga Nori', 'Vegetale'),
+('Aceto di Riso', 'Altro'),
+('Zucchero', 'Vegetale'),
+('Salsa di Soia', 'Altro'),
+('Wasabi', 'Vegetale'),
+('Zenzero Marinato', 'Vegetale'),
+('Cetriolo', 'Vegetale'),
+('Avocado', 'Vegetale'),
+('Noodles per Ramen', 'Vegetale'),
+('Brodo di Maiale', 'Altro'),
+('Fettine di Maiale Arrosto', 'Animale'),
+('Uovo Sodo Marinato', 'Animale'),
+('Alghe Nori', 'Vegetale'),
+('Germogli di Bambù', 'Vegetale'),
+('Cipollina', 'Vegetale'),
+('Miso', 'Microbico'),
+('Zenzero', 'Vegetale'),
+('Olio di Sesamo', 'Vegetale'),
+('Uova', 'Animale'),
+('Pecorino Romano', 'Animale'),
+('Pepe Nero', 'Vegetale'),
+('Guanciale', 'Animale'),
+('Spaghetti', 'Vegetale'),
+('Coscia di Pollo', 'Animale'),
+('Vino Rosso', 'Altro'),
+('Pancetta', 'Animale'),
+('Cipolline Borettane', 'Vegetale'),
+('Funghi Champignon', 'Fungino'),
+('Brodo di Pollo', 'Altro'),
+('Carota', 'Vegetale'),
+('Sedano', 'Vegetale'),
+('Timo', 'Vegetale'),
+('Alloro', 'Vegetale'),
+('Latte', 'Animale'),
+('Ragù', 'Altro'),
+('Mozzarella', 'Animale'),
+('Piselli', 'Vegetale'),
+('Zafferano', 'Vegetale'),
+('Pangrattato', 'Vegetale'),
+('Olio per Friggere', 'Vegetale'),
+('Wurstel', 'Altro'),
+('Panino per Hot Dog', 'Vegetale'),
+('Ketchup', 'Altro'),
+('Senape', 'Vegetale'),
+('Sottaceti', 'Vegetale'),
+('Mascarpone', 'Animale'),
+('Caffè Espresso', 'Altro'),
+('Savoiardi', 'Vegetale'),
+('Cacao Amaro in Polvere', 'Vegetale');
+
+-- Utilizzi
+-- Pizza Margherita
+INSERT INTO Utilizzi (IdRicetta, IdIngrediente, Quantita, UDM) VALUES
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Farina 00'), 120, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Pomodoro San Marzano'), 90, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Mozzarella Di Bufala'), 70, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Basilico'), 5, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Olio Extra Vergine Di Oliva'), 1, 'Cucchiaio'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Sale'), 0.5, 'Cucchiaino'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Lievito Di Birra Fresco'), 4, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Pizza Margherita'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Acqua'), 70, 'Millilitri'),
+
+-- Risotto ai Funghi Porcini
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Riso Carnaroli'), 90, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Funghi Porcini'), 110, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Parmigiano Reggiano'), 25, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Burro'), 18, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Cipolla'), 30, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Brodo Vegetale'), 350, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Vino Bianco Secco'), 30, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Prezzemolo'), 5, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Risotto Ai Funghi Porcini'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Aglio'), 1, 'Unita'),
+
+-- Sushi Misto
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Riso Per Sushi'), 180, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Salmone'), 50, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Tonno'), 50, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Gamberi'), 30, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Alga Nori'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Aceto Di Riso'), 15, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Zucchero'), 5, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Sale'), 2, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Salsa Di Soia'), 10, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Wasabi'), 5, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Zenzero Marinato'), 10, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Cetriolo'), 20, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Sushi Misto'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Avocado'), 20, 'Grammi'),
+
+-- Ramen Tradizionale
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Noodles Per Ramen'), 180, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Brodo Di Maiale'), 450, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Fettine Di Maiale Arrosto'), 90, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Uovo Sodo Marinato'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Alghe Nori'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Germogli Di Bambù'), 30, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Cipollina'), 10, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Salsa Di Soia'), 18, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Miso'), 15, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Zenzero'), 5, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Aglio'), 5, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Ramen Tradizionale'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Olio Di Sesamo'), 5, 'Millilitri'),
+
+-- Carbonara
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Carbonara'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Uova'), 2, 'Unita'), 
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Carbonara'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Pecorino Romano'), 55, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Carbonara'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Pepe Nero'), 2.5, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Carbonara'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Guanciale'), 90, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Carbonara'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Spaghetti'), 110, 'Grammi'),
+
+-- Coq au Vin
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Coscia Di Pollo'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Vino Rosso'), 220, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Pancetta'), 50, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Cipolline Borettane'), 90, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Funghi Champignon'), 100, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Brodo Di Pollo'), 100, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Carota'), 50, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Sedano'), 30, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Farina 00'), 10, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Burro'), 15, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Aglio'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Timo'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Alloro'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Sale'), 3, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Coq Au Vin'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Pepe Nero'), 2, 'Grammi'),
+
+-- Croissant
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Farina 00'), 50, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Burro'), 30, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Acqua'), 25, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Latte'), 10, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Zucchero'), 5, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Lievito Di Birra Fresco'), 2, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Sale'), 1, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Croissant'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Uova'), 1, 'Unita'),
+
+-- Arancini di riso
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Riso Carnaroli'), 80, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Ragù'), 40, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Mozzarella'), 20, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Piselli'), 10, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Burro'), 10, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Parmigiano Reggiano'), 10, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Zafferano'), 0.05, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Uova'), 0.5, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Pangrattato'), 30, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Arancini Di Riso'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Olio Per Friggere'), 100, 'Millilitri'),
+
+-- Hot Dog
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Hot Dog'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Wurstel'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Hot Dog'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Panino Per Hot Dog'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Hot Dog'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Ketchup'), 20, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Hot Dog'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Senape'), 15, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Hot Dog'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Cipolla'), 20, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Hot Dog'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Sottaceti'), 15, 'Grammi'),
+
+-- Tiramisù
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Tiramisù'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Uova'), 1, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Tiramisù'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Zucchero'), 25, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Tiramisù'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Mascarpone'), 50, 'Grammi'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Tiramisù'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Caffè Espresso'), 50, 'Millilitri'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Tiramisù'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Savoiardi'), 3, 'Unita'),
+((SELECT IdRicetta FROM Ricetta WHERE Nome = 'Tiramisù'), (SELECT IdIngrediente FROM Ingrediente WHERE Nome = 'Cacao Amaro In Polvere'), 5, 'Grammi');
