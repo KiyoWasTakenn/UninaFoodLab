@@ -52,8 +52,8 @@ public class ReportFrame extends JXFrame
         setContentPane(main);
         main.setBackground(new Color(240, 240, 240));
 
-        LocalDate fine = LocalDate.now();
-        LocalDate inizio = fine.minusDays(30);
+        LocalDate fine = LocalDate.now().minusDays(1);
+        LocalDate inizio = fine.minusDays(29);
 
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("d MMMM yyyy", java.util.Locale.ITALIAN);
 
@@ -76,10 +76,11 @@ public class ReportFrame extends JXFrame
         main.add(lblInfoRicette, "growx");
     }
 
-    public void setReportData(int corsi, int online, int presenza, int ricMin, int ricMax, double ricMedia) 
+    public void setReportData(int totCorsi, int totOnline, int totPratiche, int minRicette, int maxRicette, double avgRicette) 
     {
         // --- CORSI ---
-        if (corsi <= 0) 
+    	
+        if (totCorsi <= 0) 
         {
             panelCorsi.setChart(null);
             panelCorsi.setBackground(new Color(250, 250, 250));
@@ -89,18 +90,18 @@ public class ReportFrame extends JXFrame
         else 
         {
             DefaultCategoryDataset datasetCorsi = new DefaultCategoryDataset();
-            datasetCorsi.addValue(corsi, "Totale", "Corsi");
-            datasetCorsi.addValue(online, "Totale", "Online");
-            datasetCorsi.addValue(presenza, "Totale", "In presenza");
+            datasetCorsi.addValue(totCorsi, "Totale", "Corsi");
+            datasetCorsi.addValue(totOnline, "Totale", "Online");
+            datasetCorsi.addValue(totPratiche, "Totale", "In presenza");
 
             panelCorsi.setChart(createBarChart("Corsi e Sessioni", datasetCorsi, COLOR_CORSI));
             lblInfoCorsi.setToolTipText("Statistiche dei corsi negli ultimi 30 giorni");
             lblInfoCorsi.setIcon(FontIcon.of(MaterialDesign.MDI_BOOK_OPEN_PAGE_VARIANT, 24, COLOR_CORSI));
-            lblInfoCorsi.setText(String.format("Corsi: %d   |   Online: %d   |   In presenza: %d", corsi, online, presenza));
+            lblInfoCorsi.setText(String.format("Corsi: %d   |   Online: %d   |   In presenza: %d", totCorsi, totOnline, totPratiche));
         }
 
         // --- RICETTE ---
-        if (presenza <= 0) 
+        if (totPratiche <= 0) 
         {
             panelRicette.setChart(null);
             panelRicette.setBackground(new Color(250, 250, 250));
@@ -110,14 +111,14 @@ public class ReportFrame extends JXFrame
         }
 
         DefaultCategoryDataset datasetRicette = new DefaultCategoryDataset();
-        datasetRicette.addValue(ricMin, "Ricette", "Min");
-        datasetRicette.addValue(ricMedia, "Ricette", "Media");
-        datasetRicette.addValue(ricMax, "Ricette", "Max");
+        datasetRicette.addValue(minRicette, "Ricette", "Min");
+        datasetRicette.addValue(avgRicette, "Ricette", "Media");
+        datasetRicette.addValue(maxRicette, "Ricette", "Max");
 
         panelRicette.setChart(createBarChart("Statistiche Ricette", datasetRicette, COLOR_RICETTE));
         lblInfoRicette.setToolTipText("Statistiche delle ricette nelle sessioni pratiche");
         lblInfoRicette.setIcon(FontIcon.of(MaterialDesign.MDI_SILVERWARE_FORK, 24, COLOR_RICETTE));
-        lblInfoRicette.setText(String.format("Minimo: %d   |   Massimo: %d   |   Media: %.2f", ricMin, ricMax, ricMedia));
+        lblInfoRicette.setText(String.format("Minimo: %d   |   Massimo: %d   |   Media: %.2f", minRicette, maxRicette, avgRicette));
     }
 
 
@@ -126,7 +127,6 @@ public class ReportFrame extends JXFrame
         JXLabel label = new JXLabel(" ", SwingConstants.CENTER);
         label.setFont(LABEL_FONT);
         label.setForeground(new Color(50, 50, 50));
-        label.setHorizontalTextPosition(SwingConstants.RIGHT);
         label.setIconTextGap(8);
         return label;
     }

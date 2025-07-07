@@ -220,6 +220,8 @@ public class CoursesFrame extends JXFrame
  
         mainContentPanel = new JXPanel(new MigLayout("fill", "[grow]", "[grow]"));
         rootPanel.add(mainContentPanel, "grow, wrap");
+        
+        
     }
  
     /**

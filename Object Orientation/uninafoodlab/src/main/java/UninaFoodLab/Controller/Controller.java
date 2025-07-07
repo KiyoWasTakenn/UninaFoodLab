@@ -1,12 +1,11 @@
 package UninaFoodLab.Controller;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -18,7 +17,6 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import UninaFoodLab.Boundary.*;
 import UninaFoodLab.DTO.*;
-import UninaFoodLab.DAO.*;
 import UninaFoodLab.DAO.Postgres.*;
 import UninaFoodLab.Exceptions.*;
 
@@ -48,6 +46,7 @@ public class Controller
     private CorsoDAO_Postgres corsoDAO;
     private IngredienteDAO_Postgres ingredienteDAO;
     private PartecipanteDAO_Postgres partecipanteDAO;
+    private ReportMensileDAO_Postgres reportDAO;
     private RicettaDAO_Postgres ricettaDAO;
     private SessioneOnlineDAO_Postgres sessioneOnlineDAO;
     private SessionePraticaDAO_Postgres sessionePraticaDAO;
@@ -141,7 +140,14 @@ public class Controller
 
         return partecipanteDAO;
     }
-    
+
+    public ReportMensileDAO_Postgres getReportDAO() 
+    {
+        if (reportDAO == null)
+            reportDAO = new ReportMensileDAO_Postgres();
+        return reportDAO;
+    }
+
     public RicettaDAO_Postgres getRicettaDAO()
     {
         if (ricettaDAO == null)
@@ -461,11 +467,22 @@ public class Controller
 	// ReportFrame
 	public void openMonthlyReport(JFrame parent)
 	{
-	    ReportFrame report = new ReportFrame();
-	    report.setReportData(1,1,1444,323,4,5);
-	    report.setVisible(true);
-
-
+		EventQueue.invokeLater(() -> 
+        {
+        	try
+        	{
+        		ReportMensile report = getReportDAO().getMonthlyReportByIdChef(loggedUser.getId());
+        		ReportFrame rFrame = new ReportFrame();
+        	    rFrame.setReportData(report.getTotCorsi(), report.getTotOnline(), report.getTotPratiche(),
+    					 			 report.getMinRicette(), report.getMaxRicette(), report.getAvgRicette());
+        	    rFrame.setVisible(true);
+        	}
+        	catch(DAOException e)
+        	{
+        		JOptionPane.showMessageDialog(parent, "Errore durante il caricamento del report.", "Errore", JOptionPane.ERROR_MESSAGE);
+        		LOGGER.log(Level.SEVERE, "Errore durante il report nel DB: " + e.getMessage(), e);
+        	}
+        });
 	}
 
 	
