@@ -17,7 +17,7 @@ public class SessionePratica extends Sessione
 
     public SessionePratica(int durata, Time orario, LocalDate data, Corso corso, String indirizzo, ArrayList<Ricetta> ricette)
     {
-        super(durata, orario, data, corso);
+        super(durata, orario, data);
         this.indirizzo = indirizzo;
         
         if(ricette == null) throw new RequiredRicettaException();

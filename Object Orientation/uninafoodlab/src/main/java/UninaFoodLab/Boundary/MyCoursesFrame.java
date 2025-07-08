@@ -221,7 +221,12 @@ public class MyCoursesFrame extends JXFrame
         mainContentPanel = new JXPanel(new MigLayout("fill", "[grow]", "[grow]"));
         rootPanel.add(mainContentPanel, "grow, wrap");
         
-        
+        CreateCourseDialog dialog = new CreateCourseDialog(MyCoursesFrame.this);
+        dialog.showDialog();
+
+
+
+
     }
  
     /**
