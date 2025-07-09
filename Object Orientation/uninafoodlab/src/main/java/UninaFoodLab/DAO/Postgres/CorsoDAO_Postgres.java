@@ -118,7 +118,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
                         rs.getString("FrequenzaSessioni"),
                         rs.getInt("Limite"),
                         rs.getString("Descrizione"),
-                        rs.getDouble("Costo"),
+                        rs.getBigDecimal("Costo"),
                         rs.getBoolean("IsPratico"),
                         null,
                         null)
@@ -138,7 +138,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
             s.setString(3, toSaveCorso.getFrequenzaSessioni());
             s.setInt(4, toSaveCorso.getLimite());
             s.setString(5, toSaveCorso.getDescrizione());
-            s.setDouble(6, toSaveCorso.getCosto());
+            s.setBigDecimal(6, toSaveCorso.getCosto());
             s.setBoolean(7, toSaveCorso.getIsPratico());
             s.executeUpdate();
         }

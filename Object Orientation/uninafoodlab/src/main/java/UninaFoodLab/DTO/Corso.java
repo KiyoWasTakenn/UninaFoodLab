@@ -1,5 +1,6 @@
 package UninaFoodLab.DTO;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -18,15 +19,15 @@ public class Corso
     private String frequenzaSessioni;
     private int limite;
     private String descrizione;
-    private double costo;
+    private BigDecimal costo;
     private boolean isPratico;
     private Chef chef; 
     private ArrayList<Sessione> sessioni;
     private ArrayList<Argomento> argomenti;
     
-    // Questi costruttori vengono chiamati quando dalla GUI viene aggiunta una sessione pratica/online
-    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, Chef chef,
-    		     ArrayList<Argomento> argomenti, int durata, Time orario, LocalDate dataSessione, Corso corso, String linkRiunione)
+    
+    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, BigDecimal costo, boolean isPratico, Chef chef,
+    		     ArrayList<Argomento> argomenti, ArrayList<Sessione> sessioniIniziali)
     {
         this.nome = nome;
         this.dataInizio = data;
@@ -37,16 +38,16 @@ public class Corso
         this.isPratico = isPratico;
         
         if(chef == null) throw new RequiredChefException();
-        this.chef = chef;
+        this.setChef(chef);
         
-        this.sessioni.add( new SessioneOnline(durata, orario, dataSessione, corso, linkRiunione) );
+        this.sessioni;
         this.numeroSessioni = sessioni.size();
         
         if(argomenti == null || argomenti.isEmpty()) throw new RequiredArgomentoException();	
         this.argomenti = argomenti;  
     }
 
-    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, double costo, boolean isPratico, Chef chef, 
+    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, BigDecimal costo, boolean isPratico, Chef chef, 
     			 ArrayList<Argomento> argomenti, int durata, Time orario, LocalDate dataSessione, Corso corso, String indirizzo, ArrayList<Ricetta> ricette)
     {
         this.nome = nome;
@@ -58,7 +59,7 @@ public class Corso
         this.isPratico = isPratico;
         
         if(chef == null) throw new RequiredChefException();
-        this.chef = chef;
+        this.setChef(chef);
         
         this.sessioni.add( new SessionePratica(durata, orario, dataSessione, corso, indirizzo, ricette) );
         this.numeroSessioni = sessioni.size();
@@ -112,7 +113,7 @@ public class Corso
         this.descrizione = descrizione;
     }
 
-    public double getCosto()
+    public BigDecimal getCosto()
     {
         return costo;
     }
@@ -122,6 +123,16 @@ public class Corso
         return isPratico;
     }
 
+    public Chef getChef()
+	{
+		return chef;
+	}
+
+	public void setChef(Chef chef)
+	{
+		this.chef = chef;
+	}
+	
     public ArrayList<Sessione> getSessioni()
     {
         return sessioni;

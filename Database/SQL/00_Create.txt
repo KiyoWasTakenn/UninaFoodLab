@@ -19,7 +19,14 @@ CREATE TABLE Partecipante
 	Email TEXT UNIQUE NOT NULL, 
 	Password VARCHAR(60) NOT NULL,
 	NumeroCorsi INTEGER DEFAULT 0,
-	CONSTRAINT check_usrpart_length CHECK (LENGTH(Username) BETWEEN 4 AND 20)
+	CONSTRAINT check_empty_part_nome   CHECK (LENGTH(Nome) > 0),
+	CONSTRAINT check_empty_part_cognome CHECK (LENGTH(Cognome) > 0),
+	CONSTRAINT check_empty_part_cf  CHECK (LENGTH(CodiceFiscale) > 0),
+	CONSTRAINT check_empty_part_luogonascita CHECK (LENGTH(LuogoDiNascita) > 0),
+	CONSTRAINT check_empty_part_email  CHECK (LENGTH(Email) > 0),
+	CONSTRAINT check_empty_part_pass  CHECK (LENGTH(Password) > 0),
+	CONSTRAINT check_usrpart_length CHECK (LENGTH(Username) BETWEEN 4 AND 20),
+	CONSTRAINT check_usrpart_maggiorenne CHECK (DataDiNascita <= CURRENT_DATE - INTERVAL '18 years')
 );
 
 -- Chef
@@ -35,7 +42,15 @@ CREATE TABLE Chef
 	Email TEXT UNIQUE NOT NULL, 
 	Password VARCHAR(60) NOT NULL,
 	Curriculum TEXT NOT NULL,
-	CONSTRAINT check_usrchef_length CHECK (LENGTH(Username) BETWEEN 4 AND 20)
+	CONSTRAINT check_empty_chef_nome CHECK (LENGTH(Nome) > 0),
+	CONSTRAINT check_empty_chef_cognome CHECK (LENGTH(Cognome) > 0),
+	CONSTRAINT check_empty_chef_cf  CHECK (LENGTH(CodiceFiscale) > 0),
+	CONSTRAINT check_empty_chef_luogonascita CHECK (LENGTH(LuogoDiNascita) > 0),
+	CONSTRAINT check_empty_chef_email  CHECK (LENGTH(Email) > 0),
+	CONSTRAINT check_empty_chef_pass  CHECK (LENGTH(Password) > 0),
+	CONSTRAINT check_empty_chef_curriculum  CHECK (LENGTH(Curriculum) > 0),
+	CONSTRAINT check_usrchef_length CHECK (LENGTH(Username) BETWEEN 4 AND 20),
+	CONSTRAINT check_usrchef_maggiorenne CHECK (DataDiNascita <= CURRENT_DATE - INTERVAL '18 years')
 );
 
 -- Argomento
@@ -45,6 +60,9 @@ CREATE TABLE Argomento
 	Nome VARCHAR(100) UNIQUE NOT NULL
 );
 
+-- Enum per la frequenza delle sessioni
+CREATE TYPE Frequenza AS ENUM ('Giornaliera', 'Settimanale', 'Bisettimanale', 'Mensile', 'Libera' );
+
 -- Corso
 CREATE TABLE Corso 
 (
@@ -52,12 +70,14 @@ CREATE TABLE Corso
 	Nome VARCHAR(100) NOT NULL,
 	DataInizio DATE,																											-- Prendiamo sempre la data della sessione più recente
 	NumeroSessioni INTEGER DEFAULT 0 NOT NULL,							
-	FrequenzaSessioni VARCHAR(100) NOT NULL,
+	FrequenzaSessioni Frequenza NOT NULL,
 	Limite INTEGER DEFAULT NULL,
 	Descrizione TEXT NOT NULL,
-	Costo FLOAT8 NOT NULL,
+	Costo NUMERIC(10,2) NOT NULL,
 	isPratico BOOLEAN NOT NULL DEFAULT false,
-	IdChef INTEGER NOT NULL,																						
+	IdChef INTEGER NOT NULL,
+	CONSTRAINT check_empty_corso_nome CHECK (LENGTH(Nome) > 0),		
+	CONSTRAINT check_empty_corso_descr CHECK (LENGTH(Descrizione) > 0),																					
 	CONSTRAINT fk_chef_corso FOREIGN KEY(IdChef) REFERENCES Chef(IdChef) ON DELETE CASCADE,
 	CONSTRAINT check_costo_non_negativo CHECK (Costo >= 0.0),
 	CONSTRAINT check_limite_pratico CHECK ((NOT isPratico AND LIMITE IS NULL) OR (isPratico AND Limite IS NOT NULL))	 -- Il corso ha limite solo se ha almeno una sessione pratica			
@@ -73,6 +93,7 @@ CREATE TABLE SessionePratica
 	NumeroPartecipanti INTEGER NOT NULL DEFAULT 0,
 	Luogo VARCHAR(100),
 	IdCorso  INTEGER NOT NULL,
+	CONSTRAINT check_empty_sessioneprat_luogo CHECK (LENGTH(Luogo) > 0),	
 	CONSTRAINT fk_corso_pratica FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE 			--Se eliminiamo il corso vengono eliminate anche tutte le sessioni pratiche associate
 );
 
@@ -85,6 +106,7 @@ CREATE TABLE SessioneOnline
 	Data DATE NOT NULL, 
 	LinkRiunione TEXT NOT NULL,
 	IdCorso  INTEGER NOT NULL,
+	CONSTRAINT check_empty_sessioneonl_link CHECK (LENGTH(LinkRiunione) > 0),
 	CONSTRAINT fk_corso_online FOREIGN KEY(IdCorso) REFERENCES Corso(IdCorso) ON DELETE CASCADE			--Se eliminiamo il corso vengono eliminate anche tutte le sessioni online associate
 );
 
@@ -102,6 +124,8 @@ CREATE TABLE Ricetta																												-- Rilassamento vincolo implemen
 	Difficolta LivelloDifficolta NOT NULL,
 	Allergeni VARCHAR(100),
 	IdChef INTEGER NOT NULL,
+	CONSTRAINT check_empty_ricetta_nome CHECK (LENGTH(Nome) > 0),
+	CONSTRAINT check_empty_ricetta_provenienza CHECK (LENGTH(Provenienza) > 0),				
 	CONSTRAINT fk_chef_ricetta FOREIGN KEY(IdChef) REFERENCES Chef(IdChef) ON DELETE CASCADE,
 	CONSTRAINT check_tempo_positivo CHECK (Tempo > 0),
 	CONSTRAINT check_calorie_positive CHECK (Calorie > 0)
@@ -115,7 +139,8 @@ CREATE TABLE Ingrediente
 (
 	IdIngrediente SERIAL PRIMARY KEY,
 	Nome VARCHAR(100) UNIQUE NOT NULL,
-	Origine NaturaIngrediente NOT NULL
+	Origine NaturaIngrediente NOT NULL,
+	CONSTRAINT check_empty_ingr_nome CHECK (LENGTH(Nome) > 0)
 );
 
 -- Iscrizioni
@@ -172,4 +197,3 @@ CREATE TABLE Utilizzi
 	CONSTRAINT fk_ingrediente_utilizzi FOREIGN KEY(IdIngrediente) REFERENCES Ingrediente(IdIngrediente) ON DELETE CASCADE,
 	CONSTRAINT check_quantita CHECK (Quantita > 0)
 );
-

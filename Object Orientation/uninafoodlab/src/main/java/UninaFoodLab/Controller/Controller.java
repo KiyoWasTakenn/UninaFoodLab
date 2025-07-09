@@ -306,8 +306,8 @@ public class Controller
                 currFrame.dispose();
                 new ProfileFrame().setVisible(true);
             } 
-            else 
-            	((ProfileFrame) currFrame).resetView();
+            //else 
+            	//((ProfileFrame) currFrame).resetView();
         });
     }
 
@@ -667,7 +667,7 @@ public class Controller
      *   
      *  -------------------------
 	*/
-	// CreateCourseFrame
+	// CreateCourseDialog
 	// DetailedCourseFrame
 	
 	
@@ -678,7 +678,7 @@ public class Controller
      *   
      *  -------------------------
 	*/
-	// CreateRecipesFrame
+	// CreateRecipesDialog
 	// DetailedRecipeFrame
 	
 	

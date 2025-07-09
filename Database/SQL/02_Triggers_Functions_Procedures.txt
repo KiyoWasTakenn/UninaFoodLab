@@ -119,56 +119,6 @@ EXECUTE FUNCTION fun_unicita_sessione_giorno();
 
 -----------------------------------------------------------------------------------------------------------------------
 
--- Aggiornamento numero sessioni (increment)
-
-CREATE OR REPLACE FUNCTION fun_incrementa_num_sessioni()
-RETURNS TRIGGER AS
-$$
-BEGIN
-    	UPDATE Corso
-    	SET NumeroSessioni = NumeroSessioni + 1
-    	WHERE IdCorso = NEW.IdCorso;
-    	RETURN NULL;
-
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER trg_incremento_numsessioni_online
-AFTER INSERT ON SessioneOnline
-FOR EACH ROW
-EXECUTE FUNCTION fun_incrementa_num_sessioni();
-
-CREATE OR REPLACE TRIGGER trg_incremento_numsessioni_pratiche
-AFTER INSERT ON SessionePratica
-FOR EACH ROW
-EXECUTE FUNCTION fun_incrementa_num_sessioni();
-
-
--- Aggiornamento numero sessioni (decrement)
-
-CREATE OR REPLACE FUNCTION fun_decrementa_num_sessioni()
-RETURNS TRIGGER AS
-$$
-BEGIN
-	UPDATE Corso
-	SET NumeroSessioni = GREATEST(NumeroSessioni - 1, 0)
-	WHERE IdCorso = OLD.IdCorso;
-	RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER trg_decrementa_num_sessioni_pratica
-AFTER DELETE ON SessionePratica
-FOR EACH ROW
-EXECUTE FUNCTION fun_decrementa_num_sessioni();
-
-CREATE OR REPLACE TRIGGER trg_decrementa_num_sessioni_online
-AFTER DELETE ON SessioneOnline
-FOR EACH ROW
-EXECUTE FUNCTION fun_decrementa_num_sessioni();
-
------------------------------------------------------------------------------------------------------------------------
-
 -- Trigger aggiornamento numero utenti (increment)
 
 CREATE OR REPLACE FUNCTION fun_incrementa_num_utenti()
@@ -313,6 +263,206 @@ BEFORE INSERT OR UPDATE ON Iscrizioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_limite_iscrizioni();
 
+
+-----------------------------------------------------------------------------------------------------------------------
+--- Stesso chef -> piu corsi -> controllare che le sessioni non siano nella stessa fascia oraria
+
+CREATE OR REPLACE FUNCTION fun_controlla_sovrapposizione_oraria()
+RETURNS TRIGGER AS
+$$
+DECLARE
+	chef Chef.IdChef%TYPE;
+	inizio_nuova TIME := NEW.Ora;
+	fine_nuova TIME := (NEW.Ora + (NEW.Durata || ' minutes')::interval)::time;
+BEGIN
+	SELECT IdChef INTO chef FROM Corso WHERE IdCorso = NEW.IdCorso;
+
+	IF EXISTS 
+		 	  (
+				SELECT 1 FROM 
+				(
+					SELECT SP.Data, SP.Ora, SP.Durata, C.IdChef, SP.IdSessionePratica AS IdSessione
+					FROM SessionePratica SP JOIN Corso C ON SP.IdCorso = C.IdCorso
+					WHERE C.IdChef = chef AND SP.Data = NEW.Data
+					UNION ALL
+					SELECT SO.Data, SO.Ora, SO.Durata, C.IdChef, SO.IdSessioneOnline AS IdSessione
+					FROM SessionePratica SO JOIN Corso C ON SO.IdCorso = C.IdCorso
+					WHERE C.IdChef = chef AND SO.Data = NEW.Data
+				 ) AS S
+				WHERE S.IdSessione <> COALESCE(NEW.IdSessionePratica, NEW.IdSessioneOnline, -1)
+						AND NOT 
+								    (
+									    (S.Ora + (S.Durata || ' minutes')::interval)::time <= inizio_nuova)	 OR (S.Ora >= fine_nuova)							
+								    )
+			 ) THEN
+				RAISE EXCEPTION 'Sovrapposizione oraria con altra sessione dello stesso chef');
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+			
+
+CREATE OR REPLACE TRIGGER trg_sovrapposizione_orario_sessione_pratica
+BEFORE INSERT OR UPDATE OF Data, Ora, Durata ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_controlla_sovrapposizione_orario_sessione();
+
+
+CREATE OR REPLACE TRIGGER trg_sovrapposizione_orario_sessione_online
+BEFORE INSERT OR UPDATE OF Data, Ora, Durata ON SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_controlla_sovrapposizione_orario_sessione();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- La data della sessione non puo essere prima della data inizio corso e se non ci sono sessioni allora deve essere inserita il giorno di inizio corso
+
+CREATE OR REPLACE FUNCTION fun_sessione_dopo_inizio_corso()
+RETURNS TRIGGER AS
+$$
+DECLARE
+	data_inizio Corso.DataInizio%TYPE;
+BEGIN
+	SELECT DataInizio INTO data_inizio FROM Corso WHERE IdCorso = NEW.IdCorso;
+	IF NEW.Data < data_inizio THEN
+		RAISE EXCEPTION 'La sessione non può essere precedente alla data di inizio del corso';
+	END IF;
+
+	IF NOT EXISTS
+				(
+				   SELECT 1 FROM SessionePratica WHERE IdCorso = NEW.IdCorso
+				   UNION
+				   SELECT 1 FROM SessioneOnline WHERE IdCorso = NEW.IdCorso
+				)
+	THEN 
+		IF NEW.Data <> data_inizio THEN
+			RAISE EXCEPTION 'La prima sessione del corso deve essere il giorno della Data di inizio del corso';
+		END IF;
+	END IF;
+
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_sessione_pratica_dopo_inizio_corso
+BEFORE INSERT OR UPDATE OF Data ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_sessione_dopo_inizio_corso();
+
+CREATE OR REPLACE TRIGGER trg_sessione_online_dopo_inizio_corso
+BEFORE INSERT OR UPDATE OF Data ON SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_sessione_dopo_inizio_corso();
+-----------------------------------------------------------------------------------------------------------------------
+--Controllare che il  numero di sessioni non venga mai raggiunto
+
+CREATE OR REPLACE FUNCTION fun_max_sessioni_per_corso()
+RETURNS TRIGGER AS
+$$
+DECLARE
+	num_esistenti INTEGER;
+	max_consentite INTEGER;
+BEGIN
+	SELECT NumeroSessioni INTO max_consentite FROM Corso WHERE IdCorso = NEW.IdCorso;
+
+	SELECT COUNT(*) INTO num_esistenti 
+	FROM (
+			SELECT IdCorso FROM SessionePratica WHERE IdCorso = NEW.IdCorso
+			UNION ALL
+			SELECT IdCorso FROM SessioneOnline WHERE IdCorso = NEW.IdCorso
+		     ) AS tot_sessioni;
+
+	IF num_esistenti >= max_consentite THEN
+		RAISE EXCEPTION 'È stato già raggiunto il numero massimo di sessioni per questo corso';
+	END IF;
+
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_max_sessioni_pratica
+BEFORE INSERT ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_max_sessioni_per_corso();
+
+CREATE OR REPLACE TRIGGER trg_max_sessioni_online
+BEFORE INSERT ON SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_max_sessioni_per_corso();
+
+-----------------------------------------------------------------------------------------------------------------------
+-- Interrelazionale: Quando inserisco o modifico una sessione  deve rispettare l'intervallo della frequenza 
+
+CREATE OR REPLACE FUNCTION fun_verifica_frequenza_sessioni()
+RETURNS TRIGGER AS
+$$
+DECLARE
+	frequenza Corso.FrequenzaSessioni%TYPE;
+	giorni_intervallo INTEGER;
+	data_prec SessionePratica.Data%TYPE; diff_prec INTEGER;
+	data_succ SessionePratica.Data%TYPE; diff_succ  INTEGER;
+BEGIN
+	-- Prendo la frequenza del corso
+	SELECT FrequenzaSessioni INTO frequenza FROM CORSO WHERE IDCorso = NEW.IdCorso;
+	
+	CASE frequenza
+		WHEN 'Giornaliera' THEN giorni_intervallo := 1;
+		WHEN 'Settimanale' THEN giorni_intervallo := 7;
+		WHEN 'Bisettimanale' THEN giorni_intervallo := 14;
+		WHEN 'Mensile' THEN giorni_intervallo := 30;
+		WHEN 'Libera' THEN RETURN NEW;
+		ELSE
+			RAISE EXCEPTION 'Frequenza non riconosciuta';
+	END CASE;
+
+	-- Sessione Precedente
+	SELECT MAX(Data) INTO data_prec
+	FROM
+		     ( 
+			 SELECT Data FROM SessionePratica WHERE IdCorso = NEW.IdCorso AND Data < NEW.Data 
+			 UNION ALL
+			 SELECT Data FROM SessioneOnline WHERE IdCorso = NEW.IDCorso AND Data < NEW.Data
+		     )  AS Sessioni_Precedenti;
+
+	-- Sessione Successiva
+	SELECT MIN(Data) INTO data_succ
+	FROM
+		     ( 
+			 SELECT Data FROM SessionePratica WHERE IdCorso = NEW.IdCorso AND Data > NEW.Data 
+			 UNION ALL
+			 SELECT Data FROM SessioneOnline WHERE IdCorso = NEW.IDCorso AND Data > NEW.Data
+		     )  AS Sessioni_Successive;
+
+	-- Verifico distanza dalla precedente
+	IF data_prec IS NOT NULL THEN
+		diff_prec := NEW.Data - data_prec;
+		IF diff_prec < giorni_intervallo THEN
+			RAISE EXCEPTION 'Violazione frequenza: La nuova sessione è troppo vicina a quella precedente';
+		END IF;
+	END IF;
+
+	-- Verifico distanza dalla successiva
+	IF data_succ IS NOT NULL THEN
+		diff_succ := data_succ - NEW.Data;
+		IF diff_succ < giorni_intervallo THEN
+			RAISE EXCEPTION 'Violazione frequenza: La nuova sessione è troppo vicina a quella successiva';
+		END IF;
+	END IF;
+
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_verifica_frequenza_sessioni_pratiche
+BEFORE INSERT OR UPDATE OF Data ON SessionePratica
+FOR EACH ROW
+EXECUTE FUNCTION fun_verifica_frequenza_sessioni();
+
+CREATE OR REPLACE TRIGGER trg_verifica_frequenza_sessioni_online
+BEFORE INSERT OR UPDATE OF Data ON SessioneOnline
+FOR EACH ROW
+EXECUTE FUNCTION fun_verifica_frequenza_sessioni();
+
 -----------------------------------------------------------------------------------------------------------------------
 
 -- Interrelazionale: Un utente non puo' partecipare a una sessione pratica se non iscritto al corso che la organizza
@@ -399,49 +549,6 @@ EXECUTE FUNCTION fun_ricette_chef_sessione();
 
 -----------------------------------------------------------------------------------------------------------------------
 
--- L'inserimento di una sessione pratica o online (se la data è maggiore della data odierna) aggiorna la data di inizio del corso (se è minore della data del corso oppure non c'è ancora una data di inizio), l'aggiornamento di sessioni già avvenute non deve essere possibile
-
-CREATE OR REPLACE FUNCTION fun_aggiorna_data_inizio()
-RETURNS TRIGGER AS 
-$$
-DECLARE
-	current_data Corso.DataInizio%TYPE;
-BEGIN
-
-	IF TG_OP = 'UPDATE' THEN
-			IF OLD.Data <= CURRENT_DATE THEN
-				RAISE EXCEPTION 'Non puoi modificare sessioni già avvenute';
-			END IF;
-	END IF;
-
-	IF NEW.Data <= CURRENT_DATE THEN
-		RAISE EXCEPTION 'La data di inizio della sessione non puo'' essere antecedente alla data odierna o inserita oggi!';
-	END IF;
-
-	SELECT DataInizio INTO current_data FROM Corso WHERE IdCorso = NEW.IdCorso;
-	
-	IF current_data IS NULL OR current_data > NEW.Data THEN
-		UPDATE Corso
-		SET DataInizio = NEW.Data
-		WHERE IdCorso = NEW.IdCorso;
-	END IF;
-	RETURN NEW;
-	
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_pratica
-BEFORE INSERT OR UPDATE ON SessionePratica
-FOR EACH ROW
-EXECUTE FUNCTION fun_aggiorna_data_inizio();
-
-CREATE OR REPLACE TRIGGER trg_aggiorna_data_inizio_online
-BEFORE INSERT OR UPDATE ON SessioneOnline
-FOR EACH ROW
-EXECUTE FUNCTION fun_aggiorna_data_inizio();
-
------------------------------------------------------------------------------------------------------------------------
-
 -- Il Codice Fiscale non è modificabile una volta creato l'utente
 
 CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_utente()
@@ -483,24 +590,6 @@ EXECUTE  FUNCTION fun_blocca_aggiorna_argomento();
 
 -----------------------------------------------------------------------------------------------------------------------
 
--- Non si può modificare o eliminare un ingrediente
-
-CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_ingrediente()
-RETURNS TRIGGER AS
-$$
-BEGIN
-	RAISE EXCEPTION 'Non puoi modificare o cancellare un ingrediente!!!';
-	RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_ingrediente
-BEFORE DELETE OR UPDATE  OF Nome, Origine ON Ingrediente
-FOR EACH ROW
-EXECUTE  FUNCTION fun_blocca_aggiorna_ingrediente();
-
------------------------------------------------------------------------------------------------------------------------
-
 -- Non posso inserire una sessione pratica se ispratico  = false 
 
 CREATE OR REPLACE FUNCTION fun_ispratico_insert()
@@ -532,13 +621,13 @@ CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_corso()
 RETURNS TRIGGER AS
 $$
 BEGIN
-    RAISE EXCEPTION 'Non puoi modificare i campi IdCorso, Nome, FrequenzaSessioni, Costo o IdChef.';
+    RAISE EXCEPTION 'Non puoi modificare i campi IdCorso, Nome, NumeroSessioni, FrequenzaSessioni, Costo o IdChef.';
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_corso
-BEFORE UPDATE  OF IdCorso, Nome, FrequenzaSessioni, Costo, IdChef ON Corso
+BEFORE UPDATE  OF IdCorso, Nome, NumeroSessioni, FrequenzaSessioni, Costo, IdChef ON Corso
 FOR EACH ROW
 EXECUTE FUNCTION fun_blocca_aggiorna_corso();
 
@@ -584,23 +673,21 @@ FOR EACH ROW
 EXECUTE FUNCTION fun_blocca_aggiorna_sessioni();
 
 -----------------------------------------------------------------------------------------------------------------------
-
--- Degli Ingredienti non deve essere possibile aggiornare IdIngrediente, Nome, Origine 
+Degli Ingredienti non deve essere possibile aggiornare IdIngrediente, Nome, Origine
 
 CREATE OR REPLACE FUNCTION fun_blocca_aggiorna_ingrediente()
 RETURNS TRIGGER AS
 $$
 BEGIN
- 	RAISE EXCEPTION 'Non puoi modificare i campi IdIngrediente, Nome, Origine.';
+	RAISE EXCEPTION 'Non puoi modificare o cancellare un ingrediente!!!';
 	RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_ingrediente
-BEFORE UPDATE  OF IdIngrediente, Nome, Origine  ON Ingrediente
+BEFORE DELETE OR UPDATE  OF IdIngrediente, Nome, Origine ON Ingrediente
 FOR EACH ROW
-EXECUTE FUNCTION fun_blocca_aggiorna_ingrediente();
-
+EXECUTE  FUNCTION fun_blocca_aggiorna_ingrediente();
 -----------------------------------------------------------------------------------------------------------------------
 
 -- Non deve essere possibile aggiornare le  iscrizioni
@@ -654,6 +741,30 @@ CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_adesioni
 BEFORE UPDATE  OF IdPartecipante, IdSessionePratica, DataAdesione ON Adesioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_blocca_aggiorna_adesioni();
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- Si può eliminare una adesione a una sessione pratica fino a 3 giorni prima in cui essa avviene
+
+CREATE OR REPLACE FUNCTION fun_blocca_cancella_adesioni()
+RETURNS TRIGGER AS
+$$
+DECLARE 
+	data_sessione SessionePratica.Data%TYPE;
+BEGIN
+ 	SELECT Data INTO data_sessione FROM SessionePratica WHERE IdSessionePratica = OLD.IdSessionePratica;
+	
+	IF data_sessione - CURRENT_DATE <= 2 THEN
+		 RAISE EXCEPTION ' Non puoi cancellare una adesione a meno di 3 giorni dalla sessione pratica!';
+	ENDIF;
+	RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_blocca_cancella_adesioni
+BEFORE DELETE ON Adesioni
+FOR EACH ROW
+EXECUTE FUNCTION fun_blocca_cancella_adesioni();
 
 -----------------------------------------------------------------------------------------------------------------------
 

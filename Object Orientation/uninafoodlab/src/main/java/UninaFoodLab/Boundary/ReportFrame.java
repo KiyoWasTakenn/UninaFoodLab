@@ -31,6 +31,7 @@ public class ReportFrame extends JXFrame
     private final Color COLOR_CORSI = new Color(225, 126, 47);
     private final Color COLOR_RICETTE = new Color(60, 130, 200);
 
+    private ImageIcon windowLogo;
     private JXLabel lblInfoCorsi, lblInfoRicette;
     private ChartPanel panelCorsi, panelRicette;
 
@@ -51,7 +52,10 @@ public class ReportFrame extends JXFrame
         ));
         setContentPane(main);
         main.setBackground(new Color(240, 240, 240));
-
+        
+        windowLogo = new ImageIcon(getClass().getResource("/logo_finestra.png"));
+		setIconImage(windowLogo.getImage());
+		
         LocalDate fine = LocalDate.now().minusDays(1);
         LocalDate inizio = fine.minusDays(29);
 

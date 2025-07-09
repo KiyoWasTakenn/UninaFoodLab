@@ -10,7 +10,7 @@ public class SessioneOnline extends Sessione
 
     public SessioneOnline(int durata, Time orario, LocalDate data, Corso corso, String linkRiunione)
     {
-        super(durata, orario, data, corso);
+        super(durata, orario, data);
         this.linkRiunione = linkRiunione;
     }
 
