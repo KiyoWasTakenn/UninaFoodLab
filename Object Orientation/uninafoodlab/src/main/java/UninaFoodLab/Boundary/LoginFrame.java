@@ -258,25 +258,51 @@ public class LoginFrame extends JXFrame
 	private void disposeListeners() 
 	{
         if(userField != null && userFieldDocumentListener != null)
-            userField.getDocument().removeDocumentListener(userFieldDocumentListener);
+        {
+        	userField.getDocument().removeDocumentListener(userFieldDocumentListener);
+        	userFieldDocumentListener = null;
+        }
+            
 
         if(passField != null && passFieldDocumentListener != null)
-            passField.getDocument().removeDocumentListener(passFieldDocumentListener);
+        {
+        	passField.getDocument().removeDocumentListener(passFieldDocumentListener);
+        	passFieldDocumentListener = null;
+        }
+            
 
         if(userField != null && userFieldFocusListener != null)
-            userField.removeFocusListener(userFieldFocusListener);
+        {
+        	userField.removeFocusListener(userFieldFocusListener);
+        	userFieldFocusListener = null;
+        }
+            
 
         if(passField != null && passFieldFocusListener != null)
-            passField.removeFocusListener(passFieldFocusListener);
+        {
+        	passField.removeFocusListener(passFieldFocusListener);
+        	passFieldFocusListener = null;
+        }
+            
 
-        if(showPassBtn != null && showPassBtnActionListener != null)
-            showPassBtn.removeActionListener(showPassBtnActionListener);
+        if(showPassBtn != null && showPassBtnActionListener != null) 
+        {
+        	showPassBtn.removeActionListener(showPassBtnActionListener);
+        	showPassBtnActionListener = null;
+        }
+            
 
         if(loginBtn != null && loginBtnActionListener != null)
+        {
         	loginBtn.removeActionListener(loginBtnActionListener);
+        	loginBtnActionListener = null;
+        }    	
 
         if(registerBtn != null && registerBtnActionListener != null)
-            registerBtn.removeActionListener(registerBtnActionListener);
+        {
+        	registerBtn.removeActionListener(registerBtnActionListener);
+        	registerBtnActionListener = null;
+        }
     }
     
     /**
