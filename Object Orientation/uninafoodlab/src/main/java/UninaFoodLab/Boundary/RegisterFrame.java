@@ -31,7 +31,7 @@ import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.*;
 
 import UninaFoodLab.Controller.Controller;
 
@@ -212,9 +212,11 @@ public class RegisterFrame extends JXFrame
 		dataLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
 		panel.add(dataLabel, "cell 0 6, right");	
 		
-		dataPicker = new DatePicker();
+		DatePickerSettings settings = new DatePickerSettings();
+		dataPicker = new DatePicker(settings);
 		dataPicker.setPreferredSize(new Dimension(230, 30));
 		panel.add(dataPicker, "cell 1 6, left");	
+		dataPicker.setM
 		
 		luogoErrorLabel = new JXLabel(" ");
 		luogoErrorLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
