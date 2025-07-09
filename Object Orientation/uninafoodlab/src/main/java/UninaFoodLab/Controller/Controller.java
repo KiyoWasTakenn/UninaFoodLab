@@ -1,33 +1,19 @@
 package UninaFoodLab.Controller;
 
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
-import org.mindrot.jbcrypt.BCrypt;
-
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-
+import java.util.*;
+import java.util.List;
+import java.util.logging.*;
+import javax.swing.*;
+import org.mindrot.jbcrypt.*;
+import com.formdev.flatlaf.*;
 import UninaFoodLab.Boundary.*;
 import UninaFoodLab.DTO.*;
 import UninaFoodLab.DAO.Postgres.*;
 import UninaFoodLab.Exceptions.*;
-
-import java.awt.EventQueue;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
+import java.awt.*;
+import java.io.*;
+import java.nio.file.*;
+import java.time.*;
 
 public class Controller
 {
@@ -664,11 +650,25 @@ public class Controller
      *  -------------------------
      * 
      *   	  MyCoursesFrame
+     *   	  CreateCourseDialog
+     *   	  DetailedCourseFrame
      *   
      *  -------------------------
 	*/
-	// CreateCourseDialog
-	// DetailedCourseFrame
+	public List<Argomento> loadArgomenti()
+	{
+		try
+		{
+			return getArgomentoDAO().getAllArgomenti();
+		} 
+		catch (DAOException e)
+		{
+			LOGGER.log(Level.SEVERE, "Errore loadArgomenti da DB", e);
+		}
+		
+		return null;
+	}
+
 	
 	
 	/**

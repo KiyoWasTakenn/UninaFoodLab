@@ -16,7 +16,7 @@ public class Corso
     private String nome;
     private LocalDate dataInizio;
     private int numeroSessioni;
-    private String frequenzaSessioni;
+    private FrequenzaSessioni frequenzaSessioni;
     private int limite;
     private String descrizione;
     private BigDecimal costo;
@@ -26,11 +26,12 @@ public class Corso
     private ArrayList<Argomento> argomenti;
     
     
-    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, BigDecimal costo, boolean isPratico, Chef chef,
+    public Corso(String nome, LocalDate dataInizio, int numeroSessioni, FrequenzaSessioni frequenzaSessioni, int limite, String descrizione, BigDecimal costo, boolean isPratico, Chef chef,
     		     ArrayList<Argomento> argomenti, ArrayList<Sessione> sessioniIniziali)
     {
         this.nome = nome;
-        this.dataInizio = data;
+        this.dataInizio = dataInizio;
+        this.numeroSessioni = numeroSessioni;
         this.frequenzaSessioni = frequenzaSessioni;
         this.limite = limite;
         this.descrizione = descrizione;
@@ -47,11 +48,12 @@ public class Corso
         this.argomenti = argomenti;  
     }
 
-    public Corso(String nome, LocalDate data, String frequenzaSessioni, int limite, String descrizione, BigDecimal costo, boolean isPratico, Chef chef, 
-    			 ArrayList<Argomento> argomenti, int durata, Time orario, LocalDate dataSessione, Corso corso, String indirizzo, ArrayList<Ricetta> ricette)
+    public Corso(String nome, LocalDate dataInizio, int numeroSessioni, FrequenzaSessioni frequenzaSessioni, int limite, String descrizione, BigDecimal costo, boolean isPratico, Chef chef, 
+    			 ArrayList<Argomento> argomenti)
     {
         this.nome = nome;
-        this.dataInizio = data;
+        this.dataInizio = dataInizio;
+        this.numeroSessioni = numeroSessioni;
         this.frequenzaSessioni = frequenzaSessioni;
         this.limite = limite;
         this.descrizione = descrizione;
@@ -61,7 +63,7 @@ public class Corso
         if(chef == null) throw new RequiredChefException();
         this.setChef(chef);
         
-        this.sessioni.add( new SessionePratica(durata, orario, dataSessione, corso, indirizzo, ricette) );
+        this.sessioni.
         this.numeroSessioni = sessioni.size();
         
         if(argomenti == null || argomenti.isEmpty()) throw new RequiredArgomentoException();	
@@ -93,7 +95,7 @@ public class Corso
         return numeroSessioni;
     }
 
-    public String getFrequenzaSessioni()
+    public FrequenzaSessioni getFrequenzaSessioni()
     {
         return frequenzaSessioni;
     }

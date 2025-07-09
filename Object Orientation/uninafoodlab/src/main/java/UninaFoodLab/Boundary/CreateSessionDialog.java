@@ -53,18 +53,6 @@ public class CreateSessionDialog extends JDialog
         JButton confermaBtn = new JButton("Conferma");
         JButton annullaBtn = new JButton("Annulla");
 
-        confermaBtn.addActionListener(e -> {
-            if (validateInput()) {
-                confermato = true;
-                dispose();
-            }
-        });
-
-        annullaBtn.addActionListener(e -> {
-            confermato = false;
-            dispose();
-        });
-
         buttons.add(confermaBtn);
         buttons.add(annullaBtn);
 

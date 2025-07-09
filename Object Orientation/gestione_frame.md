@@ -41,3 +41,9 @@ FRAME MIEI: **LoginScreen**, IMieiCorsi, **Report,** CardCorsoCreazione, CardSes
 
 FRAME VIRGINIA: RegisterScreen, Profilo, Ricette, CardRicetta, CardIngrediente, RicettaDettagli
 
+
+
+
+
+adesione utente
+
