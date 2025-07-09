@@ -1,39 +1,15 @@
 package UninaFoodLab.Boundary;
 
-import java.awt.AWTEvent;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.border.*;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLayeredPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.LineBorder;
-import javax.swing.border.MatteBorder;
+import org.jdesktop.swingx.*;
+import org.kordamp.ikonli.materialdesign.*;
+import org.kordamp.ikonli.swing.*;
 
-import org.jdesktop.swingx.JXButton;
-import org.jdesktop.swingx.JXFrame;
-import org.jdesktop.swingx.JXLabel;
-import org.jdesktop.swingx.JXPanel;
-import org.jdesktop.swingx.JXTextField;
-import org.kordamp.ikonli.materialdesign.MaterialDesign;
-import org.kordamp.ikonli.swing.FontIcon;
+import UninaFoodLab.Controller.Controller;
+import net.miginfocom.swing.MigLayout;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
@@ -130,7 +106,7 @@ public class MyCoursesFrame extends JXFrame
 
         // Esempio: apertura dialog di creazione corso
         CreateCourseDialog dialog = new CreateCourseDialog(this);
-        dialog.setVisible(false);
+        dialog.setVisible(true);
 
     }
  

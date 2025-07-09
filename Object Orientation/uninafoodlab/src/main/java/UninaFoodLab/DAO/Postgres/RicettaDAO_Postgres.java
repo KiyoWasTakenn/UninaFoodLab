@@ -3,6 +3,7 @@ package UninaFoodLab.DAO.Postgres;
 import UninaFoodLab.DAO.RicettaDAO;
 import UninaFoodLab.DTO.LivelloDifficolta;
 import UninaFoodLab.DTO.Ricetta;
+import UninaFoodLab.Exceptions.DAOException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public class RicettaDAO_Postgres implements RicettaDAO
 {
-    public List<Ricetta> getRicetteByIdChef(int idChef) throws SQLException
+    public List<Ricetta> getRicetteByIdChef(int idChef)
     {
         List<Ricetta> ricette = new ArrayList<>();
         String sql = "SELECT * FROM Ricetta WHERE IdChef = ?";
@@ -30,10 +31,15 @@ public class RicettaDAO_Postgres implements RicettaDAO
                                         )
                             );
         }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante getRicetteByIdchef", e);
+        }
+        
         return ricette;
     }
 
-    public List<Ricetta> getRicettaByIdSessione(int idSessione) throws SQLException
+    public List<Ricetta> getRicettaByIdSessione(int idSessione)
     {
         List<Ricetta> ricette = new ArrayList<>();
         String sql = "SELECT * FROM Ricetta NATURAL JOIN Preparazioni WHERE IdSessionePratica = ?";
@@ -53,10 +59,15 @@ public class RicettaDAO_Postgres implements RicettaDAO
                                         )
                            );
         }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante getRicettaByIdSessione", e);
+        }
+        
         return ricette;
     }
 
-    public void save(Ricetta toSaveRicetta) throws SQLException
+    public void save(Ricetta toSaveRicetta)
     {
         String sql = "INSERT INTO Ricetta(Nome, Provenienza, Tempo, Calorie, Difficolta, Allergeni) " +
                      "VALUES(?, ?, ?, ?, ?, ?)";
@@ -71,9 +82,13 @@ public class RicettaDAO_Postgres implements RicettaDAO
             s.setString(6, toSaveRicetta.getAllergeni());
             s.executeUpdate();
         }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante salvataggio Ricetta", e);
+        }
     }
 
-    public void update(Ricetta previousRicetta, Ricetta updatedRicetta) throws SQLException
+    public void update(Ricetta previousRicetta, Ricetta updatedRicetta)
     {
         String sql = "UPDATE Ricetta SET";
         List<Object> param = new ArrayList<>();
@@ -129,10 +144,14 @@ public class RicettaDAO_Postgres implements RicettaDAO
 
                 s.executeUpdate();
             }
+            catch(SQLException e)
+            {
+            	throw new DAOException("Errore DB durante update Ricetta", e);
+            }
         }
     }
 
-    public void delete(int idRicetta) throws SQLException
+    public void delete(int idRicetta)
     {
         String sql = "DELETE FROM Ricetta WHERE IdRicetta = ?";
 
@@ -140,6 +159,10 @@ public class RicettaDAO_Postgres implements RicettaDAO
         {
             s.setInt(1, idRicetta);
             s.executeUpdate();
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante eliminazione Ricetta", e);
         }
     }
 }

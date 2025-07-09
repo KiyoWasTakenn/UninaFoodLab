@@ -6,8 +6,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import org.jdesktop.swingx.*;
-import org.kordamp.ikonli.materialdesign.MaterialDesign;
-import org.kordamp.ikonli.swing.FontIcon;
+import org.kordamp.ikonli.materialdesign.*;
+import org.kordamp.ikonli.swing.*;
 
 import UninaFoodLab.Controller.Controller;
 import net.miginfocom.swing.MigLayout;
@@ -56,7 +56,7 @@ public class HeaderPanel extends JXPanel
 	/** Sidebar laterale */
 	private SidebarPanel sidebar;
 	
-	// Listeners
+	/** Listeners */
 	private MouseListener logoClickListener;
     private ActionListener profileBtnListener;
     private ActionListener hamburgerBtnListener;
@@ -100,17 +100,14 @@ public class HeaderPanel extends JXPanel
      */
 	private void initComponents()
     {
-        // === Sidebar ===
         sidebar = new SidebarPanel(parentFrame);
         sidebar.setVisible(false);
         layeredPane.add(sidebar, JLayeredPane.POPUP_LAYER);
 
-        // === Dropdown ===
         dropdownPanel = new ProfileDropdownPanel(parentFrame);
         dropdownPanel.setVisible(false);
         layeredPane.add(dropdownPanel, JLayeredPane.POPUP_LAYER);
 
-        // === Hamburger ===
         hamburgerBtn = new JXButton();
         hamburgerBtn.setIcon(FontIcon.of(MaterialDesign.MDI_MENU, 32, Color.DARK_GRAY));
         hamburgerBtn.setContentAreaFilled(false);
@@ -118,7 +115,6 @@ public class HeaderPanel extends JXPanel
         hamburgerBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         add(hamburgerBtn, "cell 0 0, w 40!, h 40!, shrink 0");
 
-        // === Logo ===
         ImageIcon logo = new ImageIcon(getClass().getResource("/logo_schermata.png"));
         Image scaled = logo.getImage().getScaledInstance(94, 75, Image.SCALE_SMOOTH);
         logoLabel = new JXLabel(new ImageIcon(scaled));
@@ -126,7 +122,6 @@ public class HeaderPanel extends JXPanel
         logoLabel.setToolTipText("Torna alla homepage");
         add(logoLabel, "cell 2 0, w 94!, h 75!, gapleft 0, shrink 0");
 
-     // === Filtri (migliorato) ===
         filterBtn = new JXButton("Filtri");
         filterBtn.setIcon(FontIcon.of(MaterialDesign.MDI_FILTER, 16, new Color(80, 80, 80))); 
         filterBtn.setFont(new Font("Segoe UI", Font.BOLD, 16)); 
@@ -141,7 +136,6 @@ public class HeaderPanel extends JXPanel
         filterBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         add(filterBtn, "cell 4 0, h 40!, w 95!, shrink 0"); 
 
-        // === Campo ricerca ===
         searchField = new JXTextField();
         searchField.setPrompt("Cerca per nome corso...");
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -153,7 +147,6 @@ public class HeaderPanel extends JXPanel
         searchField.setOpaque(true);
         add(searchField, "cell 5 0, h 40!, growx, wmin 150, wmax 1600");
 
-        // === Pulsante cerca ===
         searchBtn = new JXButton("Cerca");
         searchBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
         searchBtn.setFocusPainted(false);
@@ -168,7 +161,6 @@ public class HeaderPanel extends JXPanel
         searchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         add(searchBtn, "cell 6 0, h 40!, w 90!, shrink 0");
 
-        // === Profilo ===
         profileBtn = new JXButton();
         profileBtn.setIcon(FontIcon.of(MaterialDesign.MDI_ACCOUNT_CIRCLE, 26, Color.DARK_GRAY));
         profileBtn.setContentAreaFilled(false);
@@ -257,11 +249,26 @@ public class HeaderPanel extends JXPanel
         hamburgerBtn.addActionListener(hamburgerBtnListener);
 
         /**
-         * Listener globale per intercettare tutti i click del mouse nella finestra.
-         * Se il click avviene fuori dal pannello dropdown del profilo e dal pulsante profilo,
-         * nasconde automaticamente il dropdown.
-         * Serve a chiudere il menu dropdown cliccando ovunque fuori da esso,
-         * migliorando l'usabilità e la gestione del focus.
+         * Listener globale AWT per la gestione della chiusura automatica del dropdown del profilo.
+         * <p>
+         * Questo listener viene registrato sul {@link Toolkit} per intercettare tutti gli eventi
+         * di tipo {@link MouseEvent} nell'intera finestra. Viene utilizzato per rilevare clic
+         * effettuati al di fuori del pannello {@code dropdownPanel} o del pulsante {@code profileBtn}
+         * e, in tal caso, nascondere il menu dropdown del profilo utente.
+         * <p>
+         * Il controllo viene effettuato confrontando le coordinate dello schermo del clic
+         * con i bounding box (in coordinate schermo) del pannello dropdown e del pulsante profilo.
+         * 
+         * <p><b>Funzionalità:</b>
+         * <ul>
+         *   <li>Chiude automaticamente il dropdown quando si clicca fuori da esso</li>
+         *   <li>Evita conflitti con il clic sul pulsante profilo stesso</li>
+         *   <li>Utilizza coordinate assolute dello schermo per una maggiore precisione</li>
+         * </ul>
+         *
+         * @see Toolkit#addAWTEventListener(AWTEventListener, long)
+         * @see MouseEvent
+         * @see ProfileDropdownPanel
          */
         dropdownClickListener = new AWTEventListener()
         {

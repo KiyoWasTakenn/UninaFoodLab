@@ -1,14 +1,15 @@
 package UninaFoodLab.Boundary;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
+import javax.swing.border.*;
 import javax.swing.text.NumberFormatter;
 
 import org.jdesktop.swingx.*;
@@ -20,259 +21,332 @@ import com.github.lgooddatepicker.zinternaltools.DateVetoPolicyMinimumMaximumDat
 import UninaFoodLab.Controller.Controller;
 import UninaFoodLab.DTO.Argomento;
 import UninaFoodLab.DTO.FrequenzaSessioni;
+import UninaFoodLab.DTO.Ricetta;
 import net.miginfocom.swing.MigLayout;
 
 public class CreateCourseDialog extends JDialog
 {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private static final Color BACKGROUND_COLOR = new Color(245, 248, 250);
-    private static final Color BORDER_COLOR = new Color(220, 225, 230);
-    private static final Color BUTTON_COLOR = new Color(225, 126, 47, 220);
-    private static final CompoundBorder mainBorder = new CompoundBorder(
-        new LineBorder(BORDER_COLOR, 1, true),
-        BorderFactory.createEmptyBorder(12, 12, 12, 12)
-    );
+	private static final Color BACKGROUND_COLOR = new Color(245, 248, 250);
+	private static final Color BORDER_COLOR = new Color(220, 225, 230);
+	private static final Color BUTTON_COLOR = new Color(225, 126, 47, 220);
+	private static final CompoundBorder mainBorder = new CompoundBorder(
+		new LineBorder(BORDER_COLOR, 1, true),
+		BorderFactory.createEmptyBorder(12, 12, 12, 12)
+	);
 
-    private JXLabel title, limitLabel, sessionTitle;
-    private JXPanel mainPanel, leftPanel, sessionPanel;
-    private JPanel sessionsContainer;
-    private JXTextField nameField;
-    private JXTextArea descrizioneArea;
-    private JXButton confirmBtn, goBackBtn, generateSessionsBtn;
-    private JScrollPane scrollDescrizione, scrollSessions;
-    private JFormattedTextField costField, limitField, numSessioniField;
-    private JCheckBox praticoCheck;
-    private JComboBox<FrequenzaSessioni> frequencyList;
-    private java.util.List<JCheckBox> argumentsCheck;
-    private DatePicker dataInizioField;
+	private JXTextField nameField;
+	private JXTextArea descrizioneArea;
+	private JFormattedTextField costField, limitField;
+	private JComboBox<FrequenzaSessioni> frequencyList;
+	private JCheckBox praticoCheck;
+	private DatePicker dataInizioField;
+	private List<JCheckBox> argumentsCheck;
+	private List<CreateSessionPanel> sessionCards = new ArrayList<>();
+	private JPanel sessionsContainer;
+	private JSpinner praticheSpinner;
+	private JLabel limitLabel;
+	private JXButton confirmBtn, goBackBtn;
+	private JLabel aggiungiSessioneLabel;
 
-    public CreateCourseDialog(JXFrame parent)
-    {
-        super(parent, "Crea nuovo corso", true);
-        initComponents();
-        initListeners();
-        pack();
-        setLocationRelativeTo(parent);
-        setResizable(true);
-    }
+	public CreateCourseDialog(JXFrame parent)
+	{
+		super(parent, "Crea nuovo corso", true);
+		initComponents();
+		initListeners();
+		pack();
+		setMinimumSize(new Dimension(1150, 700));
+		setPreferredSize(new Dimension(1200, 700));
+		setLocationRelativeTo(parent);
+		setResizable(true);
+		setIconImage(parent.getIconImage());
+	}
 
-    private void initComponents()
-    {
-        // Scroll wrapper esterno
-        JScrollPane rootScroll = new JScrollPane();
-        rootScroll.getVerticalScrollBar().setUnitIncrement(16);
-        rootScroll.setBorder(null);
-        JXPanel container = new JXPanel(new BorderLayout());
-        rootScroll.setViewportView(container);
-        setContentPane(rootScroll);
+	private void initComponents()
+	{
+		JScrollPane rootScroll = new JScrollPane();
+		rootScroll.getVerticalScrollBar().setUnitIncrement(16);
+		rootScroll.setBorder(null);
+		JXPanel container = new JXPanel(new BorderLayout());
+		rootScroll.setViewportView(container);
+		setContentPane(rootScroll);
 
-        // Pannello principale
-        mainPanel = new JXPanel(new MigLayout("insets 20, wrap 2", "[grow 50][grow 50]", "[]"));
-        mainPanel.setBackground(BACKGROUND_COLOR);
-        container.add(mainPanel, BorderLayout.CENTER);
+		JXPanel mainPanel = new JXPanel(new MigLayout("insets 20, wrap 2", "[grow 65][grow 35]", "[grow]"));
+		mainPanel.setBackground(BACKGROUND_COLOR);
+		container.add(mainPanel, BorderLayout.CENTER);
 
-        // Sinistra
-        leftPanel = new JXPanel(new MigLayout("wrap 1, gapy 20", "[grow,fill]"));
-        leftPanel.setBackground(BACKGROUND_COLOR);
+		// LEFT SIDE
+		JXPanel leftPanel = new JXPanel(new MigLayout("wrap 1, gapy 20", "[grow,fill]"));
+		leftPanel.setBackground(BACKGROUND_COLOR);
 
-        title = new JXLabel("Inserisci i dettagli del nuovo corso");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        leftPanel.add(title, "align center");
+		JXLabel title = new JXLabel("Inserisci i dettagli del nuovo corso");
+		title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+		leftPanel.add(title, "align center");
 
-        JXPanel infoPanel = new JXPanel(new MigLayout("wrap 2", "[right][grow,fill]"));
-        infoPanel.setBackground(Color.WHITE);
-        infoPanel.setBorder(mainBorder);
+		// INFO PANEL
+		JXPanel infoPanel = new JXPanel(new MigLayout("wrap 2", "[right][grow,fill]"));
+		infoPanel.setBackground(Color.WHITE);
+		infoPanel.setBorder(mainBorder);
 
-        nameField = new JXTextField();
-        infoPanel.add(new JXLabel("Nome corso:"));
-        infoPanel.add(nameField, "h 30!");
+		nameField = new JXTextField();
+		infoPanel.add(new JLabel("Nome corso:"));
+		infoPanel.add(nameField, "h 30!");
 
-        descrizioneArea = new JXTextArea();
-        descrizioneArea.setRows(4);
-        descrizioneArea.setColumns(20);
-        descrizioneArea.setLineWrap(true);
-        descrizioneArea.setWrapStyleWord(true);
-        scrollDescrizione = new JScrollPane(descrizioneArea);
-        scrollDescrizione.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-        infoPanel.add(new JXLabel("Descrizione:"));
-        infoPanel.add(scrollDescrizione, "h 80!");
+		descrizioneArea = new JXTextArea();
+		descrizioneArea.setRows(4);
+		descrizioneArea.setColumns(20);
+		descrizioneArea.setLineWrap(true);
+		descrizioneArea.setWrapStyleWord(true);
+		JScrollPane scrollDescrizione = new JScrollPane(descrizioneArea);
+		scrollDescrizione.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+		infoPanel.add(new JLabel("Descrizione:"));
+		infoPanel.add(scrollDescrizione, "h 80!");
 
-        frequencyList = new JComboBox<>(FrequenzaSessioni.values());
-        infoPanel.add(new JXLabel("Frequenza:"));
-        infoPanel.add(frequencyList, "h 30!");
+		frequencyList = new JComboBox<>(FrequenzaSessioni.values());
+		infoPanel.add(new JLabel("Frequenza:"));
+		infoPanel.add(frequencyList, "h 30!");
 
-        argumentsCheck = new ArrayList<>();
-        JPanel argomentiPanel = new JPanel(new GridLayout(0, 1));
-        argomentiPanel.setOpaque(false);
-        argomentiPanel.setBackground(BACKGROUND_COLOR);
+		// ARGOMENTI
+		argumentsCheck = new ArrayList<>();
+		JPanel argomentiPanel = new JPanel(new GridLayout(0, 1));
+		argomentiPanel.setOpaque(false);
 
-        for (Argomento a : Controller.getController().loadArgomenti())
-        {
-            JCheckBox cb = new JCheckBox(a.getNome());
-            argumentsCheck.add(cb);
-            argomentiPanel.add(cb);
-        }
+		for(Argomento a : Controller.getController().loadArgomenti())
+		{
+			JCheckBox cb = new JCheckBox(a.getNome());
+			argumentsCheck.add(cb);
+			argomentiPanel.add(cb);
+		}
 
-        JScrollPane scrollArgomenti = new JScrollPane(argomentiPanel);
-        scrollArgomenti.setPreferredSize(new Dimension(200, 100));
-        scrollArgomenti.setOpaque(false);
-        scrollArgomenti.getViewport().setOpaque(false);
-        scrollArgomenti.getVerticalScrollBar().setUnitIncrement(14);
-        infoPanel.add(new JLabel("Argomenti:"));
-        infoPanel.add(scrollArgomenti, "span 2");
+		JScrollPane scrollArgomenti = new JScrollPane(argomentiPanel);
+		scrollArgomenti.setPreferredSize(new Dimension(200, 100));
+		scrollArgomenti.setOpaque(false);
+		scrollArgomenti.getViewport().setOpaque(false);
+		scrollArgomenti.getVerticalScrollBar().setUnitIncrement(14);
+		infoPanel.add(new JLabel("Argomenti:"));
+		infoPanel.add(scrollArgomenti, "span 2");
 
-        leftPanel.add(infoPanel);
+		leftPanel.add(infoPanel);
 
-        JXPanel detailPanel = new JXPanel(new MigLayout("wrap 3", "[right][grow,fill][]"));
-        detailPanel.setBackground(Color.WHITE);
-        detailPanel.setBorder(mainBorder);
+		// DETTAGLI
+		JXPanel detailPanel = new JXPanel(new MigLayout("wrap 3", "[right][grow,fill][]"));
+		detailPanel.setBackground(Color.WHITE);
+		detailPanel.setBorder(mainBorder);
 
-        DateVetoPolicy vetoPolicy = new DateVetoPolicyMinimumMaximumDate(LocalDate.now().plusDays(1), null);
-        DatePickerSettings settings = new DatePickerSettings();
-        dataInizioField = new DatePicker(settings);
-        settings.setVetoPolicy(vetoPolicy);
-        detailPanel.add(new JXLabel("Data Inizio:"));
-        detailPanel.add(dataInizioField, "h 30!, span 2");
+		DateVetoPolicy vetoPolicy = new DateVetoPolicyMinimumMaximumDate(LocalDate.now().plusDays(1), null);
+		DatePickerSettings settings = new DatePickerSettings();
+		dataInizioField = new DatePicker(settings);
+		settings.setVetoPolicy(vetoPolicy);
+		detailPanel.add(new JLabel("Data Inizio:"));
+		detailPanel.add(dataInizioField, "h 30!, span 2");
 
-        costField = new JFormattedTextField(euroFormatter());
-        costField.setValue(0.0);
-        detailPanel.add(new JXLabel("Costo:"));
-        detailPanel.add(costField, "h 30!");
-        detailPanel.add(new JXLabel("€"));
+		costField = new JFormattedTextField(euroFormatter());
+		costField.setValue(0.0);
+		detailPanel.add(new JLabel("Costo:"));
+		detailPanel.add(costField, "h 30!");
+		detailPanel.add(new JLabel("€"));
 
-        praticoCheck = new JCheckBox();
-        praticoCheck.setBackground(Color.WHITE);
-        detailPanel.add(new JXLabel("Pratico:"));
-        detailPanel.add(praticoCheck, "span 2, left");
+		praticoCheck = new JCheckBox();
+		praticoCheck.setBackground(Color.WHITE);
+		detailPanel.add(new JLabel("Pratico:"));
+		detailPanel.add(praticoCheck, "span 2, left");
 
-        limitLabel = new JXLabel("Limite partecipanti:");
-        limitLabel.setVisible(false);
-        limitField = new JFormattedTextField(integerFormatter());
-        limitField.setVisible(false);
-        limitField.setEnabled(false);
-        detailPanel.add(limitLabel, "newline");
-        detailPanel.add(limitField, "h 30!, span 2");
+		limitLabel = new JLabel("Limite partecipanti:");
+		limitLabel.setVisible(false);
+		limitField = new JFormattedTextField(integerFormatter());
+		limitField.setVisible(false);
+		detailPanel.add(limitLabel, "newline");
+		detailPanel.add(limitField, "h 30!, span 2");
 
-        leftPanel.add(detailPanel);
+		leftPanel.add(detailPanel);
 
-        JXPanel buttons = new JXPanel(new MigLayout("center", "[]20[]"));
-        buttons.setBackground(BACKGROUND_COLOR);
+		// BOTTONI
+		JXPanel buttons = new JXPanel(new MigLayout("center", "[]20[]"));
+		buttons.setBackground(BACKGROUND_COLOR);
+		confirmBtn = new JXButton("Crea Corso");
+		confirmBtn.setBackground(BUTTON_COLOR);
+		confirmBtn.setForeground(Color.WHITE);
+		goBackBtn = new JXButton("Annulla");
+		buttons.add(confirmBtn, "w 120!, h 35!");
+		buttons.add(goBackBtn, "w 120!, h 35!");
+		leftPanel.add(buttons);
 
-        confirmBtn = new JXButton("Crea Corso");
-        confirmBtn.setBackground(BUTTON_COLOR);
-        confirmBtn.setForeground(Color.WHITE);
+		mainPanel.add(leftPanel, "growy");
 
-        goBackBtn = new JXButton("Annulla");
+		// RIGHT SIDE – SESSIONI
+		JXPanel sessionPanel = new JXPanel(new MigLayout("wrap", "[grow][grow][grow]", "[grow]"));
+		sessionPanel.setBackground(Color.WHITE);
+		sessionPanel.setBorder(mainBorder);
 
-        buttons.add(confirmBtn, "w 120!, h 35!");
-        buttons.add(goBackBtn, "w 120!, h 35!");
-        leftPanel.add(buttons);
+		JXLabel sessionTitle = new JXLabel("Sessioni del Corso");
+		sessionTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+		sessionPanel.add(sessionTitle);
 
-        // Destra
-        sessionPanel = new JXPanel(new MigLayout("wrap", "[]"));
-        sessionPanel.setBackground(Color.WHITE);
-        sessionPanel.setBorder(mainBorder);
+		aggiungiSessioneLabel = new JLabel("<html><u>Aggiungi sessioni</u></html>");
+		aggiungiSessioneLabel.setForeground(Color.ORANGE.darker());
+		aggiungiSessioneLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		sessionPanel.add(aggiungiSessioneLabel, "left, span 2, wrap");
 
-        sessionTitle = new JXLabel("Sessioni del Corso");
-        sessionTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        sessionPanel.add(sessionTitle);
+		sessionsContainer = new JPanel(new MigLayout("wrap 3, gapx 20, gapy 15, insets 10, align center", "[grow,fill][grow,fill][grow,fill]", ""));
+		sessionsContainer.setBackground(Color.WHITE);
+		JScrollPane scrollSessions = new JScrollPane(sessionsContainer, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollSessions.setPreferredSize(new Dimension(880, 500));
+		scrollSessions.setBorder(BorderFactory.createEmptyBorder());
+		scrollSessions.getViewport().setBackground(Color.WHITE);
+		scrollSessions.setBackground(Color.WHITE);
 
-        numSessioniField = new JFormattedTextField(integerFormatter());
-        sessionPanel.add(new JXLabel("Numero Sessioni:"));
-        sessionPanel.add(numSessioniField, "h 30!");
+		sessionPanel.add(scrollSessions, "grow, push");
+		mainPanel.add(sessionPanel, "growy");
+	}
 
-        generateSessionsBtn = new JXButton("Genera Sessioni");
-        generateSessionsBtn.setBackground(BUTTON_COLOR);
-        generateSessionsBtn.setForeground(Color.WHITE);
-        sessionPanel.add(generateSessionsBtn, "right, h 30!, w 160!");
-        
-        
-        sessionsContainer = new JPanel(new MigLayout("wrap 4, gapx 20, gapy 15", "[]"));
-        sessionsContainer.setBackground(Color.WHITE);
+	private void initListeners()
+	{
+		aggiungiSessioneLabel.addMouseListener(new MouseAdapter()
+		{
+			public void mouseClicked(MouseEvent e)
+			{
+				showAddSessionsDialog();
+			}
+		});
 
-        scrollSessions = new JScrollPane(sessionsContainer,
-        	    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        	    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
-        	);
-        scrollSessions.setBorder(BorderFactory.createEmptyBorder());
-        scrollSessions.getVerticalScrollBar().setUnitIncrement(16);
-        scrollSessions.getHorizontalScrollBar().setUnitIncrement(16);
-        scrollSessions.getViewport().setBackground(Color.WHITE);
-        scrollSessions.setBackground(Color.WHITE);
+		confirmBtn.addActionListener(e ->
+		{
+			if(sessionCards.isEmpty())
+			{
+				JOptionPane.showMessageDialog(this, "Devi aggiungere almeno una sessione.", "Errore", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 
-        sessionPanel.add(scrollSessions, "grow, push");
+			for(CreateSessionPanel card : sessionCards)
+				if(!card.isValidSession())
+				{
+					JOptionPane.showMessageDialog(this, "Errore nei dati di una sessione. Controlla data, ora e ricetta/link.", "Errore", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 
-        mainPanel.add(leftPanel, "growy");
-        mainPanel.add(sessionPanel, "growy");
-    }
+			// TODO: invia dati al Controller
+			dispose();
+		});
 
-    private void initListeners()
-    {
-        generateSessionsBtn.addActionListener(e ->
-        {
-            Object val = numSessioniField.getValue();
-            if (val instanceof Number)
-            {
-                int n = ((Number) val).intValue();
-                sessionsContainer.removeAll();
+		praticoCheck.addItemListener(e ->
+		{
+			if(e.getStateChange() == ItemEvent.SELECTED)
+			{
+				limitField.setVisible(true);
+				limitLabel.setVisible(true);
+			}
+			else
+			{
+				boolean hasPratiche = sessionCards.stream().anyMatch(card -> "Pratica".equals(card.getTipo()));
+				if(hasPratiche)
+				{
+					int result = JOptionPane.showConfirmDialog(this, "Hai già aggiunto sessioni pratiche. Vuoi rimuoverle automaticamente?", "Conferma", JOptionPane.YES_NO_OPTION);
+					if(result == JOptionPane.YES_OPTION)
+					{
+						List<CreateSessionPanel> toRemove = new ArrayList<>();
+						for(CreateSessionPanel card : sessionCards)
+							if("Pratica".equals(card.getTipo()))
+								toRemove.add(card);
 
-                for (int i = 1; i <= n; i++)
-                {
-                    JPanel p = creaSessionePanel(i, "Online", "da definire", 60);
-                    sessionsContainer.add(p);
-                }
+						for(CreateSessionPanel card : toRemove)
+							removeSessionCard(card);
 
-                sessionsContainer.revalidate();
-                sessionsContainer.repaint();
-            }
-        });
-    }
+						praticoCheck.setSelected(false);
+						limitLabel.setVisible(false);
+						limitField.setVisible(false);
+					}
+					else praticoCheck.setSelected(true);
+				}
+				else
+				{
+					limitLabel.setVisible(false);
+					limitField.setVisible(false);
+				}
+			}
+		});
+	}
 
-    private JPanel creaSessionePanel(int numero, String tipo, String data, int durata)
-    {
-        JPanel panel = new JPanel(new MigLayout("wrap 2", "[right][grow,fill]"));
-        panel.setPreferredSize(new Dimension(250, 120));
-        panel.setMaximumSize(null);
-        panel.setMinimumSize(new Dimension(250, 120));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(BORDER_COLOR, 1, true),
-            BorderFactory.createEmptyBorder(8, 12, 8, 12)
-        ));
+	private void showAddSessionsDialog()
+	{
+		JDialog dialog = new JDialog(this, "Seleziona numero sessioni", true);
+		dialog.setLayout(new MigLayout("wrap 2", "[right][grow,fill]"));
 
-        JLabel header = new JLabel("Sessione #" + numero + ": " + tipo);
-        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        header.setForeground(new Color(60, 60, 60));
-        panel.add(header, "span 2");
+		JSpinner onlineSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 20, 1));
+		dialog.add(new JLabel("Sessioni Online:"));
+		dialog.add(onlineSpinner);
 
-        panel.add(new JLabel("Data:"));
-        panel.add(new JLabel(data));
+		if(praticoCheck.isSelected())
+		{
+			praticheSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 20, 1));
+			dialog.add(new JLabel("Sessioni Pratiche:"));
+			dialog.add(praticheSpinner);
+		}
 
-        panel.add(new JLabel("Durata (min):"));
-        panel.add(new JLabel(String.valueOf(durata)));
+		JButton addBtn = new JButton("Aggiungi");
+		JButton cancelBtn = new JButton("Annulla");
+		dialog.add(addBtn, "span 1, split 2, right");
+		dialog.add(cancelBtn);
 
-        return panel;
-    }
+		addBtn.addActionListener(e ->
+		{
+			int onlineCount = (int) onlineSpinner.getValue();
+			int praticheCount = praticheSpinner != null ? (int) praticheSpinner.getValue() : 0;
 
-    private NumberFormatter euroFormatter()
-    {
-        NumberFormatter formatter = new NumberFormatter(NumberFormat.getNumberInstance(Locale.ITALY));
-        formatter.setValueClass(Double.class);
-        formatter.setMinimum(0.0);
-        formatter.setAllowsInvalid(false);
-        return formatter;
-    }
+			for(int i = 0; i < onlineCount; i++)
+				addNewSessionCard(false);
 
-    private NumberFormatter integerFormatter()
-    {
-        NumberFormat format = NumberFormat.getIntegerInstance(Locale.ITALY);
-        format.setGroupingUsed(false);
+			for(int i = 0; i < praticheCount; i++)
+				addNewSessionCard(true);
 
-        NumberFormatter formatter = new NumberFormatter(format);
-        formatter.setValueClass(Integer.class);
-        formatter.setMinimum(1);
-        formatter.setAllowsInvalid(false);
-        return formatter;
-    }
+			dialog.dispose();
+		});
+
+		cancelBtn.addActionListener(e -> dialog.dispose());
+		dialog.pack();
+		dialog.setLocationRelativeTo(this);
+		dialog.setVisible(true);
+	}
+
+	private void addNewSessionCard(boolean pratica)
+	{
+		CreateSessionPanel card = new CreateSessionPanel(sessionCards.size() + 1, pratica, this);
+		sessionCards.add(card);
+		sessionsContainer.add(card, "grow");
+		sessionsContainer.revalidate();
+		sessionsContainer.repaint();
+	}
+
+	public void removeSessionCard(CreateSessionPanel panel)
+	{
+		panel.disposeListeners();
+		sessionCards.remove(panel);
+		sessionsContainer.remove(panel);
+
+		for(int i = 0; i < sessionCards.size(); i++)
+			sessionCards.get(i).aggiornaNumero(i + 1);
+
+		sessionsContainer.revalidate();
+		sessionsContainer.repaint();
+	}
+
+	private NumberFormatter euroFormatter()
+	{
+		NumberFormatter formatter = new NumberFormatter(NumberFormat.getNumberInstance(Locale.ITALY));
+		formatter.setValueClass(Double.class);
+		formatter.setMinimum(0.0);
+		formatter.setAllowsInvalid(false);
+		return formatter;
+	}
+
+	private NumberFormatter integerFormatter()
+	{
+		NumberFormat format = NumberFormat.getIntegerInstance(Locale.ITALY);
+		format.setGroupingUsed(false);
+		NumberFormatter formatter = new NumberFormatter(format);
+		formatter.setValueClass(Integer.class);
+		formatter.setMinimum(1);
+		formatter.setAllowsInvalid(false);
+		return formatter;
+	}
 }

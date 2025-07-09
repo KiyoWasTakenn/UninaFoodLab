@@ -37,6 +37,12 @@ public class Ricetta
     }
 
     @Override
+    public String toString()
+    {
+        return nome;
+    }
+
+    @Override
     public boolean equals(Object o)
     {
         if (o == null || getClass() != o.getClass())

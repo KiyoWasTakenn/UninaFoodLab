@@ -267,7 +267,7 @@ EXECUTE FUNCTION fun_limite_iscrizioni();
 -----------------------------------------------------------------------------------------------------------------------
 --- Stesso chef -> piu corsi -> controllare che le sessioni non siano nella stessa fascia oraria
 
-CREATE OR REPLACE FUNCTION fun_controlla_sovrapposizione_oraria()
+CREATE OR REPLACE FUNCTION fun_controlla_sovrapposizione_orario_sessione()
 RETURNS TRIGGER AS
 $$
 DECLARE
@@ -560,7 +560,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER trg_blocca_aggiorna__chef
+CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_chef
 BEFORE UPDATE OF CodiceFiscale ON Chef 
 FOR EACH ROW
 EXECUTE FUNCTION fun_blocca_aggiorna_utente();
@@ -780,7 +780,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER trg_blocca_aggiorna_preparazioni
-BEFORE UPDATE  OF IdSessionePratica, IdRicetta ON Preparazioni
+BEFORE DELETE OR UPDATE OF IdSessionePratica, IdRicetta ON Preparazioni
 FOR EACH ROW
 EXECUTE FUNCTION fun_blocca_aggiorna_preparazioni();
 

@@ -668,7 +668,20 @@ public class Controller
 		
 		return null;
 	}
-
+	
+	public List<Ricetta> loadRicette()
+	{
+		try
+		{
+			return getRicettaDAO().getRicetteByIdChef(loggedUser.getId());
+		} 
+		catch (DAOException e)
+		{
+			LOGGER.log(Level.SEVERE, "Errore loadRicette da DB", e);
+		}
+		
+		return null;
+	}
 	
 	
 	/**
