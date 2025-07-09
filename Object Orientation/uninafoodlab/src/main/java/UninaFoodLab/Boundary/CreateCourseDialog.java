@@ -9,14 +9,11 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
 
 import org.jdesktop.swingx.*;
 
-import com.github.lgooddatepicker.components.DatePicker;
-import com.github.lgooddatepicker.components.DatePickerSettings;
+import com.github.lgooddatepicker.components.*;
 import com.github.lgooddatepicker.optionalusertools.DateVetoPolicy;
 import com.github.lgooddatepicker.zinternaltools.DateVetoPolicyMinimumMaximumDate;
 
@@ -38,7 +35,8 @@ public class CreateCourseDialog extends JDialog
     );
 
     private JXLabel title, limitLabel, sessionTitle;
-    private JXPanel mainPanel, leftPanel, sessionPanel, sessionsContainer;
+    private JXPanel mainPanel, leftPanel, sessionPanel;
+    private JPanel sessionsContainer;
     private JXTextField nameField;
     private JXTextArea descrizioneArea;
     private JXButton confirmBtn, goBackBtn, generateSessionsBtn;
@@ -61,10 +59,20 @@ public class CreateCourseDialog extends JDialog
 
     private void initComponents()
     {
-        mainPanel = new JXPanel(new MigLayout("insets 20", "[grow][600]", "[]"));
-        mainPanel.setBackground(BACKGROUND_COLOR);
+        // Scroll wrapper esterno
+        JScrollPane rootScroll = new JScrollPane();
+        rootScroll.getVerticalScrollBar().setUnitIncrement(16);
+        rootScroll.setBorder(null);
+        JXPanel container = new JXPanel(new BorderLayout());
+        rootScroll.setViewportView(container);
+        setContentPane(rootScroll);
 
-        // === Sinistra: Titolo, info, dettagli ===
+        // Pannello principale
+        mainPanel = new JXPanel(new MigLayout("insets 20, wrap 2", "[grow 50][grow 50]", "[]"));
+        mainPanel.setBackground(BACKGROUND_COLOR);
+        container.add(mainPanel, BorderLayout.CENTER);
+
+        // Sinistra
         leftPanel = new JXPanel(new MigLayout("wrap 1, gapy 20", "[grow,fill]"));
         leftPanel.setBackground(BACKGROUND_COLOR);
 
@@ -90,7 +98,7 @@ public class CreateCourseDialog extends JDialog
         infoPanel.add(new JXLabel("Descrizione:"));
         infoPanel.add(scrollDescrizione, "h 80!");
 
-        frequencyList = new JComboBox<FrequenzaSessioni>(FrequenzaSessioni.values());
+        frequencyList = new JComboBox<>(FrequenzaSessioni.values());
         infoPanel.add(new JXLabel("Frequenza:"));
         infoPanel.add(frequencyList, "h 30!");
 
@@ -120,14 +128,13 @@ public class CreateCourseDialog extends JDialog
         detailPanel.setBackground(Color.WHITE);
         detailPanel.setBorder(mainBorder);
 
-       
-        DateVetoPolicy vetoPolicy = new DateVetoPolicyMinimumMaximumDate(null, LocalDate.now());
-        DatePickerSettings ciao = new DatePickerSettings();
-        dataInizioField = new DatePicker(ciao);
-        ciao.setVetoPolicy(vetoPolicy);
+        DateVetoPolicy vetoPolicy = new DateVetoPolicyMinimumMaximumDate(LocalDate.now().plusDays(1), null);
+        DatePickerSettings settings = new DatePickerSettings();
+        dataInizioField = new DatePicker(settings);
+        settings.setVetoPolicy(vetoPolicy);
         detailPanel.add(new JXLabel("Data Inizio:"));
         detailPanel.add(dataInizioField, "h 30!, span 2");
-        
+
         costField = new JFormattedTextField(euroFormatter());
         costField.setValue(0.0);
         detailPanel.add(new JXLabel("Costo:"));
@@ -144,15 +151,13 @@ public class CreateCourseDialog extends JDialog
         limitField = new JFormattedTextField(integerFormatter());
         limitField.setVisible(false);
         limitField.setEnabled(false);
-
         detailPanel.add(limitLabel, "newline");
         detailPanel.add(limitField, "h 30!, span 2");
 
         leftPanel.add(detailPanel);
 
-        // === Pulsanti finali ===
         JXPanel buttons = new JXPanel(new MigLayout("center", "[]20[]"));
-        buttons.setBackground(mainPanel.getBackground());
+        buttons.setBackground(BACKGROUND_COLOR);
 
         confirmBtn = new JXButton("Crea Corso");
         confirmBtn.setBackground(BUTTON_COLOR);
@@ -162,11 +167,10 @@ public class CreateCourseDialog extends JDialog
 
         buttons.add(confirmBtn, "w 120!, h 35!");
         buttons.add(goBackBtn, "w 120!, h 35!");
-
         leftPanel.add(buttons);
 
-        // === Destra: pannello sessioni ===
-        sessionPanel = new JXPanel(new MigLayout("wrap 1", "[grow,fill]", "[]10[]10[]"));
+        // Destra
+        sessionPanel = new JXPanel(new MigLayout("wrap", "[]"));
         sessionPanel.setBackground(Color.WHITE);
         sessionPanel.setBorder(mainBorder);
 
@@ -182,29 +186,25 @@ public class CreateCourseDialog extends JDialog
         generateSessionsBtn.setBackground(BUTTON_COLOR);
         generateSessionsBtn.setForeground(Color.WHITE);
         sessionPanel.add(generateSessionsBtn, "right, h 30!, w 160!");
+        
+        
+        sessionsContainer = new JPanel(new MigLayout("wrap 4, gapx 20, gapy 15", "[]"));
+        sessionsContainer.setBackground(Color.WHITE);
 
-        sessionsContainer = new JXPanel(new MigLayout("wrap 1, gapy 10"));
-        sessionsContainer.setOpaque(false);
-
-        scrollSessions = new JScrollPane(
-            sessionsContainer,
-            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        );
-        scrollSessions.setOpaque(false);
-        scrollSessions.getViewport().setOpaque(false);
+        scrollSessions = new JScrollPane(sessionsContainer,
+        	    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        	    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        	);
         scrollSessions.setBorder(BorderFactory.createEmptyBorder());
-        scrollSessions.setPreferredSize(new Dimension(400, 400));
         scrollSessions.getVerticalScrollBar().setUnitIncrement(16);
         scrollSessions.getHorizontalScrollBar().setUnitIncrement(16);
+        scrollSessions.getViewport().setBackground(Color.WHITE);
+        scrollSessions.setBackground(Color.WHITE);
 
-        sessionPanel.add(scrollSessions, "grow");
+        sessionPanel.add(scrollSessions, "grow, push");
 
-        // === Aggiungi pannelli ===
         mainPanel.add(leftPanel, "growy");
         mainPanel.add(sessionPanel, "growy");
-
-        setContentPane(mainPanel);
     }
 
     private void initListeners()
@@ -220,25 +220,11 @@ public class CreateCourseDialog extends JDialog
                 for (int i = 1; i <= n; i++)
                 {
                     JPanel p = creaSessionePanel(i, "Online", "da definire", 60);
-                    sessionsContainer.add(p, "growx");
+                    sessionsContainer.add(p);
                 }
 
                 sessionsContainer.revalidate();
                 sessionsContainer.repaint();
-            }
-        });
-
-        numSessioniField.getDocument().addDocumentListener(new DocumentListener()
-        {
-            public void insertUpdate(DocumentEvent e) { toggleBtn(); }
-            public void removeUpdate(DocumentEvent e) { toggleBtn(); }
-            public void changedUpdate(DocumentEvent e) { toggleBtn(); }
-
-            private void toggleBtn()
-            {
-                boolean enabled = !numSessioniField.getText().trim().isEmpty();
-                generateSessionsBtn.setEnabled(enabled);
-                generateSessionsBtn.setVisible(enabled);
             }
         });
     }
@@ -246,6 +232,9 @@ public class CreateCourseDialog extends JDialog
     private JPanel creaSessionePanel(int numero, String tipo, String data, int durata)
     {
         JPanel panel = new JPanel(new MigLayout("wrap 2", "[right][grow,fill]"));
+        panel.setPreferredSize(new Dimension(250, 120));
+        panel.setMaximumSize(null);
+        panel.setMinimumSize(new Dimension(250, 120));
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createCompoundBorder(
             new LineBorder(BORDER_COLOR, 1, true),
