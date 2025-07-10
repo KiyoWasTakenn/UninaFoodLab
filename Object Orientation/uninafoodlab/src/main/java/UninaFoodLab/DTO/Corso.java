@@ -47,28 +47,6 @@ public class Corso
         if(argomenti == null || argomenti.isEmpty()) throw new RequiredArgomentoException();	
         this.argomenti = argomenti;  
     }
-
-    public Corso(String nome, LocalDate dataInizio, int numeroSessioni, FrequenzaSessioni frequenzaSessioni, int limite, String descrizione, BigDecimal costo, boolean isPratico, Chef chef, 
-    			 ArrayList<Argomento> argomenti)
-    {
-        this.nome = nome;
-        this.dataInizio = dataInizio;
-        this.numeroSessioni = numeroSessioni;
-        this.frequenzaSessioni = frequenzaSessioni;
-        this.limite = limite;
-        this.descrizione = descrizione;
-        this.costo = costo;
-        this.isPratico = isPratico;
-        
-        if(chef == null) throw new RequiredChefException();
-        this.setChef(chef);
-        
-        this.sessioni.
-        this.numeroSessioni = sessioni.size();
-        
-        if(argomenti == null || argomenti.isEmpty()) throw new RequiredArgomentoException();	
-        this.argomenti = argomenti;  
-    }
     
     public int getId()  
     {

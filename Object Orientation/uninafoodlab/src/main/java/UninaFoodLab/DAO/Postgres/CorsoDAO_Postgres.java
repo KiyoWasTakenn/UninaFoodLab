@@ -2,7 +2,6 @@ package UninaFoodLab.DAO.Postgres;
 
 import UninaFoodLab.DAO.CorsoDAO;
 import UninaFoodLab.DTO.Argomento;
-import UninaFoodLab.DTO.Chef;
 import UninaFoodLab.DTO.Corso;
 import UninaFoodLab.Exceptions.CorsoNotFoundException;
 import UninaFoodLab.Exceptions.DAOException;
@@ -132,7 +131,7 @@ public class CorsoDAO_Postgres implements CorsoDAO
     }
 
 	@Override
-    public List<Corso> getCorsiByArgomento(List<Argomento> argomenti)
+    public List<Corso> getCorsiByArgomenti(List<Argomento> argomenti)
     {
 
     }

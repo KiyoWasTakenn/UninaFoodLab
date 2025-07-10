@@ -14,7 +14,7 @@ public class UtilizzoDAO_Postgres implements UtilizzoDAO
 {
 	private Utilizzo mapResultSetToUtilizzo(ResultSet rs) throws SQLException
 	{
-		Ingrediente i = new Ingrediente(rs.getString("Nome"), NaturaIngrediente.valueOf(rs.getString("Origine") ));
+		Ingrediente i = new Ingrediente(rs.getString("Nome"), NaturaIngrediente.valueOf(rs.getString("Origine")));
 		i.setId(rs.getInt("IdIngrediente"));
 		
 	    Utilizzo u = new Utilizzo(	
@@ -100,8 +100,7 @@ public class UtilizzoDAO_Postgres implements UtilizzoDAO
 	        param.add(previousUtilizzo.getIdRicetta());
 	        param.add(previousUtilizzo.getIdIngrediente());
 
-	        try (Connection conn = ConnectionManager.getConnection();
-	             PreparedStatement s = conn.prepareStatement(sql))
+	        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
 	        {
 	            for (int i = 0; i < param.size(); i++)
 	                s.setObject(i + 1, param.get(i));
