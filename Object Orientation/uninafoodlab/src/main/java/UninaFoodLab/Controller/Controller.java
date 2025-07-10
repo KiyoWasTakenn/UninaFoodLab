@@ -738,6 +738,58 @@ public class Controller
      *  -------------------------
 	*/
 	
-
+	public void checkNewPassword(ChangePasswordDialog currFrame, char[] oldPass, char[] newPass)
+	{
+		try
+		{
+			Utente user = getLoggedUser();
+			if(checkPassword(user.getHashPassword(), oldPass))
+			{
+				//newPassSuccess(currFrame, );
+				//aggiornaPassword(currFrame, user, newPass);
+			}
+				
+			/*else
+				loginFailed(currFrame, "Username o password errati.");*/			
+		}
+		catch(RecordNotFoundException e) 
+		{
+			//loginFailed(currFrame, "Username o password errati."); // Evitiamo User Enumeration
+		}
+		catch(DAOException e)
+		{
+			LOGGER.log(Level.SEVERE, "Errore durante login nel DB: " + e.getMessage(), e);
+			//loginFailed(currFrame, "Errore di accesso al database.");
+		}
+		finally
+	    {
+	        //Arrays.fill(pass, ' '); // It is recommended that the returned character array be cleared after use by setting each character to zero.
+	    }
+	}
+	
+	private void aggiornaPassword(RegisterFrame currFrame, Utente user, char[] newPass)
+	{
+		if (isChefLogged())
+		{
+			
+		}
+	}
+	/*private void registerSuccess(RegisterFrame currFrame, String username) 
+    {
+		LOGGER.log(Level.INFO, "Registrazione riuscita per utente: {0}", username);
+    	goToLogin(currFrame);
+    }*/
+	
+    /**
+     * Notifica il fallimento della registrazione loggando l'errore e mostrando un messaggio all'utente.
+     * 
+     * @param currFrame il frame di registrazione
+     * @param message messaggio di errore da mostrare
+     */
+    /*private void registerFailed(RegisterFrame currFrame, String message) 
+    {
+    	LOGGER.log(Level.WARNING, "Tentativo di registrazione fallito: {0}", message);
+        currFrame.showError(message);
+    }*/
 	
 }

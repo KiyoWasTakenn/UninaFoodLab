@@ -44,7 +44,7 @@ public class HomepageFrame extends JFrame
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		JXButton prova = new JXButton("cliccami");
-		prova.addActionListener(new ActionListener() {@Override public void actionPerformed(ActionEvent e) {Controller.getController().goToMyCourses(HomepageFrame.this);}});
+		prova.addActionListener(new ActionListener() {@Override public void actionPerformed(ActionEvent e) {Controller.getController().goToProfile(HomepageFrame.this);}});
 		contentPane.add(prova);
 	}
 }

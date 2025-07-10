@@ -32,6 +32,8 @@ import org.jdesktop.swingx.JXTextField;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.github.lgooddatepicker.components.*;
+import com.github.lgooddatepicker.optionalusertools.DateVetoPolicy;
+import com.github.lgooddatepicker.zinternaltools.DateVetoPolicyMinimumMaximumDate;
 
 import UninaFoodLab.Controller.Controller;
 
@@ -109,7 +111,7 @@ public class RegisterFrame extends JXFrame
 	private JXLabel curriculumErrorLabel;
 	
 	ActionListener scegliBtnActionListener;		
-	ActionListener showPassBtnBtnActionListener;		
+	ActionListener showPassBtnActionListener;		
 	ActionListener registerBtnActionListener;				
 	FocusAdapter nomeFieldFocusListener;		
 	DocumentListener nomeFieldDocumentListener;		
@@ -212,11 +214,13 @@ public class RegisterFrame extends JXFrame
 		dataLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
 		panel.add(dataLabel, "cell 0 6, right");	
 		
+		DateVetoPolicy vetoPolicy = new DateVetoPolicyMinimumMaximumDate(null, LocalDate.now());
 		DatePickerSettings settings = new DatePickerSettings();
 		dataPicker = new DatePicker(settings);
+		settings.setVetoPolicy(vetoPolicy);
 		dataPicker.setPreferredSize(new Dimension(230, 30));
 		panel.add(dataPicker, "cell 1 6, left");	
-		dataPicker.setM
+				
 		
 		luogoErrorLabel = new JXLabel(" ");
 		luogoErrorLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
@@ -380,7 +384,7 @@ public class RegisterFrame extends JXFrame
 		  };
 		scegliBtn.addActionListener(scegliBtnActionListener);
 		
-		showPassBtnBtnActionListener = new ActionListener()
+		showPassBtnActionListener = new ActionListener()
 		  {
 			@Override 
 			public void actionPerformed(ActionEvent e)
@@ -397,7 +401,7 @@ public class RegisterFrame extends JXFrame
 			    }
 			}				
 		  };
-		showPassBtn.addActionListener(showPassBtnBtnActionListener);
+		showPassBtn.addActionListener(showPassBtnActionListener);
 		
 		registerBtnActionListener = new ActionListener()
 		{
@@ -894,8 +898,8 @@ public class RegisterFrame extends JXFrame
 		if(scegliBtn != null && scegliBtnActionListener != null)
 			scegliBtn.removeActionListener(scegliBtnActionListener);
 		
-		if(showPassBtn != null && showPassBtnBtnActionListener != null)
-			showPassBtn.removeActionListener(showPassBtnBtnActionListener);
+		if(showPassBtn != null && showPassBtnActionListener != null)
+			showPassBtn.removeActionListener(showPassBtnActionListener);
 		
 		if(registerBtn != null && registerBtnActionListener != null)
 			registerBtn.removeActionListener(registerBtnActionListener);
