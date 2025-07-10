@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JToggleButton;
 import javax.swing.border.CompoundBorder;
@@ -63,7 +64,7 @@ public class ChangePasswordDialog extends JDialog {
 	
 	private JXPanel panel;
 	
-	public ChangePasswordDialog(JXFrame parent)
+	public ChangePasswordDialog(JXPanel parent)
 	{
 		
 		super(parent, "Cambia Password", true);
@@ -160,18 +161,6 @@ public class ChangePasswordDialog extends JDialog {
 			}				
 		  };
 		  showOldPassBtn.addActionListener(showOldPassBtnActionListener);
-		
-		  oldPassFieldDocumentListener = new DocumentListener()
-			{
-				@Override
-			    public void insertUpdate(DocumentEvent e) { checkOldPass(); }
-			    @Override
-			    public void removeUpdate(DocumentEvent e) { checkOldPass(); }
-			    @Override
-			    public void changedUpdate(DocumentEvent e) { checkOldPass(); }
-			};
-		   
-		oldPasswordField.getDocument().addDocumentListener(oldPassFieldDocumentListener);
 			
 		  showNewPassBtnActionListener = new ActionListener()
 		  {
@@ -197,9 +186,7 @@ public class ChangePasswordDialog extends JDialog {
 			@Override 
 			public void actionPerformed(ActionEvent e)
 			{
-				/*if(!checkOldPass())
-					oldPasswordField.requestFocus();
-				else */if(!checkNewPass())
+				if(!checkNewPass())
 					newPasswordField.requestFocus();
 		        else
 		        {
@@ -232,23 +219,9 @@ public class ChangePasswordDialog extends JDialog {
 	    return check; 
 	}
 	
-	/*private boolean checkOldPass()
+	public void showError(String msg)
 	{
-		boolean check = true;
-		String text = new String(oldPasswordField.getPassword()).trim();
-
-	    if (text.length() < 8 || text.length() > 30)
-	    {
-	    	oldPasswordField.setBorder(errorBorder);
-	    	oldPasswordErrorLabel.setText("La password deve essere tra 8 e 30 caratteri.");
-	        check = false;
-	    } 
-	    else
-	    {
-	    	oldPasswordField.setBorder(defaultBorder);
-	    	oldPasswordErrorLabel.setText(" ");
-	    }
-	    
-	    return check; 
-	}*/
+		JOptionPane.showMessageDialog(this, msg, "Errore", JOptionPane.ERROR_MESSAGE);
+	}	
+	
 }
