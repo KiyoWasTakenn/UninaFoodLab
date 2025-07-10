@@ -2,7 +2,10 @@ package UninaFoodLab.DAO.Postgres;
 
 import UninaFoodLab.DAO.CorsoDAO;
 import UninaFoodLab.DTO.Argomento;
+import UninaFoodLab.DTO.Chef;
 import UninaFoodLab.DTO.Corso;
+import UninaFoodLab.Exceptions.CorsoNotFoundException;
+import UninaFoodLab.Exceptions.DAOException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,160 +13,151 @@ import java.util.List;
 
 public class CorsoDAO_Postgres implements CorsoDAO
 {
-    public Corso getCorsoById(int idCorso) throws SQLException{
-        String sql ="SELECT * FROM Corso WHERE IdCorso = ?";
-        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
+	private Corso mapResultSetToCorso(ResultSet rs) throws SQLException
+	{
+		Corso c = new Corso(
+				        	 
+	    			   	   );
+		
+	    c.setId(rs.getInt("IdCorso"));	    
+	    return c;
+	}
+	
+	@Override
+	public void save(Corso toSaveCorso)
+	{
+        String sql =
+        		     "INSERT INTO Corso (nome, data, frequenzaSessioni, limite, descrizione, costo, isPratico) "
+        		   + "VALUES (?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
+        {
+            s.setString(1, toSaveCorso.getNome());
+            s.setDate(2, toSaveCorso.getDataInizio());
+            s.setString(3, toSaveCorso.getFrequenzaSessioni().toString());
+            s.setInt(4, toSaveCorso.getLimite());
+            s.setString(5, toSaveCorso.getDescrizione());
+            s.setBigDecimal(6, toSaveCorso.getCosto());
+            s.setBoolean(7, toSaveCorso.getIsPratico());
+            s.executeUpdate();
+            
+            try(ResultSet genKeys = s.getGeneratedKeys())
+            {
+            	if(genKeys.next())
+            		toSaveCorso.setId(genKeys.getInt(1));
+            	else
+            		throw new DAOException("Creazione Corso fallita, nessun ID ottenuto.");
+            }   
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante salvataggio Corso", e);
+        }
+    }
+	
+	@Override
+    public Corso getCorsoById(int idCorso)
+    {
+        String sql = 
+        			"SELECT * "
+        		  + "FROM Corso "
+        		  + "WHERE IdCorso = ?";
+        
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idCorso);
             ResultSet rs = s.executeQuery();
 
-            while(rs.next())
+            if(rs.next())
             {
-                return new Corso(
-                        rs.getString("Nome"),
-                        rs.getDate("DataInizio").toLocalDate(),
-                        rs.getString("FrequenzaSessioni"),
-                        rs.getInt("Limite"),
-                        rs.getString("Descrizione"),
-                        rs.getDouble("Costo"),
-                        rs.getBoolean("IsPratico"),
-                        null,
-                        null
-                );
+                return mapResultSetToCorso(rs);
             }
+            else
+            	throw new CorsoNotFoundException("Corso con id " + idCorso + " non trovato");
         }
-        return null;
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante getCorsoById", e);
+        }
     }
 
-    public Corso getCorsoByChef(int idChef) throws SQLException{
-        String sql ="SELECT * FROM Corso WHERE IdChef = ?";
+	@Override
+    public List<Corso> getCorsiByChef(int idChef)
+    {
+        String sql =
+        			 "SELECT * "
+        		   + "FROM Corso "
+        		   + "WHERE IdChef = ?";
+        
+        List<Corso> courses = new ArrayList<Corso>();
+        
         try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idChef);
             ResultSet rs = s.executeQuery();
 
             while(rs.next())
-            {
-                return new Corso(
-                        rs.getString("Nome"),
-                        rs.getDate("DataInizio").toLocalDate(),
-                        rs.getString("FrequenzaSessioni"),
-                        rs.getInt("Limite"),
-                        rs.getString("Descrizione"),
-                        rs.getDouble("Costo"),
-                        rs.getBoolean("IsPratico"),
-                        null,
-                        null
-                );
-            }
+                courses.add(mapResultSetToCorso(rs));
         }
-        return null;
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante getCorsiByChef", e);
+        }
+          
+        return courses;
     }
 
-    public List<Corso> getAllCorsi() throws SQLException{
-        String sql ="SELECT * FROM Corso";
-        List<Corso> ret =new ArrayList<Corso>();
+	@Override
+    public List<Corso> getAllCorsi()
+    {
+        String sql =
+        			 "SELECT * "
+        		   + "FROM Corso";
+        
+        List<Corso> courses = new ArrayList<>();
+        
         try(Connection conn = ConnectionManager.getConnection(); Statement s = conn.createStatement())
         {
             ResultSet rs = s.executeQuery(sql);
 
             while(rs.next())
-            {
-                ret.add(new Corso(
-                        rs.getString("Nome"),
-                        rs.getDate("DataInizio").toLocalDate(),
-                        rs.getString("FrequenzaSessioni"),
-                        rs.getInt("Limite"),
-                        rs.getString("Descrizione"),
-                        rs.getDouble("Costo"),
-                        rs.getBoolean("IsPratico"),
-                        null,
-                        null)
-                );
-
-            }
+            	courses.add(mapResultSetToCorso(rs));
         }
-        return ret;
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante getAllCorsi", e);
+        }
+        
+        return courses;
     }
 
-    public List<Corso> getCorsiByArgomento(List<Argomento> argomenti) throws SQLException{
+	@Override
+    public List<Corso> getCorsiByArgomento(List<Argomento> argomenti)
+    {
 
-        if(argomenti.isEmpty())
-                return this.getAllCorsi();
-
-        String sql ="SELECT * FROM Corso WHERE IdCorso =((SELECT IdCorso FROM Argomenti_Corso WHERE IdArgomento = ?)";
-        for (int i=1; i<argomenti.size(); i++)
-        {
-            sql += "INTERSECT (SELECT IdCorso FROM Argomenti_Corso WHERE IdArgomento = ?)";
-        }
-        sql += ")";
-
-        int i=1;
-        List<Corso> ret =new ArrayList<Corso>();
-        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
-        {
-            for (Argomento x:argomenti)
-            {
-                s.setInt(i, x.getId());
-                i++;
-            }
-
-            ResultSet rs = s.executeQuery();
-
-            while(rs.next())
-            {
-                ret.add(new Corso(
-                        rs.getString("Nome"),
-                        rs.getDate("DataInizio").toLocalDate(),
-                        rs.getString("FrequenzaSessioni"),
-                        rs.getInt("Limite"),
-                        rs.getString("Descrizione"),
-                        rs.getBigDecimal("Costo"),
-                        rs.getBoolean("IsPratico"),
-                        null,
-                        null)
-                );
-            }
-        }
-        return ret;
     }
 
-
-    public void save(Corso toSaveCorso) throws SQLException {
-        String sql = "INSERT INTO Corso (nome, data, frequenzaSessioni, limite, descrizione, costo, isPratico)  VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
-        {
-            s.setString(1, toSaveCorso.getNome());
-            s.setDate(2, toSaveCorso.getDataInizio());
-            s.setString(3, toSaveCorso.getFrequenzaSessioni());
-            s.setInt(4, toSaveCorso.getLimite());
-            s.setString(5, toSaveCorso.getDescrizione());
-            s.setBigDecimal(6, toSaveCorso.getCosto());
-            s.setBoolean(7, toSaveCorso.getIsPratico());
-            s.executeUpdate();
-        }
+	@Override
+    public void update(Corso oldCorso, Corso newCorso)
+    {
+        
     }
-
-    public void delete(int IdCorso) throws SQLException {
-        String sql = "DELETE FROM Corso WHERE IdCorso = ?";
+	
+	@Override
+    public void delete(int IdCorso)
+    {
+        String sql = "DELETE "
+        		   + "FROM Corso "
+        		   + "WHERE IdCorso = ?";
+        
         try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, IdCorso);
             s.executeUpdate();
         }
-
-    }
-
-    public void update(Corso oldCorso, Corso newCorso) throws SQLException{
-        if(!oldCorso.getDescrizione().equals(newCorso.getDescrizione()))
+        catch(SQLException e)
         {
-            String sql = "UPDATE Corso SET Descrizione = ? WHERE IdCorso = ?";
-            try (Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
-            {
-                s.setString(1, newCorso.getDescrizione());
-                s.setInt(2, oldCorso.getId());
-                s.executeUpdate();
-            }
+        	throw new DAOException("Errore DB durante eliminazione Corso", e);
         }
     }
 }

@@ -16,27 +16,20 @@ public class Ricetta
     private String allergeni;
     private ArrayList<Utilizzo> utilizzi;
 
-    public Ricetta(String nome, String provenienza, int tempo, int calorie, LivelloDifficolta difficolta, ArrayList<Utilizzo> utilizzi)
+    public Ricetta(String nome, String provenienza, int tempo, int calorie, LivelloDifficolta difficolta, String allergeni, ArrayList<Utilizzo> utilizzi)
     {
+    	if(utilizzi == null) throw new RequiredIngredienteException();
+    	
         this.nome = nome;
         this.provenienza = provenienza;
         this.tempo = tempo;
         this.calorie = calorie;
         this.difficolta = difficolta;
-        
-        if(utilizzi == null) throw new RequiredIngredienteException();
-        
+        this.allergeni = allergeni;
         this.utilizzi = utilizzi;
     }
 
-    // Se la ricetta ha allergeni
-    public Ricetta(String nome, String provenienza, int tempo, int calorie, LivelloDifficolta difficolta, ArrayList<Utilizzo> utilizzi, String allergeni)
-    {
-        this(nome, provenienza, tempo, calorie, difficolta, utilizzi);
-        this.allergeni = allergeni;
-    }
-
-    @Override
+	@Override
     public String toString()
     {
         return nome;

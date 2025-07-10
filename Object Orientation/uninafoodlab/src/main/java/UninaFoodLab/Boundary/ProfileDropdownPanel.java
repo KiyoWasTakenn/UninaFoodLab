@@ -41,9 +41,9 @@ public class ProfileDropdownPanel extends JXPanel
 	);
 	private JXLabel userLabel;
 	private JXPanel separator;
-	private JXButton profileItemBtn, logoutItemBtn;
+	private JXButton profileItemBtn, changePwItemBtn, logoutItemBtn;
 	
-	private ActionListener profileItemBtnListener, logoutItemBtnListener;
+	private ActionListener profileItemBtnListener, changePwItemBtnListener, logoutItemBtnListener;
 	private MouseAdapter hoverListener;
 	
 	
@@ -78,6 +78,7 @@ public class ProfileDropdownPanel extends JXPanel
 		userLabel = new JXLabel("hola", FontIcon.of(MaterialDesign.MDI_ACCOUNT_CIRCLE, 20, new Color(80, 80, 80)), JXLabel.LEFT); /*Controller.getController().getLoggedUser().getUsername()*/
     	separator = new JXPanel();
     	profileItemBtn = new JXButton("  Profilo", FontIcon.of(MaterialDesign.MDI_ACCOUNT, 18, new Color(60, 60, 60)));
+    	changePwItemBtn = new JXButton(" Cambia Password", FontIcon.of(MaterialDesign.MDI_LOCK, 18, new Color(60, 60, 60)));
     	logoutItemBtn = new JXButton("  Logout", FontIcon.of(MaterialDesign.MDI_LOGOUT, 18, new Color(60, 60, 60)));
     	
     	userLabel.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 16));
@@ -91,6 +92,7 @@ public class ProfileDropdownPanel extends JXPanel
         add(separator, "h 2!, gapbottom 8");
           
         add(profileItemBtn);
+        add(changePwItemBtn);
         add(logoutItemBtn);
 	}
 	
@@ -102,6 +104,7 @@ public class ProfileDropdownPanel extends JXPanel
 	private void styleComponents()
 	{
 		styleDropdownButton(profileItemBtn);
+		styleDropdownButton(changePwItemBtn);
 		styleDropdownButton(logoutItemBtn);
 	}
 	
@@ -114,48 +117,58 @@ public class ProfileDropdownPanel extends JXPanel
 	private void initListeners()
 	{
 		profileItemBtnListener = new ActionListener()
-		 {
-			 @Override
-			 public void actionPerformed(ActionEvent e)
-			 {
-				 Controller.getController().goToProfile(parentFrame);
-			 }
-		 };
+								 {
+									 @Override
+									 public void actionPerformed(ActionEvent e)
+									 {
+										 Controller.getController().goToProfile(parentFrame);
+									 }
+								 };
 		profileItemBtn.addActionListener(profileItemBtnListener);
-
+		
+		changePwItemBtnListener = new ActionListener()
+								  {
+									 @Override
+									 public void actionPerformed(ActionEvent e)
+									 {
+										 new ChangePasswordDialog(parentFrame).setVisible(true);
+									 }
+	
+								  };
+		changePwItemBtn.addActionListener(changePwItemBtnListener);		
 
 		logoutItemBtnListener = new ActionListener()
-		 {
-			 @Override
-			 public void actionPerformed(ActionEvent e)
-			 {
-				 Controller.getController().logout(parentFrame);
-			 }
-		 };
+								{
+									@Override
+									public void actionPerformed(ActionEvent e)
+									{
+										Controller.getController().logout(parentFrame);
+									}
+								};
 		logoutItemBtn.addActionListener(logoutItemBtnListener);
 		
 		hoverListener = new MouseAdapter() 
-		{
-		    @Override
-		    public void mouseEntered(MouseEvent e) 
-		    {
-		        if(e.getSource() instanceof JXButton) 
-		        {
-		            JXButton btn = (JXButton) e.getSource();
-		            btn.setBackground(new Color(230, 230, 230));
-		            btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		        }
-		    }
-		    @Override
-		    public void mouseExited(MouseEvent e) 
-		    {
-		        if(e.getSource() instanceof JXButton) 
-		        {
-		            JXButton btn = (JXButton) e.getSource();
-		            btn.setBackground(new Color(245, 245, 245));
-		        }
-		    }
-		 };
+						{
+						    @Override
+						    public void mouseEntered(MouseEvent e) 
+						    {
+						        if(e.getSource() instanceof JXButton) 
+						        {
+						            JXButton btn = (JXButton) e.getSource();
+						            btn.setBackground(new Color(230, 230, 230));
+						            btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+						        }
+						    }
+						    @Override
+						    public void mouseExited(MouseEvent e) 
+						    {
+						        if(e.getSource() instanceof JXButton) 
+						        {
+						            JXButton btn = (JXButton) e.getSource();
+						            btn.setBackground(new Color(245, 245, 245));
+						        }
+						    }
+						 };
 		 profileItemBtn.addMouseListener(hoverListener);
 		 logoutItemBtn.addMouseListener(hoverListener);
 	}
@@ -172,7 +185,9 @@ public class ProfileDropdownPanel extends JXPanel
 			profileItemBtn.removeActionListener(profileItemBtnListener);
 		if(logoutItemBtn != null && logoutItemBtnListener != null)
 			logoutItemBtn.removeActionListener(logoutItemBtnListener);	
-		
+		if(changePwItemBtn != null && changePwItemBtnListener != null)
+			changePwItemBtn.removeActionListener(changePwItemBtnListener);	
+	
         if(hoverListener != null) 
         {
             if (profileItemBtn != null) profileItemBtn.removeMouseListener(hoverListener);

@@ -31,6 +31,7 @@ public class ChefDAO_Postgres implements ChefDAO
 	    return c;
 	}
 
+	@Override
 	public void save(Chef toSaveChef)
     {
         String sql = "INSERT INTO Chef(Username, Nome, Cognome, CodiceFiscale, DataDiNascita, LuogoDiNascita, Email, Password, Curriculum) " +
@@ -63,9 +64,13 @@ public class ChefDAO_Postgres implements ChefDAO
         }
     }
 	
+	@Override
     public Chef getChefById(int idChef)
     {
-        String sql = "SELECT * FROM Chef WHERE IdChef = ?";
+        String sql = 
+        			"SELECT * "
+        		  + "FROM Chef "
+        		  + "WHERE IdChef = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
@@ -82,10 +87,14 @@ public class ChefDAO_Postgres implements ChefDAO
         	throw new DAOException("Errore DB durante ricerca Chef per id", e);
         }
     }
-
+	
+	@Override
     public Chef getChefByUsername(String username)
     {
-        String sql = "SELECT * FROM Chef WHERE Username = ?";
+        String sql = 
+        			"SELECT * "
+        		  + "FROM Chef "
+        		  + "WHERE Username = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
@@ -103,7 +112,8 @@ public class ChefDAO_Postgres implements ChefDAO
         }
     }
     
-    public boolean getChefByEmail(String email)
+	@Override
+    public boolean existsChefByEmail(String email)
     {
         String sql = "SELECT EXISTS (SELECT 1 FROM Chef WHERE Email = ?)";
 
@@ -120,7 +130,8 @@ public class ChefDAO_Postgres implements ChefDAO
         }
     }
     
-    public boolean getChefByCodiceFiscale(String codFisc)
+	@Override
+    public boolean existsChefByCodiceFiscale(String codFisc)
     {
         String sql = "SELECT EXISTS (SELECT 1 FROM Chef WHERE CodiceFiscale = ?)";
 
@@ -136,11 +147,15 @@ public class ChefDAO_Postgres implements ChefDAO
         	throw new DAOException("Errore DB durante ricerca di Chef per codice fiscale", e);
         }
     }
-
+	
+	@Override
     public List<Chef> getChefsByName(String name, String surname)
     {
         List<Chef> chefs = new ArrayList<>();
-        String sql = "SELECT * FROM Chef WHERE Nome = ? AND Cognome = ?";
+        String sql = 
+        		     "SELECT * "
+        		   + "FROM Chef "
+        		   + "WHERE Nome = ? AND Cognome = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
@@ -158,10 +173,13 @@ public class ChefDAO_Postgres implements ChefDAO
         return chefs;
     }
 
+	@Override
     public List<Chef> getAllChefs()
     {
         List<Chef> chefs = new ArrayList<>();
-        String sql = "SELECT * FROM Chef";
+        String sql = 
+        			 "SELECT * "
+        		   + "FROM Chef";
 
         try(Connection conn = ConnectionManager.getConnection(); Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(sql))
         {
@@ -176,6 +194,7 @@ public class ChefDAO_Postgres implements ChefDAO
         return chefs;
     }
 
+	@Override
     public void update(Chef previousChef, Chef updatedChef)
     {
         String sql = "UPDATE Chef SET ";
@@ -251,9 +270,13 @@ public class ChefDAO_Postgres implements ChefDAO
         }
     }
 
+	@Override
     public void delete(int idChef)
     {
-        String sql = "DELETE FROM Chef WHERE IdChef = ?";
+        String sql = 
+        			 "DELETE "
+        		   + "FROM Chef "
+        		   + "WHERE IdChef = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {

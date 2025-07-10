@@ -4,6 +4,8 @@ import java.util.Objects;
 
 public class Utilizzo
 {
+	private int idRicetta;
+	private int idIngrediente;
     private double quantita;
     private UnitaDiMisura udm;
     private Ingrediente ingrediente;
@@ -31,6 +33,26 @@ public class Utilizzo
         return Objects.hash(quantita, udm, ingrediente);
     }
 
+    public int getIdRicetta()
+    {
+        return idRicetta;
+    }
+
+    public void setIdRicetta(int id)
+    {
+        this.idRicetta = id;
+    }
+    
+    public int getIdIngrediente()
+    {
+        return idIngrediente;
+    }
+
+    public void setIdIngrediente(int id)
+    {
+        this.idIngrediente = id;
+    }
+    
     public double getQuantita()
     {
         return quantita;
