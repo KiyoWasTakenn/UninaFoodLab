@@ -395,9 +395,9 @@ public class Controller
     private void registerPartecipante(RegisterFrame currFrame, String username, String nome, String cognome, String codFisc, 
     								  LocalDate data, String luogo, String email, char[] pass) throws DAOException
     {
-        if(getPartecipanteDAO().existsPartecipanteByCodiceFiscale(codFisc))
+        if(getPartecipanteDAO().getPartecipanteByCodiceFiscale(codFisc))
             registerFailed(currFrame, ERR_CF_EXISTING);
-        else if(getPartecipanteDAO().existsPartecipanteByEmail(email))
+        else if(getPartecipanteDAO().getPartecipanteByEmail(email))
             registerFailed(currFrame, ERR_EMAIL_EXISTING);
         else
         {
@@ -445,9 +445,9 @@ public class Controller
     private void registerChef(RegisterFrame currFrame, String username, String nome, String cognome, String codFisc, LocalDate data, 
     		 				  String luogo, String email, char[] pass, File selectedFile) throws DAOException, IOException
     {
-        if(getChefDAO().existsChefByCodiceFiscale(codFisc))
+        if(getChefDAO().getChefByCodiceFiscale(codFisc))
             registerFailed(currFrame, ERR_CF_EXISTING);
-        else if(getChefDAO().existsChefByEmail(email))
+        else if(getChefDAO().getChefByEmail(email))
             registerFailed(currFrame, ERR_EMAIL_EXISTING);
         else
         {
@@ -696,6 +696,10 @@ public class Controller
 	// CreateRecipesDialog
 	// DetailedRecipeFrame
 	
+	
+	
+	
+	
 	/**
      *  -------------------------
      * 
@@ -728,12 +732,6 @@ public class Controller
         });
 	}
 	
-	
-	
-	
-	
-	
-	
 	/**
      *  -------------------------
      * 
@@ -756,7 +754,7 @@ public class Controller
 	    
 	    private void modifyPartecipante(ProfileFrame currFrame, String username, String nome, String cognome,LocalDate data, String luogo, String email) throws DAOException
 	    {
-	        if(getPartecipanteDAO().existsPartecipanteByEmail(email))
+	        if(getPartecipanteDAO().getPartecipanteByEmail(email))
 	            modifyFailed(currFrame, ERR_EMAIL_EXISTING);
 	        else
 	        {
@@ -777,7 +775,7 @@ public class Controller
 	    private void modifyChef(ProfileFrame currFrame, String username, String nome, String cognome,LocalDate data, String luogo, String email, File selectedFile) 
 	    		 				  throws DAOException, IOException
 	    {
-	        if(getChefDAO().existsChefByEmail(email))
+	        if(getChefDAO().getChefByEmail(email))
 	        	modifyFailed(currFrame, ERR_EMAIL_EXISTING);
 	        else
 	        {
@@ -960,12 +958,12 @@ public class Controller
     private void deleteSuccess(ConfirmEliminationDialog currFrame, String username) 
     {
 		LOGGER.log(Level.INFO, "Password modifica per utente: {0}", username);
-		goToProfile(currFrame);
+		goToLogin(currFrame);
     }
 	
     private void deleteFailed(ConfirmEliminationDialog currFrame, String message) 
     {
-    	LOGGER.log(Level.WARNING, "Tentativo di modifica fallito: {0}", message);
+    	LOGGER.log(Level.WARNING, "Eliminazione fallita: {0}", message);
         currFrame.showError(message);
     }
 }
