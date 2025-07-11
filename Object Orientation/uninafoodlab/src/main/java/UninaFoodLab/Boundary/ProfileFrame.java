@@ -135,7 +135,6 @@ public class ProfileFrame extends JXFrame
 	private JPasswordField passwordField;
 	*/
 	private JXLabel userErrorLabel;
-	private JXLabel curriculumErrorLabel;
     // Listeners
 	ActionListener scegliBtnActionListener;		
 	private ActionListener CurriculumBtnListener;
@@ -571,10 +570,10 @@ public class ProfileFrame extends JXFrame
 			        else
 			        {
 						setEditMode(false);
-			        	Controller.getController().modifyProfile(ProfileFrame.this,
-			        										     NomeField.getText(), CognomeField.getText(),dataPicker.getDate(), luogoField.getText(),
-			        										     EmailField.getText(), UsernameField.getText().trim(), 
-			        										     selectedFile);
+			        	/*Controller.getController().checkmodifyProfile(ProfileFrame.this,
+							     NomeField.getText(), CognomeField.getText(),dataPicker.getDate(), luogoField.getText(),
+							     EmailField.getText(), UsernameField.getText().trim(), 
+							     selectedFile);*/
 			        }
 				   VisualizzaCurriculumBtn.setEnabled(true);
 				   setEditMode(false);
@@ -582,6 +581,16 @@ public class ProfileFrame extends JXFrame
 			};
 		   ConfermaBtn.addActionListener(ConfermaBtnListener);
 
+		   EliminaBtnListener = new ActionListener()
+				   {
+			   @Override
+			   public void actionPerformed(ActionEvent e)
+			   {
+				   ConfirmEliminationDialog dialog = new ConfirmEliminationDialog(ProfileFrame.this);
+		            dialog.setVisible(true);
+			   }
+				   };
+				   EliminaProfiloBtn.addActionListener(EliminaBtnListener);
 			scegliBtnActionListener = new ActionListener()
 			  {
 				

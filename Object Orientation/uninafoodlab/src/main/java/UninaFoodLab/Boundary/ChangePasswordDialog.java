@@ -64,7 +64,7 @@ public class ChangePasswordDialog extends JDialog {
 	
 	private JXPanel panel;
 	
-	public ChangePasswordDialog(JXPanel parent)
+	public ChangePasswordDialog(JXFrame parent)
 	{
 		
 		super(parent, "Cambia Password", true);

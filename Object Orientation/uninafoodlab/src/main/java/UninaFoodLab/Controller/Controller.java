@@ -927,5 +927,43 @@ public class Controller
     	LOGGER.log(Level.WARNING, "Tentativo di modifica fallito: {0}", message);
         currFrame.showError(message);
     }
+    
+    public void checkDelete(ConfirmEliminationDialog currDialog, char[]pass)
+    {
+    	try
+		{
+			if(checkPassword(loggedUser.getHashPassword(), pass))
+			{
+	            getChefDAO().delete(loggedUser.getId());
+				deleteSuccess(currDialog, loggedUser.getUsername());
+			}				
+			else
+				deleteFailed(currDialog, "Username o password errati.");		
+		}
+		catch(RecordNotFoundException e) 
+		{
+			deleteFailed(currDialog, "Password errata.");
+		}
+		catch(DAOException e)
+		{
+			LOGGER.log(Level.SEVERE, "Errore durante login nel DB: " + e.getMessage(), e);
+			deleteFailed(currDialog, "Errore di accesso al database.");
+		}
+		finally
+	    {
+	        Arrays.fill(pass, ' '); // It is recommended that the returned character array be cleared after use by setting each character to zero.
+	    }
+    }
+    
+    private void deleteSuccess(ConfirmEliminationDialog currFrame, String username) 
+    {
+		LOGGER.log(Level.INFO, "Password modifica per utente: {0}", username);
+		goToProfile(currFrame);
+    }
 	
+    private void deleteFailed(ConfirmEliminationDialog currFrame, String message) 
+    {
+    	LOGGER.log(Level.WARNING, "Tentativo di modifica fallito: {0}", message);
+        currFrame.showError(message);
+    }
 }
