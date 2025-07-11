@@ -10,6 +10,8 @@ public interface ChefDAO
     Chef getChefById(int idChef);
     Chef getChefByUsername(String username);
     List<Chef> getChefsByName(String name, String surname);
+    boolean existsChefByCodiceFiscale(String codFisc);
+    boolean existsChefByEmail(String email);
     List<Chef> getAllChefs();
     void update(Chef previousChef, Chef updatedChef);
     void delete(int idChef);

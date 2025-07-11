@@ -10,6 +10,7 @@ import java.sql.*;
 
 public class ArgomentoDAO_Postgres implements ArgomentoDAO
 {
+	@Override
     public List<Argomento> getAllArgomenti()
     {
         List<Argomento> argomenti = new ArrayList<>();

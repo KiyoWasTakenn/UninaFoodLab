@@ -28,27 +28,33 @@ public abstract class Sessione
         this.id = id;
     }
 
-    public int getDurata() {
+    public int getDurata() 
+    {
         return durata;
     }
 
-    public void setDurata(int durata) {
+    public void setDurata(int durata) 
+    {
         this.durata = durata;
     }
 
-    public Time getOrario() {
+    public Time getOrario() 
+    {
         return orario;
     }
 
-    public void setOrario(Time orario) {
+    public void setOrario(Time orario) 
+    {
         this.orario = orario;
     }
 
-    public Date getData() {
+    public Date getData() 
+    {
         return Date.valueOf(data);
     }
 
-    public void setData(LocalDate data) {
+    public void setData(LocalDate data) 
+    {
         this.data = data;
     }
 }

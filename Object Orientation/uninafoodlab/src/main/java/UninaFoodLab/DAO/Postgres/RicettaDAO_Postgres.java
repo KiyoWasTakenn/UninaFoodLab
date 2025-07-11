@@ -1,35 +1,106 @@
 package UninaFoodLab.DAO.Postgres;
 
 import UninaFoodLab.DAO.RicettaDAO;
+import UninaFoodLab.DTO.Chef;
 import UninaFoodLab.DTO.LivelloDifficolta;
 import UninaFoodLab.DTO.Ricetta;
+import UninaFoodLab.DTO.Utilizzo;
 import UninaFoodLab.Exceptions.DAOException;
+import UninaFoodLab.Exceptions.IngredienteNotFoundException;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class RicettaDAO_Postgres implements RicettaDAO
 {
+	private Ricetta mapResultSetToRicetta(ResultSet rs) throws SQLException
+	{
+		Chef c = new Chef(null, null, null, null, null, null, null, null, null, null, null);
+		c.setId(rs.getInt("IdChef"));
+	    Ricetta r = new Ricetta(
+						    	   rs.getString("Nome"),
+					               rs.getString("Provenienza"),
+					               rs.getInt("Tempo"),
+					               rs.getInt("Calorie"),
+					               LivelloDifficolta.valueOf(rs.getString("Difficolta")),
+					               rs.getString("Allergeni"),
+					               c,
+					               new ArrayList<Utilizzo>(new UtilizzoDAO_Postgres().getUtilizziByIdRicetta(rs.getInt("IdRicetta")))
+	    			   	    	);
+	    r.setId(rs.getInt("IdRicetta"));	    
+	    return r;
+	}
+	
+	@Override
+    public void save(Ricetta toSaveRicetta, int idChef)
+    {
+        String sql = 
+        		     "INSERT INTO Ricetta(Nome, Provenienza, Tempo, Calorie, Difficolta, Allergeni, IdChef) " +
+                     "VALUES(?, ?, ?, ?, ?, ?, ?)";
+
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
+        {
+            s.setString(1, toSaveRicetta.getNome());
+            s.setString(2, toSaveRicetta.getProvenienza());
+            s.setInt(3, toSaveRicetta.getTempo());
+            s.setInt(4, toSaveRicetta.getCalorie());
+            s.setString(5, toSaveRicetta.getDifficolta().toString());
+            s.setString(6, toSaveRicetta.getAllergeni());
+            s.setInt(7, idChef);
+            s.executeUpdate();
+            
+            try(ResultSet genKeys = s.getGeneratedKeys())
+            {
+            	if(genKeys.next())
+            		toSaveRicetta.setId(genKeys.getInt(1));
+            	else
+            		throw new DAOException("Creazione Ricetta fallita, nessun ID ottenuto.");
+            }    
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante salvataggio Ricetta", e);
+        }
+    }
+	
+	@Override
+	public Ricetta getRicettaById(int idRicetta)
+    {
+        String sql = 
+        			"SELECT * "
+        		  + "FROM Ricetta "
+        		  + "WHERE IdRicetta = ?";
+
+        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
+        {
+            s.setInt(1, idRicetta);
+            ResultSet rs = s.executeQuery();
+            if(rs.next())
+                return mapResultSetToRicetta(rs);
+            else
+            	throw new IngredienteNotFoundException("Ricetta con id " + idRicetta + " non trovato");
+        }
+        catch(SQLException e)
+        {
+        	throw new DAOException("Errore DB durante getRicettaById", e);
+        }
+    }
+	
+	@Override
     public List<Ricetta> getRicetteByIdChef(int idChef)
     {
         List<Ricetta> ricette = new ArrayList<>();
-        String sql = "SELECT * FROM Ricetta WHERE IdChef = ?";
+        String sql = 
+        		     "SELECT * "
+        		   + "FROM Ricetta "
+        		   + "WHERE IdChef = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idChef);
             ResultSet rs = s.executeQuery();
             while(rs.next())
-                ricette.add( new Ricetta( rs.getString("Nome"),
-                                          rs.getString("Provenienza"),
-                                          rs.getInt("Tempo"),
-                                          rs.getInt("Calorie"),
-                                          LivelloDifficolta.valueOf(rs.getString("Difficolta")),
-                                          null,
-                                          rs.getString("Allergeni")
-                                        )
-                            );
+                ricette.add(mapResultSetToRicetta(rs));
         }
         catch(SQLException e)
         {
@@ -38,26 +109,22 @@ public class RicettaDAO_Postgres implements RicettaDAO
         
         return ricette;
     }
-
+	
+	@Override
     public List<Ricetta> getRicettaByIdSessione(int idSessione)
     {
         List<Ricetta> ricette = new ArrayList<>();
-        String sql = "SELECT * FROM Ricetta NATURAL JOIN Preparazioni WHERE IdSessionePratica = ?";
+        String sql = 
+        			"SELECT * "
+        		  + "FROM Ricetta R JOIN Preparazioni P ON R.IdRicetta = P.IdRicetta "
+        		  + "WHERE P.IdSessionePratica = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
             s.setInt(1, idSessione);
             ResultSet rs = s.executeQuery();
             while(rs.next())
-                ricette.add( new Ricetta( rs.getString("Nome"),
-                                          rs.getString("Provenienza"),
-                                          rs.getInt("Tempo"),
-                                          rs.getInt("Calorie"),
-                                          LivelloDifficolta.valueOf(rs.getString("Difficolta")),
-                                          null,
-                                          rs.getString("Allergeni")
-                                        )
-                           );
+            	 ricette.add(mapResultSetToRicetta(rs));
         }
         catch(SQLException e)
         {
@@ -67,30 +134,10 @@ public class RicettaDAO_Postgres implements RicettaDAO
         return ricette;
     }
 
-    public void save(Ricetta toSaveRicetta)
-    {
-        String sql = "INSERT INTO Ricetta(Nome, Provenienza, Tempo, Calorie, Difficolta, Allergeni) " +
-                     "VALUES(?, ?, ?, ?, ?, ?)";
-
-        try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
-        {
-            s.setString(1, toSaveRicetta.getNome());
-            s.setString(2, toSaveRicetta.getProvenienza());
-            s.setInt(3, toSaveRicetta.getTempo());
-            s.setInt(4, toSaveRicetta.getCalorie());
-            s.setString(5, toSaveRicetta.getDifficolta().toString());
-            s.setString(6, toSaveRicetta.getAllergeni());
-            s.executeUpdate();
-        }
-        catch(SQLException e)
-        {
-        	throw new DAOException("Errore DB durante salvataggio Ricetta", e);
-        }
-    }
-
+	@Override
     public void update(Ricetta previousRicetta, Ricetta updatedRicetta)
     {
-        String sql = "UPDATE Ricetta SET";
+        String sql = "UPDATE Ricetta SET ";
         List<Object> param = new ArrayList<>();
 
         if(! (previousRicetta.getNome().equals(updatedRicetta.getNome())) )
@@ -151,9 +198,13 @@ public class RicettaDAO_Postgres implements RicettaDAO
         }
     }
 
+	@Override
     public void delete(int idRicetta)
     {
-        String sql = "DELETE FROM Ricetta WHERE IdRicetta = ?";
+        String sql =
+        		     "DELETE "
+        		   + "FROM Ricetta "
+        		   + "WHERE IdRicetta = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {

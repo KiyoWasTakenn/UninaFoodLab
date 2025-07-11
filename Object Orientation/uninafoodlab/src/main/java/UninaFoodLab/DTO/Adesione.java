@@ -1,11 +1,11 @@
 package UninaFoodLab.DTO;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Objects;
 
 public class Adesione
 {
-    private int id;
     private LocalDate dataAdesione;
     Partecipante partecipante;
     SessionePratica sessione;
@@ -33,25 +33,18 @@ public class Adesione
         return Objects.hash(dataAdesione, partecipante, sessione);
     }
 
-    public int getId()
+    public Date getDataAdesione() 
     {
-        return id;
+        return Date.valueOf(dataAdesione);
     }
 
-    public void setId(int id)
+    public Partecipante getPartecipante() 
     {
-        this.id = id;
-    }
-
-    public LocalDate getDataAdesione() {
-        return dataAdesione;
-    }
-
-    public Partecipante getPartecipante() {
         return partecipante;
     }
 
-    public SessionePratica getSessione() {
+    public SessionePratica getSessione() 
+    {
         return sessione;
     }
 

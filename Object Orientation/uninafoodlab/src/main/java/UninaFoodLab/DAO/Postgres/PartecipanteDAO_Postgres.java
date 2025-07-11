@@ -6,8 +6,7 @@ import UninaFoodLab.Exceptions.DAOException;
 import UninaFoodLab.Exceptions.PartecipanteNotFoundException;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class PartecipanteDAO_Postgres implements PartecipanteDAO
 {
@@ -29,6 +28,7 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
 	    return p;
 	}
 	
+	@Override
 	public void save(Partecipante toSavePartecipante)
     {
         String sql = "INSERT INTO Partecipante(Username, Nome, Cognome, CodiceFiscale, DataDiNascita, LuogoDiNascita, Email, Password) " +
@@ -60,9 +60,13 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
         }
     }
 	
+	@Override
     public Partecipante getPartecipanteById(int idPartecipante)
     {	
-        String sql = "SELECT * FROM Partecipante WHERE IdPartecipante = ?";
+        String sql = 
+        			"SELECT * "
+        		  + "FROM Partecipante "
+        		  + "WHERE IdPartecipante = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
@@ -80,7 +84,8 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
         }
     }
     
-    public boolean getPartecipanteByEmail(String email)
+	@Override
+    public boolean existsPartecipanteByEmail(String email)
     {
         String sql = "SELECT EXISTS (SELECT 1 FROM Partecipante WHERE Email = ?)";
 
@@ -97,7 +102,8 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
         }
     }
     
-    public boolean getPartecipanteByCodiceFiscale(String codFisc)
+	@Override
+    public boolean existsPartecipanteByCodiceFiscale(String codFisc)
     {
         String sql = "SELECT EXISTS (SELECT 1 FROM Partecipante WHERE CodiceFiscale = ?)";
 
@@ -117,7 +123,10 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
 
     public Partecipante getPartecipanteByUsername(String username)
     {
-        String sql = "SELECT * FROM Partecipante WHERE Username = ?";
+        String sql = 
+        			"SELECT * "
+        		  + "FROM Partecipante "
+        		  + "WHERE Username = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
@@ -206,7 +215,10 @@ public class PartecipanteDAO_Postgres implements PartecipanteDAO
 
     public void delete(int idPartecipante)
     {
-        String sql = "DELETE FROM Partecipante WHERE IdPartecipante = ?";
+        String sql = 
+        			"DELETE "
+        		  + "FROM Partecipante "
+        		  + "WHERE IdPartecipante = ?";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql))
         {
