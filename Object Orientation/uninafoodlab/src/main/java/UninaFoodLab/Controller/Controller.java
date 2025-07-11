@@ -728,6 +728,12 @@ public class Controller
         });
 	}
 	
+	
+	
+	
+	
+	
+	
 	/**
      *  -------------------------
      * 
@@ -750,7 +756,7 @@ public class Controller
 	    
 	    private void modifyPartecipante(ProfileFrame currFrame, String username, String nome, String cognome,LocalDate data, String luogo, String email) throws DAOException
 	    {
-	        if(getPartecipanteDAO().getPartecipanteByEmail(email))
+	        if(getPartecipanteDAO().existsPartecipanteByEmail(email))
 	            modifyFailed(currFrame, ERR_EMAIL_EXISTING);
 	        else
 	        {
@@ -771,7 +777,7 @@ public class Controller
 	    private void modifyChef(ProfileFrame currFrame, String username, String nome, String cognome,LocalDate data, String luogo, String email, File selectedFile) 
 	    		 				  throws DAOException, IOException
 	    {
-	        if(getChefDAO().getChefByEmail(email))
+	        if(getChefDAO().existsChefByEmail(email))
 	        	modifyFailed(currFrame, ERR_EMAIL_EXISTING);
 	        else
 	        {
