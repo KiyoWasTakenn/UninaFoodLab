@@ -3,6 +3,8 @@ package UninaFoodLab.Controller;
 import java.util.*;
 import java.util.List;
 import java.util.logging.*;
+import java.util.stream.Stream;
+
 import javax.swing.*;
 import org.mindrot.jbcrypt.*;
 import com.formdev.flatlaf.*;
@@ -738,58 +740,192 @@ public class Controller
      *  -------------------------
 	*/
 	
+	 private void modifySuccess(ProfileFrame currFrame, String username) 
+	    {
+			LOGGER.log(Level.INFO, "Registrazione modifica per utente: {0}", username);
+	    	goToLogin(currFrame);
+	    }
+		
+	    private void modifyFailed(ProfileFrame currFrame, String message) 
+	    {
+	    	LOGGER.log(Level.WARNING, "Tentativo di modifica fallito: {0}", message);
+	        currFrame.showError(message);
+	    }
+	    
+	    private void modifyPartecipante(ProfileFrame currFrame, String username, String nome, String cognome,LocalDate data, String luogo, String email) throws DAOException
+	    {
+	        if(getPartecipanteDAO().getPartecipanteByEmail(email))
+	            modifyFailed(currFrame, ERR_EMAIL_EXISTING);
+	        else
+	        {
+	        	try
+	            {
+	                tryGetUser(username);
+	                modifyFailed(currFrame, "Username già utilizzato.");
+	            }
+	        	catch(RecordNotFoundException e)
+	        	{
+	        		Partecipante p = new Partecipante(username, nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), null, null);
+	                getPartecipanteDAO().update((Partecipante)loggedUser, p);
+	                modifySuccess(currFrame, username);
+	        	}
+	        }
+	    }
+	    
+	    private void modifyChef(ProfileFrame currFrame, String username, String nome, String cognome,LocalDate data, String luogo, String email, File selectedFile) 
+	    		 				  throws DAOException, IOException
+	    {
+	        if(getChefDAO().getChefByEmail(email))
+	        	modifyFailed(currFrame, ERR_EMAIL_EXISTING);
+	        else
+	        {
+	        	
+	        	try
+	            {
+	        		if(loggedUser.getUsername()!=username)
+	        		{
+	        			tryGetUser(username);
+	        			modifyFailed(currFrame, "Username già utilizzato.");
+	        		}
+	        		else
+	        		{
+	        			String curriculumPath = changeCurriculumFile(username, selectedFile);
+	        			Chef c = new Chef(username, nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), curriculumPath, null, null);
+		                getChefDAO().update((Chef)loggedUser, c);
+		                modifySuccess(currFrame, username);
+	        		}
+	                
+	            }
+	            catch(RecordNotFoundException e)
+	            {
+	            	String oldPath = "resources" + File.separator + loggedUser.getUsername();
+	            	File oldFile = new File(oldPath);
+	            	File newFile = new File(oldFile.getParent(), username);
+	            	oldFile.renameTo(newFile);
+	            	
+	                String curriculumPath = changeCurriculumFile(username, selectedFile);
+	                Chef c = new Chef(username, nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), curriculumPath, null, null);
+	                getChefDAO().update((Chef)loggedUser, c);
+	                modifySuccess(currFrame, username);
+	            }
+	        }
+	    }
+	    
+	    
+	    private String changeCurriculumFile(String username, File selectedFile) throws IOException
+	    {
+	        String relativePath = "resources" + File.separator + username + File.separator + "Curriculum";
+	        /*try (Stream<Path> walk = Files.walk(Paths.get(relativePath))) {
+	            walk.sorted(Comparator.reverseOrder()) // Ordina al contrario per eliminare prima i file e le sottocartelle
+	                .forEach(path -> {
+	                    if (!path.equals(Paths.get(relativePath))) { // Non eliminare la cartella radice stessa
+	                        try {
+	                            Files.delete(path);
+	                            LOGGER.log(Level.INFO, "Eliminato: {0}", path);
+	                        } catch (DirectoryNotEmptyException e) {
+	                        	LOGGER.log(Level.SEVERE, "Errore: La cartella non è vuota e non può essere eliminata: {0}", path);
+	                        } catch (IOException e) {
+	                        	LOGGER.log(Level.SEVERE, "Errore durante l'eliminazione di {0}", path + ": " + e.getMessage());
+	                        }
+	                    }
+	                });
+	            LOGGER.log(Level.INFO, "Cartella svuotata con successo: {0}", relativePath);
+	        } catch (IOException e) {
+	        	LOGGER.log(Level.SEVERE, "Errore durante l'accesso alla cartella: {0}", relativePath + ": " + e.getMessage());
+	        }*/
+	        
+	        String toDeleteString = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + ((Chef) loggedUser).getCurriculum(); 
+	        String fullPathString = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + relativePath;
+	        try
+	        {
+	        	Files.delete(Paths.get(toDeleteString));
+	        }
+	        catch(IOException e)
+	        {
+	        	LOGGER.log(Level.SEVERE, "Errore durante l'eliminazione di {0}", toDeleteString + ": " + e.getMessage());
+	        }
+	        
+	        Path destinationDir = Paths.get(fullPathString);
+	        Files.createDirectories(destinationDir); 
+
+	        Path destinationPath = destinationDir.resolve(selectedFile.getName());
+	        Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
+
+	        LOGGER.log(Level.INFO, "File salvato con successo in: {0}", destinationPath);
+	        return relativePath + File.separator + selectedFile.getName();
+	    }
+	    
+            
+	    public void checkmodifyProfile(ProfileFrame currFrame,
+	    		String nome, String cognome,LocalDate data, String luogo,
+	    		String email, String username, 
+	    		File selectedFile)
+	    {
+			try
+			{
+				if(isPartecipanteLogged())
+					modifyPartecipante(currFrame, username, nome, cognome, data, luogo, email);
+				else
+					modifyChef(currFrame, username, nome, cognome, data, luogo, email, selectedFile);
+			}
+			catch(DAOException e)
+			{
+				LOGGER.log(Level.SEVERE, "Errore registrazione DB", e);
+				modifyFailed(currFrame, "Errore di accesso al database.");
+			}
+			catch(IOException e)
+			{
+				LOGGER.log(Level.SEVERE, "Errore salvataggio file", e);
+				modifyFailed(currFrame, "Errore di salvataggio file.");
+			}
+	    }
+	    
 	public void checkNewPassword(ChangePasswordDialog currFrame, char[] oldPass, char[] newPass)
 	{
 		try
 		{
-			Utente user = getLoggedUser();
-			if(checkPassword(user.getHashPassword(), oldPass))
+			if(checkPassword(loggedUser.getHashPassword(), oldPass))
 			{
-				//newPassSuccess(currFrame, );
-				//aggiornaPassword(currFrame, user, newPass);
-			}
-				
-			/*else
-				loginFailed(currFrame, "Username o password errati.");*/			
+				if(isChefLogged())
+				{
+					Chef c = new Chef(loggedUser.getUsername(), loggedUser.getNome(), loggedUser.getCognome(), loggedUser.getCodiceFiscale(), loggedUser.getDataDiNascita().toLocalDate(), loggedUser.getLuogoDiNascita(), loggedUser.getEmail(), hashPassword(newPass), ((Chef) loggedUser).getCurriculum(), null, null);
+	                getChefDAO().update((Chef)loggedUser, c);
+				}
+				else
+				{
+					Partecipante p = new Partecipante(loggedUser.getUsername(), loggedUser.getNome(), loggedUser.getCognome(), loggedUser.getCodiceFiscale(), loggedUser.getDataDiNascita().toLocalDate(), loggedUser.getLuogoDiNascita(), loggedUser.getEmail(), hashPassword(newPass), null, null);
+	                getPartecipanteDAO().update((Partecipante)loggedUser, p);
+				}
+				changePassSuccess(currFrame, loggedUser.getUsername());
+			}				
+			else
+				changePassFailed(currFrame, "Username o password errati.");		
 		}
 		catch(RecordNotFoundException e) 
 		{
-			//loginFailed(currFrame, "Username o password errati."); // Evitiamo User Enumeration
+			changePassFailed(currFrame, "Password errata.");
 		}
 		catch(DAOException e)
 		{
 			LOGGER.log(Level.SEVERE, "Errore durante login nel DB: " + e.getMessage(), e);
-			//loginFailed(currFrame, "Errore di accesso al database.");
+			changePassFailed(currFrame, "Errore di accesso al database.");
 		}
 		finally
 	    {
-	        //Arrays.fill(pass, ' '); // It is recommended that the returned character array be cleared after use by setting each character to zero.
+	        Arrays.fill(newPass, ' '); // It is recommended that the returned character array be cleared after use by setting each character to zero.
 	    }
 	}
 	
-	private void aggiornaPassword(RegisterFrame currFrame, Utente user, char[] newPass)
-	{
-		if (isChefLogged())
-		{
-			
-		}
-	}
-	/*private void registerSuccess(RegisterFrame currFrame, String username) 
+	private void changePassSuccess(ChangePasswordDialog currFrame, String username) 
     {
-		LOGGER.log(Level.INFO, "Registrazione riuscita per utente: {0}", username);
-    	goToLogin(currFrame);
-    }*/
+		LOGGER.log(Level.INFO, "Password modifica per utente: {0}", username);
+		goToProfile(currFrame);
+    }
 	
-    /**
-     * Notifica il fallimento della registrazione loggando l'errore e mostrando un messaggio all'utente.
-     * 
-     * @param currFrame il frame di registrazione
-     * @param message messaggio di errore da mostrare
-     */
-    /*private void registerFailed(RegisterFrame currFrame, String message) 
+    private void changePassFailed(ChangePasswordDialog currFrame, String message) 
     {
-    	LOGGER.log(Level.WARNING, "Tentativo di registrazione fallito: {0}", message);
+    	LOGGER.log(Level.WARNING, "Tentativo di modifica fallito: {0}", message);
         currFrame.showError(message);
-    }*/
+    }
 	
 }
