@@ -1,7 +1,6 @@
 package UninaFoodLab.DAO.Postgres;
 
 import UninaFoodLab.DAO.RicettaDAO;
-import UninaFoodLab.DTO.Chef;
 import UninaFoodLab.DTO.LivelloDifficolta;
 import UninaFoodLab.DTO.Ricetta;
 import UninaFoodLab.DTO.Utilizzo;
@@ -15,8 +14,6 @@ public class RicettaDAO_Postgres implements RicettaDAO
 {
 	private Ricetta mapResultSetToRicetta(ResultSet rs) throws SQLException
 	{
-		Chef c = new Chef(null, null, null, null, null, null, null, null, null, null, null);
-		c.setId(rs.getInt("IdChef"));
 	    Ricetta r = new Ricetta(
 						    	   rs.getString("Nome"),
 					               rs.getString("Provenienza"),
@@ -24,7 +21,7 @@ public class RicettaDAO_Postgres implements RicettaDAO
 					               rs.getInt("Calorie"),
 					               LivelloDifficolta.valueOf(rs.getString("Difficolta")),
 					               rs.getString("Allergeni"),
-					               c,
+					               new ChefDAO_Postgres().getChefById(rs.getInt("IdChef")),
 					               new ArrayList<Utilizzo>(new UtilizzoDAO_Postgres().getUtilizziByIdRicetta(rs.getInt("IdRicetta")))
 	    			   	    	);
 	    r.setId(rs.getInt("IdRicetta"));	    

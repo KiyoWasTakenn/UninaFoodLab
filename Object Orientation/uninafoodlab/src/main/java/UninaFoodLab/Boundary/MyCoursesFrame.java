@@ -106,7 +106,7 @@ public class MyCoursesFrame extends JXFrame
 
         // Esempio: apertura dialog di creazione corso
         CreateCourseDialog dialog = new CreateCourseDialog(this);
-        dialog.setVisible(false);
+        dialog.setVisible(true);
 
     }
  

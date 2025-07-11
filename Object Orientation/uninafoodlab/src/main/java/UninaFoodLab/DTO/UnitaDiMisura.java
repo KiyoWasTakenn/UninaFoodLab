@@ -2,7 +2,7 @@ package UninaFoodLab.DTO;
 
 public enum UnitaDiMisura
 {
-    Unità,
+    Unita,
     Grammi,
     Kilogrammi,
     Litri,
