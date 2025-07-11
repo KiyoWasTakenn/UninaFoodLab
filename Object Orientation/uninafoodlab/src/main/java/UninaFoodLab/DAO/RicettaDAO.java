@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface RicettaDAO
 {
-	void save(Ricetta toSaveRicetta);
+	void save(Ricetta toSaveRicetta, int IdChef);
 	Ricetta getRicettaById(int idRicetta);
     List<Ricetta> getRicetteByIdChef(int idChef);
     List<Ricetta> getRicettaByIdSessione(int idSessione);

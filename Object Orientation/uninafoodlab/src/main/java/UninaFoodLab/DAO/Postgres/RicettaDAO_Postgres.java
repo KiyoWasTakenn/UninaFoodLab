@@ -1,6 +1,7 @@
 package UninaFoodLab.DAO.Postgres;
 
 import UninaFoodLab.DAO.RicettaDAO;
+import UninaFoodLab.DTO.Chef;
 import UninaFoodLab.DTO.LivelloDifficolta;
 import UninaFoodLab.DTO.Ricetta;
 import UninaFoodLab.DTO.Utilizzo;
@@ -14,6 +15,8 @@ public class RicettaDAO_Postgres implements RicettaDAO
 {
 	private Ricetta mapResultSetToRicetta(ResultSet rs) throws SQLException
 	{
+		Chef c = new Chef(null, null, null, null, null, null, null, null, null, null, null);
+		c.setId(rs.getInt("IdChef"));
 	    Ricetta r = new Ricetta(
 						    	   rs.getString("Nome"),
 					               rs.getString("Provenienza"),
@@ -21,6 +24,7 @@ public class RicettaDAO_Postgres implements RicettaDAO
 					               rs.getInt("Calorie"),
 					               LivelloDifficolta.valueOf(rs.getString("Difficolta")),
 					               rs.getString("Allergeni"),
+					               c,
 					               new ArrayList<Utilizzo>(new UtilizzoDAO_Postgres().getUtilizziByIdRicetta(rs.getInt("IdRicetta")))
 	    			   	    	);
 	    r.setId(rs.getInt("IdRicetta"));	    
@@ -28,11 +32,11 @@ public class RicettaDAO_Postgres implements RicettaDAO
 	}
 	
 	@Override
-    public void save(Ricetta toSaveRicetta)
+    public void save(Ricetta toSaveRicetta, int idChef)
     {
         String sql = 
-        		     "INSERT INTO Ricetta(Nome, Provenienza, Tempo, Calorie, Difficolta, Allergeni) " +
-                     "VALUES(?, ?, ?, ?, ?, ?)";
+        		     "INSERT INTO Ricetta(Nome, Provenienza, Tempo, Calorie, Difficolta, Allergeni, IdChef) " +
+                     "VALUES(?, ?, ?, ?, ?, ?, ?)";
 
         try(Connection conn = ConnectionManager.getConnection(); PreparedStatement s = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
         {
@@ -42,6 +46,7 @@ public class RicettaDAO_Postgres implements RicettaDAO
             s.setInt(4, toSaveRicetta.getCalorie());
             s.setString(5, toSaveRicetta.getDifficolta().toString());
             s.setString(6, toSaveRicetta.getAllergeni());
+            s.setInt(7, idChef);
             s.executeUpdate();
             
             try(ResultSet genKeys = s.getGeneratedKeys())

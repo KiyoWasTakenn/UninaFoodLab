@@ -696,10 +696,6 @@ public class Controller
 	// CreateRecipesDialog
 	// DetailedRecipeFrame
 	
-	
-	
-	
-	
 	/**
      *  -------------------------
      * 

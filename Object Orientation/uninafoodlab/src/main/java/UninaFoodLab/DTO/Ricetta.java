@@ -3,6 +3,7 @@ package UninaFoodLab.DTO;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import UninaFoodLab.Exceptions.RequiredChefException;
 import UninaFoodLab.Exceptions.RequiredIngredienteException;
 
 public class Ricetta
@@ -16,8 +17,9 @@ public class Ricetta
     private String allergeni;
     private ArrayList<Utilizzo> utilizzi;
 
-    public Ricetta(String nome, String provenienza, int tempo, int calorie, LivelloDifficolta difficolta, String allergeni, ArrayList<Utilizzo> utilizzi)
+    public Ricetta(String nome, String provenienza, int tempo, int calorie, LivelloDifficolta difficolta, String allergeni, Chef chef, ArrayList<Utilizzo> utilizzi)
     {
+    	if(chef == null) throw new RequiredChefException();
     	if(utilizzi == null) throw new RequiredIngredienteException();
     	
         this.nome = nome;
