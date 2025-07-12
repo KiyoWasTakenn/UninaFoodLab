@@ -6,6 +6,8 @@ import java.util.logging.*;
 import java.util.stream.Stream;
 
 import javax.swing.*;
+
+import org.jdesktop.swingx.JXFrame;
 import org.mindrot.jbcrypt.*;
 import com.formdev.flatlaf.*;
 import UninaFoodLab.Boundary.*;
@@ -395,9 +397,9 @@ public class Controller
     private void registerPartecipante(RegisterFrame currFrame, String username, String nome, String cognome, String codFisc, 
     								  LocalDate data, String luogo, String email, char[] pass) throws DAOException
     {
-        if(getPartecipanteDAO().getPartecipanteByCodiceFiscale(codFisc))
+        if(getPartecipanteDAO().existsPartecipanteByCodiceFiscale(codFisc))
             registerFailed(currFrame, ERR_CF_EXISTING);
-        else if(getPartecipanteDAO().getPartecipanteByEmail(email))
+        else if(getPartecipanteDAO().existsPartecipanteByEmail(email))
             registerFailed(currFrame, ERR_EMAIL_EXISTING);
         else
         {
@@ -445,9 +447,9 @@ public class Controller
     private void registerChef(RegisterFrame currFrame, String username, String nome, String cognome, String codFisc, LocalDate data, 
     		 				  String luogo, String email, char[] pass, File selectedFile) throws DAOException, IOException
     {
-        if(getChefDAO().getChefByCodiceFiscale(codFisc))
+        if(getChefDAO().existsChefByCodiceFiscale(codFisc))
             registerFailed(currFrame, ERR_CF_EXISTING);
-        else if(getChefDAO().getChefByEmail(email))
+        else if(getChefDAO().existsChefByEmail(email))
             registerFailed(currFrame, ERR_EMAIL_EXISTING);
         else
         {
@@ -743,7 +745,7 @@ public class Controller
 	 private void modifySuccess(ProfileFrame currFrame, String username) 
 	    {
 			LOGGER.log(Level.INFO, "Registrazione modifica per utente: {0}", username);
-	    	goToLogin(currFrame);
+	    	goToProfile(currFrame);
 	    }
 		
 	    private void modifyFailed(ProfileFrame currFrame, String message) 
@@ -754,28 +756,37 @@ public class Controller
 	    
 	    private void modifyPartecipante(ProfileFrame currFrame, String username, String nome, String cognome,LocalDate data, String luogo, String email) throws DAOException
 	    {
-	        if(getPartecipanteDAO().getPartecipanteByEmail(email))
+	        if((!loggedUser.getEmail().equals(email)) && getPartecipanteDAO().existsPartecipanteByEmail(email))
 	            modifyFailed(currFrame, ERR_EMAIL_EXISTING);
 	        else
 	        {
-	        	try
-	            {
-	                tryGetUser(username);
-	                modifyFailed(currFrame, "Username già utilizzato.");
-	            }
-	        	catch(RecordNotFoundException e)
+	        	if(!loggedUser.getUsername().equals(username))
 	        	{
-	        		Partecipante p = new Partecipante(username, nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), null, null);
+	        		try
+		            {
+		                tryGetUser(username);
+		                modifyFailed(currFrame, "Username già utilizzato.");
+		            }
+		        	catch(RecordNotFoundException e)
+		        	{
+		        		Partecipante p = new Partecipante(username, nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), null, null);
+		                getPartecipanteDAO().update((Partecipante)loggedUser, p);
+		                modifySuccess(currFrame, username);
+		        	}
+	        	}
+	        	else
+	        	{
+	        		Partecipante p = new Partecipante(username , nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), null, null);
 	                getPartecipanteDAO().update((Partecipante)loggedUser, p);
 	                modifySuccess(currFrame, username);
-	        	}
+	        	}	        	
 	        }
 	    }
 	    
 	    private void modifyChef(ProfileFrame currFrame, String username, String nome, String cognome,LocalDate data, String luogo, String email, File selectedFile) 
 	    		 				  throws DAOException, IOException
 	    {
-	        if(getChefDAO().getChefByEmail(email))
+	        if((!loggedUser.getEmail().equals(email)) && getChefDAO().existsChefByEmail(email))
 	        	modifyFailed(currFrame, ERR_EMAIL_EXISTING);
 	        else
 	        {
@@ -880,7 +891,7 @@ public class Controller
 			}
 	    }
 	    
-	public void checkNewPassword(ChangePasswordDialog currFrame, char[] oldPass, char[] newPass)
+	public void checkNewPassword(ChangePasswordDialog currFrame, JXFrame parent, char[] oldPass, char[] newPass)
 	{
 		try
 		{
@@ -896,10 +907,10 @@ public class Controller
 					Partecipante p = new Partecipante(loggedUser.getUsername(), loggedUser.getNome(), loggedUser.getCognome(), loggedUser.getCodiceFiscale(), loggedUser.getDataDiNascita().toLocalDate(), loggedUser.getLuogoDiNascita(), loggedUser.getEmail(), hashPassword(newPass), null, null);
 	                getPartecipanteDAO().update((Partecipante)loggedUser, p);
 				}
-				changePassSuccess(currFrame, loggedUser.getUsername());
+				changePassSuccess(parent, loggedUser.getUsername());
 			}				
 			else
-				changePassFailed(currFrame, "Username o password errati.");		
+				changePassFailed(currFrame, "Password errata.");		
 		}
 		catch(RecordNotFoundException e) 
 		{
@@ -916,33 +927,32 @@ public class Controller
 	    }
 	}
 	
-	private void changePassSuccess(ChangePasswordDialog currFrame, String username) 
+	private void changePassSuccess(JXFrame parent, String username) 
     {
 		LOGGER.log(Level.INFO, "Password modifica per utente: {0}", username);
-		goToProfile(currFrame);
+		goToProfile(parent);
     }
 	
-    private void changePassFailed(ChangePasswordDialog currFrame, String message) 
+    private void changePassFailed(ChangePasswordDialog currDialog, String message) 
     {
     	LOGGER.log(Level.WARNING, "Tentativo di modifica fallito: {0}", message);
-        currFrame.showError(message);
+        currDialog.showError(message);
     }
     
-    public void checkDelete(ConfirmEliminationDialog currDialog, char[]pass)
+    public void checkDelete(JXFrame parentFrame, ConfirmEliminationDialog currDialog, char[]pass)
     {
     	try
 		{
 			if(checkPassword(loggedUser.getHashPassword(), pass))
 			{
-	            getChefDAO().delete(loggedUser.getId());
-				deleteSuccess(currDialog, loggedUser.getUsername());
+				if(isChefLogged())
+					getChefDAO().delete(loggedUser.getId());
+				else
+					getPartecipanteDAO().delete(loggedUser.getId());
+				deleteSuccess(parentFrame, loggedUser.getUsername());
 			}				
 			else
-				deleteFailed(currDialog, "Username o password errati.");		
-		}
-		catch(RecordNotFoundException e) 
-		{
-			deleteFailed(currDialog, "Password errata.");
+				deleteFailed(currDialog, "Password errata.");		
 		}
 		catch(DAOException e)
 		{
@@ -955,15 +965,15 @@ public class Controller
 	    }
     }
     
-    private void deleteSuccess(ConfirmEliminationDialog currFrame, String username) 
+    private void deleteSuccess(JXFrame parentFrame, String username) 
     {
-		LOGGER.log(Level.INFO, "Password modifica per utente: {0}", username);
-		goToLogin(currFrame);
+		LOGGER.log(Level.INFO, "Eliminazione avvenuta con successo: {0}", username);
+		goToLogin(parentFrame);
     }
 	
-    private void deleteFailed(ConfirmEliminationDialog currFrame, String message) 
+    private void deleteFailed(ConfirmEliminationDialog currDialog, String message) 
     {
     	LOGGER.log(Level.WARNING, "Eliminazione fallita: {0}", message);
-        currFrame.showError(message);
+        currDialog.showError(message);
     }
 }

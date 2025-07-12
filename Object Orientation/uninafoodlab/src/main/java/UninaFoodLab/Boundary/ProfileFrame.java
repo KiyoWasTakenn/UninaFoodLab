@@ -570,10 +570,10 @@ public class ProfileFrame extends JXFrame
 			        else
 			        {
 						setEditMode(false);
-			        	/*Controller.getController().checkmodifyProfile(ProfileFrame.this,
+			        	Controller.getController().checkmodifyProfile(ProfileFrame.this,
 							     NomeField.getText(), CognomeField.getText(),dataPicker.getDate(), luogoField.getText(),
 							     EmailField.getText(), UsernameField.getText().trim(), 
-							     selectedFile);*/
+							     selectedFile);
 			        }
 				   VisualizzaCurriculumBtn.setEnabled(true);
 				   setEditMode(false);
