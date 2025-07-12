@@ -87,6 +87,7 @@ public class HeaderPanel extends JXPanel
         
         initComponents();
         initListeners();
+        updateVisibility();
         
         parentFrame.getRootPane().setDefaultButton(searchBtn);
         
@@ -332,6 +333,19 @@ public class HeaderPanel extends JXPanel
         parentFrame.addComponentListener(componentResizeListener);
     }
 	
+	/**
+     * Aggiorna la visibilità dei componenti (es. search bar) 
+     * in base al frame genitore attuale.
+     */
+    public void updateVisibility()
+    {
+        boolean isProfile = parentFrame instanceof ProfileFrame;
+        
+        filterBtn.setVisible(!isProfile);
+        searchField.setVisible(!isProfile);
+        searchBtn.setVisible(!isProfile);
+    }
+    
 	 /**
      * Rimuove tutti i listener aggiunti ai componenti e al toolkit,
      * da chiamare quando il pannello non è più utilizzato per evitare memory leak.
