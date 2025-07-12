@@ -26,8 +26,8 @@ public class CreateSessionPanel extends JXPanel
 	private TimePicker timePicker;
 	private JSpinner durataSpinner;
 	private JComboBox<Ricetta> ricettaCombo;
-	private JTextField linkField;
-	private JButton removeBtn;
+	private JXTextField addressField, linkField;
+	private JXButton removeBtn;
 
 	public CreateSessionPanel(int numero, boolean pratica, CreateCourseDialog parent)
 	{
@@ -52,23 +52,27 @@ public class CreateSessionPanel extends JXPanel
 		numeroLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		add(numeroLabel, "span 2, center");
 
-		add(new JLabel("Tipo:"));
-		add(new JLabel(pratica ? "Pratica" : "Online"));
+		add(new JXLabel("Tipo:"));
+		add(new JXLabel(pratica ? "Pratica" : "Online"));
 
-		add(new JLabel("Data:"));
+		add(new JXLabel("Data:"));
 		datePicker = new DatePicker();
 		add(datePicker);
 
-		add(new JLabel("Ora:"));
+		add(new JXLabel("Ora:"));
 		timePicker = new TimePicker();
 		add(timePicker);
 
-		add(new JLabel("Durata (minuti):"));
+		add(new JXLabel("Durata (minuti):"));
 		durataSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 480, 1));
 		add(durataSpinner);
 
 		if(pratica)
 		{
+			add(new JXLabel("Indirizzo: "));
+			addressField = new JXTextField();	
+			add(addressField, "h 30!");
+			
 			List<Ricetta> ricette = Controller.getController().loadRicette();
 			ricettaCombo = new JComboBox<>(ricette.toArray(new Ricetta[0]));
 			add(ricettaCombo, "h 30!");
@@ -76,12 +80,12 @@ public class CreateSessionPanel extends JXPanel
 		}
 		else
 		{
-			add(new JLabel("Link riunione:"));
-			linkField = new JTextField();
+			add(new JXLabel("Link riunione:"));
+			linkField = new JXTextField();
 			add(linkField, "h 30!");
 		}
 
-		removeBtn = new JButton("Rimuovi sessione");
+		removeBtn = new JXButton("Rimuovi sessione");
 		removeBtn.setBackground(new Color(220, 53, 69));
 		removeBtn.setForeground(Color.WHITE);
 		removeBtn.setFocusPainted(false);
