@@ -72,7 +72,7 @@ public class CreateCourseDialog extends JDialog
 		rootScroll.setViewportView(container);
 		setContentPane(rootScroll);
 
-		JXPanel mainPanel = new JXPanel(new MigLayout("insets 20, wrap 2", "[grow 65][grow 35]", "[grow]"));
+		JXPanel mainPanel = new JXPanel(new MigLayout("insets 20, wrap 2", "[grow 65]0[grow 35]", "[grow]"));
 		mainPanel.setBackground(BACKGROUND_COLOR);
 		container.add(mainPanel, BorderLayout.CENTER);
 
@@ -188,7 +188,7 @@ public class CreateCourseDialog extends JDialog
 		aggiungiSessioneLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		sessionPanel.add(aggiungiSessioneLabel, "left, span 2, wrap");
 
-		sessionsContainer = new JPanel(new MigLayout("wrap 3, gapx 20, gapy 15, insets 10, align center", "[grow,fill][grow,fill][grow,fill]", ""));
+		sessionsContainer = new JXPanel(new MigLayout("wrap, fillx, insets 10", "[]", "[]"));
 		sessionsContainer.setBackground(Color.WHITE);
 		JScrollPane scrollSessions = new JScrollPane(sessionsContainer, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollSessions.setPreferredSize(new Dimension(880, 500));
@@ -197,7 +197,7 @@ public class CreateCourseDialog extends JDialog
 		scrollSessions.setBackground(Color.WHITE);
 
 		sessionPanel.add(scrollSessions, "grow, push");
-		mainPanel.add(sessionPanel, "growy");
+		mainPanel.add(sessionPanel, "grow");
 	}
 
 	private void initListeners()
@@ -312,7 +312,7 @@ public class CreateCourseDialog extends JDialog
 	{
 		CreateSessionPanel card = new CreateSessionPanel(sessionCards.size() + 1, pratica, this);
 		sessionCards.add(card);
-		sessionsContainer.add(card, "grow");
+		sessionsContainer.add(card, "w pref!, h pref!");
 		sessionsContainer.revalidate();
 		sessionsContainer.repaint();
 	}

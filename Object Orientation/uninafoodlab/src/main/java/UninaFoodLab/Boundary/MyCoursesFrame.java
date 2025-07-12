@@ -44,9 +44,10 @@ public class MyCoursesFrame extends JXFrame
 
     private static final long serialVersionUID = 1L;
 
-    private JXPanel rootPanel,  mainContentPanel;
+    private JXPanel rootPanel,  mainContentPanel, coursesPanel;
+    private JScrollPane scrollPane;
     private HeaderPanel header;
- 
+    
     // Listeners
     
 
@@ -101,8 +102,13 @@ public class MyCoursesFrame extends JXFrame
         rootPanel.add(header, "dock north");
 
         // Pannello principale dei contenuti
-        mainContentPanel = new JXPanel(new MigLayout("fill", "[grow]", "[grow]"));
-        rootPanel.add(mainContentPanel, "grow, wrap");
+        mainContentPanel = new JXPanel(new MigLayout("fill, insets 15", "[grow, fill]", "[][grow, fill]"));
+        rootPanel.add(mainContentPanel, "grow");
+
+        coursesPanel = new JXPanel(new MigLayout("wrap 4, fillx, insets 10", "[]", "[]"));
+        scrollPane = new JScrollPane(coursesPanel);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        mainContentPanel.add(scrollPane, "grow");
 
         // Esempio: apertura dialog di creazione corso
         CreateCourseDialog dialog = new CreateCourseDialog(this);
@@ -114,7 +120,11 @@ public class MyCoursesFrame extends JXFrame
     
     private void initListeners()
     {
-
+        /*newCourseButton.addActionListener(e -> {
+            CreateCourseDialog dialog = new CreateCourseDialog(this);
+            dialog.setVisible(true);
+            // Aggiungi un listener per ricaricare i corsi quando il dialogo si chiude
+        });*/
     }
     
     

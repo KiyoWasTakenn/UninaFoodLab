@@ -121,7 +121,7 @@ public class HeaderPanel extends JXPanel
         logoLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         logoLabel.setToolTipText("Torna alla homepage");
         add(logoLabel, "cell 2 0, w 94!, h 75!, gapleft 0, shrink 0");
-
+        
         filterBtn = new JXButton("Filtri");
         filterBtn.setIcon(FontIcon.of(MaterialDesign.MDI_FILTER, 16, new Color(80, 80, 80))); 
         filterBtn.setFont(new Font("Segoe UI", Font.BOLD, 16)); 
@@ -161,6 +161,13 @@ public class HeaderPanel extends JXPanel
         searchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         add(searchBtn, "cell 6 0, h 40!, w 90!, shrink 0");
 
+        if(parentFrame instanceof ProfileFrame)
+        {
+        	filterBtn.setVisible(false);
+        	searchField.setVisible(false);
+        	searchBtn.setVisible(false);
+        }
+        
         profileBtn = new JXButton();
         profileBtn.setIcon(FontIcon.of(MaterialDesign.MDI_ACCOUNT_CIRCLE, 26, Color.DARK_GRAY));
         profileBtn.setContentAreaFilled(false);

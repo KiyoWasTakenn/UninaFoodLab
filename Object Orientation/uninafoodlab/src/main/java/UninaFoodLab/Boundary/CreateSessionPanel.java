@@ -37,6 +37,9 @@ public class CreateSessionPanel extends JXPanel
 
 		initComponents();
 		initListeners();
+		
+		setPreferredSize(new Dimension(360, 250));
+		setMaximumSize(new Dimension(360, 250));
 	}
 
 	private void initComponents()
