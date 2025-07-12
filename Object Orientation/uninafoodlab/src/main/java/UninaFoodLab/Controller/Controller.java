@@ -742,9 +742,11 @@ public class Controller
      *  -------------------------
 	*/
 	
-	 private void modifySuccess(ProfileFrame currFrame, String username) 
+	 private void modifySuccess(ProfileFrame currFrame, Utente u) 
 	    {
-			LOGGER.log(Level.INFO, "Registrazione modifica per utente: {0}", username);
+			LOGGER.log(Level.INFO, "Registrazione modifica per utente: {0}", u.getUsername());
+			currFrame.showSuccess("Modifica avvenuta con successo!");
+			this.loggedUser=u;
 	    	goToProfile(currFrame);
 	    }
 		
@@ -771,14 +773,14 @@ public class Controller
 		        	{
 		        		Partecipante p = new Partecipante(username, nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), null, null);
 		                getPartecipanteDAO().update((Partecipante)loggedUser, p);
-		                modifySuccess(currFrame, username);
+		                modifySuccess(currFrame, p);
 		        	}
 	        	}
 	        	else
 	        	{
 	        		Partecipante p = new Partecipante(username , nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), null, null);
 	                getPartecipanteDAO().update((Partecipante)loggedUser, p);
-	                modifySuccess(currFrame, username);
+	                modifySuccess(currFrame, p);
 	        	}	        	
 	        }
 	    }
@@ -803,7 +805,7 @@ public class Controller
 	        			String curriculumPath = changeCurriculumFile(username, selectedFile);
 	        			Chef c = new Chef(username, nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), curriculumPath, null, null);
 		                getChefDAO().update((Chef)loggedUser, c);
-		                modifySuccess(currFrame, username);
+		                modifySuccess(currFrame, c);
 	        		}
 	                
 	            }
@@ -817,7 +819,7 @@ public class Controller
 	                String curriculumPath = changeCurriculumFile(username, selectedFile);
 	                Chef c = new Chef(username, nome, cognome, loggedUser.getCodiceFiscale(), data, luogo, email, loggedUser.getHashPassword(), curriculumPath, null, null);
 	                getChefDAO().update((Chef)loggedUser, c);
-	                modifySuccess(currFrame, username);
+	                modifySuccess(currFrame, c);
 	            }
 	        }
 	    }
@@ -891,7 +893,7 @@ public class Controller
 			}
 	    }
 	    
-	public void checkNewPassword(ChangePasswordDialog currFrame, JXFrame parent, char[] oldPass, char[] newPass)
+	public void checkNewPassword(ChangePasswordDialog currDialog, JXFrame parent, char[] oldPass, char[] newPass)
 	{
 		try
 		{
@@ -907,19 +909,20 @@ public class Controller
 					Partecipante p = new Partecipante(loggedUser.getUsername(), loggedUser.getNome(), loggedUser.getCognome(), loggedUser.getCodiceFiscale(), loggedUser.getDataDiNascita().toLocalDate(), loggedUser.getLuogoDiNascita(), loggedUser.getEmail(), hashPassword(newPass), null, null);
 	                getPartecipanteDAO().update((Partecipante)loggedUser, p);
 				}
-				changePassSuccess(parent, loggedUser.getUsername());
+				changePassSuccess(parent, currDialog, loggedUser.getUsername());
+				currDialog.dispose();
 			}				
 			else
-				changePassFailed(currFrame, "Password errata.");		
+				changePassFailed(currDialog, "Password errata.");		
 		}
 		catch(RecordNotFoundException e) 
 		{
-			changePassFailed(currFrame, "Password errata.");
+			changePassFailed(currDialog, "Password errata.");
 		}
 		catch(DAOException e)
 		{
 			LOGGER.log(Level.SEVERE, "Errore durante login nel DB: " + e.getMessage(), e);
-			changePassFailed(currFrame, "Errore di accesso al database.");
+			changePassFailed(currDialog, "Errore di accesso al database.");
 		}
 		finally
 	    {
@@ -927,9 +930,10 @@ public class Controller
 	    }
 	}
 	
-	private void changePassSuccess(JXFrame parent, String username) 
+	private void changePassSuccess(JXFrame parent, ChangePasswordDialog currDialog, String username) 
     {
 		LOGGER.log(Level.INFO, "Password modifica per utente: {0}", username);
+		currDialog.showSuccess("Password modificata con successo!");
 		goToProfile(parent);
     }
 	

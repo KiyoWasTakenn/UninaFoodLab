@@ -239,7 +239,7 @@ public class ChangePasswordDialog extends JDialog {
 					newPasswordField.requestFocus();
 				} else {
 		        	conferma.setEnabled(false); // Disabilita il pulsante durante l'operazione
-		        	Controller.getController().checkNewPassword(ChangePasswordDialog.this, parent, newPasswordField.getPassword(), oldPasswordField.getPassword());
+		        	Controller.getController().checkNewPassword(ChangePasswordDialog.this, parent, oldPasswordField.getPassword(), newPasswordField.getPassword());
 		        	// La riabilitazione del pulsante e la chiusura della dialog (o gestione errori) dovrebbe avvenire dopo la risposta del controller
 		        }
 		    }
@@ -294,13 +294,13 @@ public class ChangePasswordDialog extends JDialog {
 	public void showError(String msg)
 	{
 		JOptionPane.showMessageDialog(this, msg, "Errore", JOptionPane.ERROR_MESSAGE);
-		conferma.setEnabled(true); // Riabilita il pulsante in caso di errore dal controller
+		conferma.setEnabled(true);
 	}
 
 	public void showSuccess(String msg) {
         JOptionPane.showMessageDialog(this, msg, "Successo", JOptionPane.INFORMATION_MESSAGE);
-        conferma.setEnabled(true); // Riabilita il pulsante in caso di successo
-        dispose(); // Chiude la finestra di dialogo al successo
+        conferma.setEnabled(true);
+        dispose(); 
     }
 
 }

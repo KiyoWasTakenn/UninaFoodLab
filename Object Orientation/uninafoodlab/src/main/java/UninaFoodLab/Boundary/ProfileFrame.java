@@ -77,8 +77,6 @@ public class ProfileFrame extends JXFrame
     
 	private JPanel contentPane;
 	
-	private Utente loggedUser;
-	
 	//private JXButton hamburgerBtn;
 	//private JXButton profileBtn;
 	private JXButton modifyBtn;
@@ -192,14 +190,11 @@ public class ProfileFrame extends JXFrame
         ));
         rootPanel.add(mainContentPanel, "grow, align center");
         
-        loggedUser = Controller.getController().getLoggedUser();
-    	BenvenutoLabel = new JXLabel("BENVENUTO "+ loggedUser.getNome().toUpperCase() +" !");
+    	BenvenutoLabel = new JXLabel("BENVENUTO "+ Controller.getController().getLoggedUser().getNome().toUpperCase() +" !");
     	BenvenutoLabel.setFont(new Font("Roboto", Font.BOLD, 36));
     	BenvenutoLabel.setForeground(new Color(0x9C5B17)); 
     	mainContentPanel.add(BenvenutoLabel, "span 4, center, wrap 50");	
-    	
- 
-    	
+    	    	
     	DatiLabel = new JXLabel("I tuoi dati:");
     	DatiLabel.setFont(new Font("SansSerif", Font.BOLD, 26));
     	DatiLabel.setForeground(new Color(0x9C5B17));
@@ -225,7 +220,7 @@ public class ProfileFrame extends JXFrame
     	NomeField = new JXTextField();
     	NomeField.setFont(new Font("SansSerif", Font.PLAIN, 16));
     	NomeField.setForeground(new Color(0x333333));
-    	NomeField.setText(loggedUser.getNome());
+    	NomeField.setText(Controller.getController().getLoggedUser().getNome());
     	NomeField.setEditable(false);
     	NomeField.setFocusable(false);
     	NomeField.setBorder(defaultBorder);
@@ -245,7 +240,7 @@ public class ProfileFrame extends JXFrame
     	CognomeField = new JXTextField();
     	CognomeField.setFont(new Font("SansSerif", Font.PLAIN, 16));
     	CognomeField.setForeground(new Color(0x333333));
-    	CognomeField.setText(loggedUser.getCognome());
+    	CognomeField.setText(Controller.getController().getLoggedUser().getCognome());
     	CognomeField.setEditable(false);
     	CognomeField.setFocusable(false);
     	CognomeField.setBorder(defaultBorder);
@@ -266,7 +261,7 @@ public class ProfileFrame extends JXFrame
 		DateVetoPolicy vetoPolicy = new DateVetoPolicyMinimumMaximumDate(null, LocalDate.now());
 		DatePickerSettings settings = new DatePickerSettings();
 		dataPicker = new DatePicker(settings);
-		dataPicker.setDate(loggedUser.getDataDiNascita().toLocalDate());
+		dataPicker.setDate(Controller.getController().getLoggedUser().getDataDiNascita().toLocalDate());
 		settings.setVetoPolicy(vetoPolicy);
 		
         
@@ -311,7 +306,7 @@ public class ProfileFrame extends JXFrame
 		luogoField = new JXTextField();
 		luogoField.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		luogoField.setForeground(new Color(0x333333));
-		luogoField.setText(loggedUser.getLuogoDiNascita());
+		luogoField.setText(Controller.getController().getLoggedUser().getLuogoDiNascita());
 		luogoField.setEditable(false);
 		luogoField.setFocusable(false);
 		luogoField.setBorder(defaultBorder);
@@ -328,7 +323,7 @@ public class ProfileFrame extends JXFrame
     	CodFiscaleLabel.setForeground(new Color(0xD86F00));
     	mainContentPanel.add(CodFiscaleLabel, "cell 0 7, right");	
     	
-    	CodFiscaleEffettivoField = new JXLabel(loggedUser.getCodiceFiscale());
+    	CodFiscaleEffettivoField = new JXLabel(Controller.getController().getLoggedUser().getCodiceFiscale());
     	CodFiscaleEffettivoField.setFont(new Font("SansSerif", Font.PLAIN, 16));
     	CodFiscaleEffettivoField.setForeground(new Color(0x333333));
     	CodFiscaleEffettivoField.setBackground(new Color(0xFFFBF5));
@@ -348,7 +343,7 @@ public class ProfileFrame extends JXFrame
     	EmailField = new JXTextField();
     	EmailField.setFont(new Font("SansSerif", Font.PLAIN, 16));
     	EmailField.setForeground(new Color(0x333333));
-    	EmailField.setText(loggedUser.getEmail());
+    	EmailField.setText(Controller.getController().getLoggedUser().getEmail());
     	EmailField.setEditable(false);
     	EmailField.setFocusable(false);
     	EmailField.setBorder(defaultBorder);
@@ -368,7 +363,7 @@ public class ProfileFrame extends JXFrame
     	UsernameField = new JXTextField();
     	UsernameField.setFont(new Font("SansSerif", Font.PLAIN, 16));
     	UsernameField.setForeground(new Color(0x333333));
-    	UsernameField.setText(loggedUser.getUsername());
+    	UsernameField.setText(Controller.getController().getLoggedUser().getUsername());
     	UsernameField.setEditable(false);
     	UsernameField.setFocusable(false);
     	UsernameField.setBorder(defaultBorder);
@@ -406,6 +401,18 @@ public class ProfileFrame extends JXFrame
 		fileLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
 		fileLabel.setForeground(new Color(0x604A3C));
 		mainContentPanel.add(fileLabel,  "cell 2 11, span 2, left, gapleft 20");
+		
+		if(Controller.getController().isPartecipanteLogged())
+		{
+			CurriculumLabel.setEnabled(false);
+			CurriculumLabel.setVisible(false);
+			VisualizzaCurriculumBtn.setEnabled(false);
+			VisualizzaCurriculumBtn.setVisible(false);
+			ScegliCurriculumBtn.setEnabled(false);
+			ScegliCurriculumBtn.setEnabled(false);
+			fileLabel.setEnabled(false);
+			fileLabel.setVisible(false);
+		}
 		
     	EliminaProfiloBtn = new JXButton ("Elimina Profilo");
     	EliminaProfiloBtn.setFont(new Font("SansSerif", Font.BOLD, 15));
@@ -479,10 +486,20 @@ public class ProfileFrame extends JXFrame
         ConfermaBtn.setEnabled(editable);
         EliminaProfiloBtn.setVisible(editable);
         EliminaProfiloBtn.setEnabled(editable);
-        ScegliCurriculumBtn.setVisible(editable);
-        ScegliCurriculumBtn.setEnabled(editable);
-        fileLabel.setVisible(editable);
-        fileLabel.setEnabled(editable);
+        if(Controller.getController().isPartecipanteLogged())
+        {
+        	ScegliCurriculumBtn.setVisible(false);
+        	ScegliCurriculumBtn.setEnabled(false);
+        	fileLabel.setVisible(false);
+        	fileLabel.setEnabled(false);
+        }
+        else
+        {
+        	ScegliCurriculumBtn.setVisible(editable);
+        	ScegliCurriculumBtn.setEnabled(editable);
+        	fileLabel.setVisible(editable);
+        	fileLabel.setEnabled(editable);
+        }       
         dataPicker.setEnabled(editable);
 		nomeErrorLabel.setVisible(editable);
 		cognomeErrorLabel.setVisible(editable);
@@ -538,12 +555,12 @@ public class ProfileFrame extends JXFrame
 			   @Override
 			   public void actionPerformed(ActionEvent e)
 			   {
-			    	NomeField.setText(loggedUser.getNome());
-			    	CognomeField.setText(loggedUser.getCognome());
-			    	dataPicker.setDate(loggedUser.getDataDiNascita().toLocalDate());
-			    	luogoField.setText(loggedUser.getLuogoDiNascita());
-					EmailField.setText(loggedUser.getEmail());
-					UsernameField.setText(loggedUser.getUsername());
+			    	NomeField.setText(Controller.getController().getLoggedUser().getNome());
+			    	CognomeField.setText(Controller.getController().getLoggedUser().getCognome());
+			    	dataPicker.setDate(Controller.getController().getLoggedUser().getDataDiNascita().toLocalDate());
+			    	luogoField.setText(Controller.getController().getLoggedUser().getLuogoDiNascita());
+					EmailField.setText(Controller.getController().getLoggedUser().getEmail());
+					UsernameField.setText(Controller.getController().getLoggedUser().getUsername());
 					VisualizzaCurriculumBtn.setEnabled(true);
 					setEditMode(false);
 			   }
@@ -570,13 +587,12 @@ public class ProfileFrame extends JXFrame
 			        else
 			        {
 						setEditMode(false);
+						VisualizzaCurriculumBtn.setEnabled(true);
 			        	Controller.getController().checkmodifyProfile(ProfileFrame.this,
 							     NomeField.getText(), CognomeField.getText(),dataPicker.getDate(), luogoField.getText(),
 							     EmailField.getText(), UsernameField.getText().trim(), 
 							     selectedFile);
-			        }
-				   VisualizzaCurriculumBtn.setEnabled(true);
-				   setEditMode(false);
+			        }				   
 			   }
 			};
 		   ConfermaBtn.addActionListener(ConfermaBtnListener);
@@ -898,6 +914,12 @@ public class ProfileFrame extends JXFrame
 		ConfermaBtn.setEnabled(true);
 	    AnnullaBtn.setEnabled(true);
 	}	
+	
+	public void showSuccess(String msg) {
+        JOptionPane.showMessageDialog(this, msg, "Successo", JOptionPane.INFORMATION_MESSAGE);
+        ConfermaBtn.setEnabled(true);
+	    AnnullaBtn.setEnabled(true);
+    }
 	
     private void disposeListeners() 
     {
